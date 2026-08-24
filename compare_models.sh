@@ -16,6 +16,7 @@ TAGS=(qwen3.5-27b            llama3.1-8b                            gemma3-12b)
 PATHS=(/model-weights/Qwen3.5-27B  /model-weights/Meta-Llama-3.1-8B-Instruct  /model-weights/gemma-3-12b-it)
 
 mkdir -p "$OUT"
+rm -f "$OUT"/*.graph.json "$OUT"/summary.json   # clear stale results so we never mix runs
 
 # ---- Pass 1: extraction (separate process per model) ----
 for i in "${!TAGS[@]}"; do

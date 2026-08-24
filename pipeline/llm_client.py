@@ -172,7 +172,7 @@ class VLLMClient:
     Env knobs: VLLM_TP (tensor-parallel GPUs, default 1), VLLM_GPU_UTIL (0.90),
     VLLM_MAX_LEN (8192)."""
 
-    def __init__(self, model: str, max_tokens: int = 1024):
+    def __init__(self, model: str, max_tokens: int = 2048):
         # Use vLLM's native PyTorch sampler instead of FlashInfer, whose sampler
         # JIT-compiles a CUDA kernel at runtime (needs nvcc). On clusters where the
         # CUDA toolkit is module-gated (e.g. Alliance/Killarney) nvcc isn't on the

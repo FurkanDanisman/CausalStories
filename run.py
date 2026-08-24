@@ -84,7 +84,11 @@ def do_extract(args, ex, outdir: Path) -> None:
     tag = args.tag or (args.model or args.backend).replace("/", "_")
     print(f"=== EXTRACT · {tag} · backend={args.backend} · {ex.torque_id} [{ex.split}] ===\n")
     client = build_client(args.backend, args.model, args.base_url)
-    graph = extract.extract_graph(client, ex.text, k=args.k)
+    try:
+        graph = extract.extract_graph(client, ex.text, k=args.k)
+    except Exception as e:  # bad/truncated model output must not kill the batch
+        print(f"!! extraction FAILED for {tag}: {type(e).__name__}: {e}")
+        graph = CausalGraph(nodes=[], edges=[])
     _print_graph(graph, args.k)
     (outdir / f"{tag}.graph.json").write_text(json.dumps(graph.model_dump(mode="json"), indent=2))
     print(f"\nsaved {outdir}/{tag}.graph.json")
