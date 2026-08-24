@@ -193,11 +193,16 @@ class VLLMClient:
 
     def complete(self, *, task: str, prompt: str, schema: Type[T], temperature: float = 0.0) -> T:
         from vllm import SamplingParams
-        from vllm.sampling_params import GuidedDecodingParams
 
-        guided = GuidedDecodingParams(json=schema.model_json_schema())
-        sp = SamplingParams(temperature=temperature, max_tokens=self.max_tokens,
-                            guided_decoding=guided)
+        schema_json = schema.model_json_schema()
+        try:  # vLLM v1 (>=0.11 / Alliance 0.25): structured outputs
+            from vllm.sampling_params import StructuredOutputsParams
+            sp = SamplingParams(temperature=temperature, max_tokens=self.max_tokens,
+                                structured_outputs=StructuredOutputsParams(json=schema_json))
+        except Exception:  # older vLLM: guided decoding
+            from vllm.sampling_params import GuidedDecodingParams
+            sp = SamplingParams(temperature=temperature, max_tokens=self.max_tokens,
+                                guided_decoding=GuidedDecodingParams(json=schema_json))
         out = self.llm.chat([{"role": "user", "content": prompt}], sampling_params=sp)
         return schema.model_validate_json(out[0].outputs[0].text)
 
