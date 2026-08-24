@@ -24,7 +24,7 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
-from pipeline import dataset, evaluate, extract, prompts, visualize
+from pipeline import aggregate, dataset, evaluate, extract, prompts, visualize
 from pipeline.llm_client import (AnthropicClient, HFClient, MockLLMClient,
                                  OllamaClient, OpenAIClient, VLLMClient)
 from pipeline.schema import CausalGraph, Variant
@@ -175,6 +175,85 @@ def do_generate(args, outdir: Path) -> None:
     print(f"\nwrote {len(bases)} story-set(s) to {outdir}/*.variants.json")
 
 
+def do_agg_extract(args, outdir: Path) -> None:
+    """Extract a causal graph from each synthetic variant with ONE model."""
+    tag = _tag(args)
+    synth = Path(args.synth_dir)
+    files = sorted(synth.glob("*.variants.json"))
+    if not files:
+        raise SystemExit(f"no *.variants.json in {synth}; run --mode generate first")
+    print(f"=== AGG-EXTRACT · {tag} · {len(files)} base(s) ===")
+    client = build_client(args.backend, args.model, args.base_url)
+    for sf in files:
+        d = json.loads(sf.read_text())
+        vgs = []
+        for idx, v in enumerate(d["variants"]):
+            try:
+                g = extract.extract_graph(client, v["text"], k=args.k)
+            except Exception as e:
+                print(f"  {d['base_torque_id']} v{idx}: FAILED {type(e).__name__}: {e}")
+                g = CausalGraph(nodes=[], edges=[])
+            vgs.append({"idx": idx, **g.model_dump(mode="json")})
+            print(f"  {d['base_torque_id']} v{idx}: {len(g.nodes)} nodes, {len(g.edges)} edges")
+        out = {"base_torque_id": d["base_torque_id"], "base_split": d["base_split"], "tag": tag,
+               "variant_graphs": vgs}
+        (outdir / f"{d['base_torque_id']}__{tag}.varsgraphs.json").write_text(json.dumps(out, indent=2))
+    print(f"saved variant graphs for {tag}")
+
+
+def do_agg_combine(args, outdir: Path) -> None:
+    """Canonicalize + aggregate each base/model's variant graphs into one
+    probability graph, score it vs the base's gold graph, render true vs estimated."""
+    files = sorted(outdir.glob("*.varsgraphs.json"))
+    if not files:
+        raise SystemExit(f"no *.varsgraphs.json in {outdir}; run --mode agg-extract first")
+    print(f"=== AGG-COMBINE · judge={args.model} · {len(files)} base/model set(s) ===")
+    judge = build_client(args.backend, args.model, args.base_url)
+    per_model = defaultdict(list)
+    detail = []
+    for f in files:
+        d = json.loads(f.read_text())
+        base_ex = dataset.get_example(d["base_torque_id"], d["base_split"])
+        graphs = [CausalGraph.model_validate({"nodes": vg["nodes"], "edges": vg["edges"]})
+                  for vg in d["variant_graphs"]]
+        n = len(graphs)
+        node2canon = aggregate.canonicalize(judge, base_ex.text, graphs)
+        agg = aggregate.aggregate(graphs, node2canon, n_variants=n, min_count=args.agg_min_count)
+        report = evaluate.evaluate(judge, agg, base_ex)
+        name = f"{d['base_torque_id']}__{d['tag']}"
+        _render(agg, report, base_ex, outdir, name, backend=f"AGG({d['tag']}, min>={args.agg_min_count}/{n})")
+        (outdir / f"{name}.aggregated.json").write_text(json.dumps(
+            {"base_torque_id": d["base_torque_id"], "tag": d["tag"],
+             "edges": [{"head": e.head, "tail": e.tail, "prob": e.prob} for e in agg.edges]}, indent=2))
+        per_model[d["tag"]].append(report)
+        detail.append({"model": d["tag"], "base": d["base_torque_id"],
+                       "gold_precision": round(report.precision, 3), "recall": round(report.recall, 3),
+                       "gold_f1": round(report.f1, 3), "paper_precision": round(report.paper_precision, 3),
+                       "judge": report.judge_score, "n_agg_edges": report.n_pred, "n_gold": report.n_gold})
+        print(f"  {d['tag']} · {d['base_torque_id']}: goldP={report.precision:.3f} "
+              f"R={report.recall:.3f} F1={report.f1:.3f} | paperP={report.paper_precision:.3f} "
+              f"({report.n_pred} agg edges) -> {name}.comparison.html")
+
+    summary = []
+    for tag, reps in per_model.items():
+        m = len(reps)
+        summary.append({"model": tag, "n_bases": m,
+                        "gold_precision": round(sum(r.precision for r in reps) / m, 3),
+                        "recall": round(sum(r.recall for r in reps) / m, 3),
+                        "gold_f1": round(sum(r.f1 for r in reps) / m, 3),
+                        "paper_precision": round(sum(r.paper_precision for r in reps) / m, 3),
+                        "judge": round(sum(r.judge_score for r in reps) / m, 2)})
+    summary.sort(key=lambda s: -s["gold_f1"])
+    (outdir / "summary_agg.json").write_text(json.dumps(summary, indent=2))
+    (outdir / "summary_agg_detail.json").write_text(json.dumps(detail, indent=2))
+    print("=" * 78)
+    print(f"{'model':<16}{'bases':>6}{'goldP':>8}{'R':>8}{'goldF1':>8}{'paperP':>8}{'judge':>8}")
+    for r in summary:
+        print(f"{r['model']:<16}{r['n_bases']:>6}{r['gold_precision']:>8.3f}{r['recall']:>8.3f}"
+              f"{r['gold_f1']:>8.3f}{r['paper_precision']:>8.3f}{r['judge']:>8.2f}")
+    print(f"\nwrote {outdir}/summary_agg.json + per (base,model) *.comparison.html (true vs estimated)")
+
+
 def do_full(args, outdir: Path) -> None:
     ex = dataset.get_example(args.torque_id, args.split)
     client = build_client(args.backend, args.model, args.base_url)
@@ -225,7 +304,8 @@ def _print_report(report) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", default="full", choices=["full", "extract", "judge", "generate"])
+    ap.add_argument("--mode", default="full",
+                    choices=["full", "extract", "judge", "generate", "agg-extract", "agg-combine"])
     ap.add_argument("--backend", default="mock",
                     choices=["mock", "anthropic", "openai", "ollama", "hf", "vllm"])
     ap.add_argument("--model", default=None)
@@ -241,6 +321,9 @@ def main() -> None:
                     help="file of 'torque_id [split]' lines; overrides --torque-id")
     ap.add_argument("--k", type=int, default=1, help="self-consistency samples")
     ap.add_argument("--n-variants", type=int, default=6, help="synthetic retellings per base (generate mode)")
+    ap.add_argument("--synth-dir", default="out_synth", help="dir of *.variants.json (agg-extract)")
+    ap.add_argument("--agg-min-count", type=int, default=2,
+                    help="keep aggregated edges seen in >= this many variants")
     ap.add_argument("--outdir", default="out")
     args = ap.parse_args()
 
@@ -253,6 +336,10 @@ def main() -> None:
         do_judge(args, outdir)
     elif args.mode == "generate":
         do_generate(args, outdir)
+    elif args.mode == "agg-extract":
+        do_agg_extract(args, outdir)
+    elif args.mode == "agg-combine":
+        do_agg_combine(args, outdir)
     else:
         do_full(args, outdir)
 

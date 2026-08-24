@@ -93,3 +93,10 @@ class Variant(BaseModel):
     """One synthetic retelling of a base text (simulating a different narrator)."""
 
     text: str
+
+
+class NodeClustering(BaseModel):
+    """Maps each node (verbatim, across all retellings) to a canonical name, so the
+    same event/participant worded differently in different retellings is unified."""
+
+    mapping: dict[str, str]

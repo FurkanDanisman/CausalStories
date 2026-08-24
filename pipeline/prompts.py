@@ -86,3 +86,7 @@ PERSPECTIVES = [
 
 def generate_variant_prompt(base_text: str, perspective: str) -> str:
     return render("generate_variant.md", TEXT=base_text, PERSPECTIVE=perspective)
+
+
+def canonicalize_prompt(base_text: str, nodes_listing: str) -> str:
+    return render("canonicalize.md", TEXT=base_text, NODES=nodes_listing)
