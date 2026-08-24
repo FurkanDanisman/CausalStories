@@ -1,9 +1,11 @@
 <!--
 PARTIAL: injected wherever {{GUIDANCE}} appears in another template.
-Every definition here is taken from Michael's paper (Regan et al., "Causal schema
-induction for knowledge discovery"): the causal relations of Table 2, the force-
-dynamic view of §3.1, and the participant-centered structure of §3.2. Nothing
-here should state anything the paper does not.
+Every definition is taken from Michael's paper (Regan et al.): causal relations
++ examples = Table 2; force-dynamic view = §3.1; participants = §3.2. The
+participant<->event arrow DIRECTION follows §3.2 ("initiating agents or causal
+endpoints of events") and Fig. 2 (the ousting removes the leader: ousting -> leader).
+Nothing here states anything the paper does not; in particular nothing claims a
+location/site/host is a cause.
 -->
 A causal edge is a directed arrow  A -> B : A is a causal factor for B — A affects
 whether or how B happens. A cause acts in one of two directions; draw the arrow
@@ -37,6 +39,8 @@ Participants — the people and things named in the text, the grammatical subjec
 and objects associated with events — are causal too. In a participant-centered
 graph, people and things directly act on one another and also act as the
 initiating agents or causal endpoints of events (e.g. a pathogen causes a
-disease). Draw a causal arrow from a participant to an event it initiates, from an
-event to a participant that is its causal endpoint, and between participants that
-act on one another.
+disease). When a participant and an event are connected, point the arrow by the
+participant's role: draw participant -> event when the participant is the
+initiating agent of the event, and event -> participant when the participant is
+the causal endpoint of the event — the result or outcome the event brings about.
+Also draw arrows between participants that act on one another.

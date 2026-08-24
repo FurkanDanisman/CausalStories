@@ -1,28 +1,27 @@
 #!/usr/bin/env python3
-"""Single-example causal-graph extraction + evaluation.
+"""Causal-graph extraction + evaluation over one example or a held-out set.
 
 Modes (--mode):
-  full     (default) one process: extract with the test model, then judge. Fine
-           for API models. For big local models prefer extract/judge split below.
-  extract  load ONE model, extract the graph, save it. No judging. One process
-           per model => clean GPU teardown on exit.
-  judge    load the judge model once, score every saved graph in --outdir vs gold,
-           render the visual comparisons + a summary table.
+  full     one process: extract with the test model, then judge (single example).
+  extract  load ONE model, extract graph(s), save them. No judging. One process
+           per model => clean GPU teardown on exit. With --examples-file the model
+           is loaded once and every example is extracted.
+  judge    load the judge model once, score every saved graph in --outdir against
+           its gold (each saved graph records its own torque_id), and report mean
+           P/R/F1 per model over all examples.
 
-Backends: mock | anthropic | openai (also vLLM/TGI/llama.cpp via --base-url) |
-          ollama | hf (transformers, in-process) | vllm (in-process, guided JSON).
+Examples selection: --torque-id (single) OR --examples-file FILE (one
+"torque_id [split]" per line; blank/#-comment lines ignored).
 
-Examples:
-  python run.py                                   # mock, offline sanity check
-  python run.py --mode extract --backend vllm --model /model-weights/Qwen3.5-27B \\
-                --tag qwen3.5-27b --torque-id <id> --outdir out_compare
-  python run.py --mode judge   --backend vllm --model $JUDGE --torque-id <id> --outdir out_compare
+Backends: mock | anthropic | openai (also vLLM/TGI via --base-url) | ollama |
+          hf (transformers) | vllm (in-process, schema-guided JSON).
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+from collections import defaultdict
 from pathlib import Path
 
 from pipeline import dataset, evaluate, extract, visualize
@@ -47,6 +46,130 @@ def build_client(backend: str, model: str | None, base_url: str | None = None):
     raise ValueError(f"unknown backend: {backend}")
 
 
+def _tag(args) -> str:
+    return args.tag or (args.model or args.backend).replace("/", "_")
+
+
+def _examples(args) -> list[tuple[str, str]]:
+    if args.examples_file:
+        out = []
+        for line in Path(args.examples_file).read_text().splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split()
+            out.append((parts[0], parts[1] if len(parts) > 1 else args.split))
+        return out
+    return [(args.torque_id, args.split)]
+
+
+def _save_graph(path: Path, tag: str, ex, graph: CausalGraph) -> None:
+    data = {"tag": tag, "torque_id": ex.torque_id, "split": ex.split}
+    data.update(graph.model_dump(mode="json"))
+    path.write_text(json.dumps(data, indent=2))
+
+
+def _load_graph(path: Path):
+    d = json.loads(path.read_text())
+    graph = CausalGraph.model_validate({"nodes": d["nodes"], "edges": d["edges"]})
+    return d["tag"], d["torque_id"], d["split"], graph
+
+
+def _render(graph, report, ex, outdir: Path, name: str, backend: str) -> None:
+    pred_svg = visualize.render_svg(visualize.predicted_dot(graph, report))
+    gold_svg = visualize.render_svg(visualize.gold_dot(ex, report))
+    meta = {"torque_id": ex.torque_id, "split": ex.split, "backend": backend,
+            "text": ex.text, "is_mock": backend == "mock"}
+    (outdir / f"{name}.comparison.html").write_text(
+        visualize.comparison_html(gold_svg, pred_svg, report, meta))
+
+
+def do_extract(args, outdir: Path) -> None:
+    tag = _tag(args)
+    examples = _examples(args)
+    print(f"=== EXTRACT · {tag} · backend={args.backend} · {len(examples)} example(s) ===")
+    for old in outdir.glob(f"{tag}##*.graph.json"):
+        old.unlink()
+    client = build_client(args.backend, args.model, args.base_url)
+    for idx, (tid, split) in enumerate(examples):
+        ex = dataset.get_example(tid, split)
+        try:
+            graph = extract.extract_graph(client, ex.text, k=args.k)
+        except Exception as e:  # bad/truncated output must not kill the batch
+            print(f"  !! [{idx:03d}] {tid}: FAILED {type(e).__name__}: {e}")
+            graph = CausalGraph(nodes=[], edges=[])
+        print(f"  [{idx:03d}] {tid}: {len(graph.nodes)} nodes, {len(graph.edges)} edges")
+        _save_graph(outdir / f"{tag}##{idx:03d}.graph.json", tag, ex, graph)
+    print(f"saved {len(examples)} graph(s) for {tag}")
+
+
+def do_judge(args, outdir: Path) -> None:
+    files = sorted(outdir.glob("*.graph.json"))
+    if not files:
+        raise SystemExit(f"no *.graph.json in {outdir}; run --mode extract first")
+    print(f"=== JUDGE · {args.model} · scoring {len(files)} graph(s) ===")
+    judge = build_client(args.backend, args.model, args.base_url)
+    per_tag = defaultdict(list)
+    detail = []
+    for gf in files:
+        tag, tid, split, graph = _load_graph(gf)
+        ex = dataset.get_example(tid, split)
+        report = evaluate.evaluate(judge, graph, ex)
+        per_tag[tag].append(report)
+        detail.append({"model": tag, "torque_id": tid, "precision": round(report.precision, 3),
+                       "recall": round(report.recall, 3), "f1": round(report.f1, 3),
+                       "judge": report.judge_score, "n_pred": report.n_pred, "n_gold": report.n_gold})
+        if len(files) <= 6:  # only render for small single-example-style runs
+            _render(graph, report, ex, outdir, gf.name[:-len(".graph.json")], backend=tag)
+        print(f"  {tag} · {tid}: P={report.precision:.3f} R={report.recall:.3f} "
+              f"F1={report.f1:.3f} judge={report.judge_score}")
+
+    summary = []
+    for tag, reports in per_tag.items():
+        n = len(reports)
+        summary.append({"model": tag, "n_examples": n,
+                        "precision": round(sum(r.precision for r in reports) / n, 3),
+                        "recall": round(sum(r.recall for r in reports) / n, 3),
+                        "f1": round(sum(r.f1 for r in reports) / n, 3),
+                        "judge": round(sum(r.judge_score for r in reports) / n, 2)})
+    summary.sort(key=lambda s: -s["f1"])
+    (outdir / "summary.json").write_text(json.dumps(summary, indent=2))
+    (outdir / "summary_detail.json").write_text(json.dumps(detail, indent=2))
+    print("=" * 72)
+    print(f"{'model':<18}{'n':>4}{'P':>9}{'R':>9}{'F1':>9}{'judge':>8}")
+    for r in summary:
+        print(f"{r['model']:<18}{r['n_examples']:>4}{r['precision']:>9.3f}"
+              f"{r['recall']:>9.3f}{r['f1']:>9.3f}{r['judge']:>8.2f}")
+    print(f"\nwrote {outdir}/summary.json (means over examples) + summary_detail.json")
+
+
+def do_full(args, outdir: Path) -> None:
+    ex = dataset.get_example(args.torque_id, args.split)
+    client = build_client(args.backend, args.model, args.base_url)
+    if args.eval_backend:
+        eval_client = build_client(args.eval_backend, args.eval_model, args.eval_base_url)
+        eval_desc = f"{args.eval_backend}:{args.eval_model}"
+    else:
+        eval_client = client
+        eval_desc = "SAME as test model — scores may be self-graded"
+    tag = _tag(args)
+
+    print(f"=== example {ex.torque_id} [{ex.split}] · backend={args.backend} ===")
+    print(f"    evaluator (align+judge): {eval_desc}")
+    if args.backend == "mock":
+        print("!!! MOCK backend: the PREDICTED graph is canned, NOT a real model. !!!")
+    print(f"\nTEXT:\n{ex.text}\n")
+
+    graph = extract.extract_graph(client, ex.text, k=args.k)
+    _print_graph(graph, args.k)
+    print("\nSTAGE 3  align_nodes.md + judge.md  ->  score vs gold")
+    report = evaluate.evaluate(eval_client, graph, ex)
+    _print_report(report)
+    _save_graph(outdir / f"{tag}.graph.json", tag, ex, graph)
+    _render(graph, report, ex, outdir, tag, args.backend)
+    print(f"\nSTAGE 4  wrote {outdir}/{tag}.comparison.html  (two graphs side by side)")
+
+
 def _print_graph(graph: CausalGraph, k: int) -> None:
     print("STAGE 1  extract_nodes.md  ->  typed nodes")
     for n in graph.nodes:
@@ -61,124 +184,39 @@ def _print_report(report) -> None:
     print("\n    node alignment (predicted -> gold):")
     for k_, v_ in report.alignment.items():
         print(f"        {k_!r}  ->  {v_!r}")
-    print(f"\n    structurally valid : {report.valid}")
-    print(f"    edge precision     : {report.precision:.3f}  (correct arrows / predicted arrows)")
-    print(f"    edge recall        : {report.recall:.3f}  (gold arrows recovered / gold arrows)")
-    print(f"    edge F1            : {report.f1:.3f}  "
-          f"({report.matched} matched / {report.n_pred} pred / {report.n_gold} gold)")
-    print(f"    LLM-judge score    : {report.judge_score}/5 -- {report.judge_rationale}")
-
-
-def _render(graph, report, ex, outdir: Path, tag: str, backend: str) -> None:
-    pred_dot = visualize.predicted_dot(graph, report)
-    gold_dot = visualize.gold_dot(ex, report)
-    pred_svg = visualize.render_svg(pred_dot)
-    gold_svg = visualize.render_svg(gold_dot)
-    meta = {"torque_id": ex.torque_id, "split": ex.split, "backend": f"{backend}:{tag}",
-            "text": ex.text, "is_mock": backend == "mock"}
-    (outdir / f"{tag}.comparison.html").write_text(
-        visualize.comparison_html(gold_svg, pred_svg, report, meta))
-
-
-def do_extract(args, ex, outdir: Path) -> None:
-    tag = args.tag or (args.model or args.backend).replace("/", "_")
-    print(f"=== EXTRACT · {tag} · backend={args.backend} · {ex.torque_id} [{ex.split}] ===\n")
-    client = build_client(args.backend, args.model, args.base_url)
-    try:
-        graph = extract.extract_graph(client, ex.text, k=args.k)
-    except Exception as e:  # bad/truncated model output must not kill the batch
-        print(f"!! extraction FAILED for {tag}: {type(e).__name__}: {e}")
-        graph = CausalGraph(nodes=[], edges=[])
-    _print_graph(graph, args.k)
-    (outdir / f"{tag}.graph.json").write_text(json.dumps(graph.model_dump(mode="json"), indent=2))
-    print(f"\nsaved {outdir}/{tag}.graph.json")
-
-
-def do_judge(args, ex, outdir: Path) -> None:
-    graph_files = sorted(outdir.glob("*.graph.json"))
-    if not graph_files:
-        raise SystemExit(f"no *.graph.json in {outdir}; run --mode extract first")
-    print(f"=== JUDGE · {args.model} · scoring {len(graph_files)} graph(s) ===\n")
-    judge = build_client(args.backend, args.model, args.base_url)
-    summary = []
-    for gf in graph_files:
-        tag = gf.name[:-len(".graph.json")]
-        graph = CausalGraph.model_validate(json.loads(gf.read_text()))
-        print(f"--- {tag} ---")
-        report = evaluate.evaluate(judge, graph, ex)
-        _print_report(report)
-        _render(graph, report, ex, outdir, tag, backend=tag)
-        summary.append({"model": tag, "precision": round(report.precision, 3),
-                        "recall": round(report.recall, 3), "f1": round(report.f1, 3),
-                        "judge": report.judge_score, "n_pred": report.n_pred,
-                        "n_gold": report.n_gold})
-        print()
-    (outdir / "summary.json").write_text(json.dumps(summary, indent=2))
-    print("=" * 64)
-    print(f"{'model':<20}{'P':>7}{'R':>7}{'F1':>7}{'judge':>7}")
-    for r in summary:
-        print(f"{r['model']:<20}{r['precision']:>7.3f}{r['recall']:>7.3f}"
-              f"{r['f1']:>7.3f}{r['judge']:>6}/5")
-    print(f"\nwrote {outdir}/summary.json + per-model *.comparison.html")
-
-
-def do_full(args, ex, outdir: Path) -> None:
-    client = build_client(args.backend, args.model, args.base_url)
-    if args.eval_backend:
-        eval_client = build_client(args.eval_backend, args.eval_model, args.eval_base_url)
-        eval_desc = f"{args.eval_backend}:{args.eval_model}"
-    else:
-        eval_client = client
-        eval_desc = "SAME as test model — scores may be self-graded"
-    tag = args.tag or (args.model or args.backend).replace("/", "_")
-
-    print(f"=== example {ex.torque_id} [{ex.split}] · backend={args.backend} ===")
-    print(f"    evaluator (align+judge): {eval_desc}")
-    if args.backend == "mock":
-        print("!!! MOCK backend: the PREDICTED graph is canned, NOT a real model. !!!")
-    print(f"\nTEXT:\n{ex.text}\n")
-
-    graph = extract.extract_graph(client, ex.text, k=args.k)
-    _print_graph(graph, args.k)
-    print("\nSTAGE 3  align_nodes.md + judge.md  ->  score vs gold")
-    report = evaluate.evaluate(eval_client, graph, ex)
-    _print_report(report)
-    (outdir / f"{tag}.graph.json").write_text(json.dumps(graph.model_dump(mode="json"), indent=2))
-    _render(graph, report, ex, outdir, tag, args.backend)
-    print(f"\nSTAGE 4  wrote {outdir}/{tag}.comparison.html  (two graphs side by side)")
+    print(f"\n    edge precision : {report.precision:.3f}   recall : {report.recall:.3f}   "
+          f"F1 : {report.f1:.3f}   judge : {report.judge_score}/5")
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", default="full", choices=["full", "extract", "judge"])
-    # model UNDER TEST (extract/full) or the JUDGE (judge mode)
     ap.add_argument("--backend", default="mock",
                     choices=["mock", "anthropic", "openai", "ollama", "hf", "vllm"])
     ap.add_argument("--model", default=None)
-    ap.add_argument("--base-url", default=None,
-                    help="OpenAI-compatible server URL (vLLM/TGI/llama.cpp); use with --backend openai")
+    ap.add_argument("--base-url", default=None)
     ap.add_argument("--tag", default=None, help="label for output files (defaults to model name)")
-    # EVALUATOR (full mode only). Keep FIXED and strong so models aren't self-graded.
     ap.add_argument("--eval-backend", default=None,
                     choices=["mock", "anthropic", "openai", "ollama", "hf", "vllm"])
     ap.add_argument("--eval-model", default=None)
     ap.add_argument("--eval-base-url", default=None)
     ap.add_argument("--split", default="train", choices=["train", "dev"])
     ap.add_argument("--torque-id", default=dataset.DEMO_TORQUE_ID)
+    ap.add_argument("--examples-file", default=None,
+                    help="file of 'torque_id [split]' lines; overrides --torque-id")
     ap.add_argument("--k", type=int, default=1, help="self-consistency samples")
     ap.add_argument("--outdir", default="out")
     args = ap.parse_args()
 
     outdir = Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
-    ex = dataset.get_example(args.torque_id, args.split)
 
     if args.mode == "extract":
-        do_extract(args, ex, outdir)
+        do_extract(args, outdir)
     elif args.mode == "judge":
-        do_judge(args, ex, outdir)
+        do_judge(args, outdir)
     else:
-        do_full(args, ex, outdir)
+        do_full(args, outdir)
 
 
 if __name__ == "__main__":
