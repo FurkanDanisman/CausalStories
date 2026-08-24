@@ -1,24 +1,42 @@
 <!--
 PARTIAL: injected wherever {{GUIDANCE}} appears in another template.
-Defines what a causal edge is. Edit this to change how the model decides whether
-to draw an arrow.
+Every definition here is taken from Michael's paper (Regan et al., "Causal schema
+induction for knowledge discovery"): the causal relations of Table 2, the force-
+dynamic view of §3.1, and the participant-centered structure of §3.2. Nothing
+here should state anything the paper does not.
 -->
-A causal edge is a directed arrow  A -> B  meaning A causally bears on whether or how B happens. A causal edge covers two directions in which A can act on B. Recognize either as a reason to draw an arrow.
+A causal edge is a directed arrow  A -> B : A is a causal factor for B — A affects
+whether or how B happens. A cause acts in one of two directions; draw the arrow
+for either.
 
-(1) A brings about or sustains B:
-  * A directly causes or starts B (e.g. "Oleg started the ball rolling").
-  * A contributes to, helps, accelerates, or is a sufficient condition for B (e.g. "Olga kept the ball rolling").
-  * A allows or lets B happen by not acting to stop it (e.g. "Olaf let the ball roll").
-  * A removes an obstacle or barrier so B can happen or continue (e.g. "Oksana cleared the way for the ball").
+(1) A makes B happen, start, or keep going:
+  * A causes or starts B (cause, start): "Oleg started the ball rolling."
+  * A contributes to or helps B, as an acceleration or sufficient condition
+    (contribute, help): "Olga kept the ball rolling."
+  * A allows or lets B by inaction, not acting to stop it (let, allow, permit):
+    "Olaf let the ball roll."
+  * A removes a barrier so B can continue (free, maintain): "Oksana removed
+    obstacles to the ball rolling."
 
-(2) A stops or prevents B:
-  * A ends or stops B (e.g. "Oleg stopped the ball rolling").
-  * A slows, hinders, resists, or weakens B  (e.g. "Olga slowed the ball").
-  * A lets B come to rest by not acting to keep it going (e.g. "Olaf let the ball stop").
-  * A blocks, forbids, or raises a barrier that prevents B (e.g. "Oksana prevented the ball from rolling").
+(2) A makes B stop, or keeps B from happening:
+  * A stops or ends B (stop): "Oleg stopped the ball rolling."
+  * A reduces B's momentum — hinders, resists, or slows it (hinder, resist, slow):
+    "Olga slowed the ball rolling."
+  * A lets B come to rest by inaction, not helping it continue (not help):
+    "Olaf let the ball stop rolling."
+  * A is a barrier to B, preventing it (refrain, forbid, hold): "Oksana prevented
+    the ball from rolling."
 
-Both directions are the same causal edge and both get a plain arrow  A -> B.
+Both directions are causal edges; draw each as a plain arrow  A -> B.
 
-Judge each candidate edge as a matter of force dynamics: causation is a tendency toward action or rest, a force, an opposition to force, or the overcoming of a force. Draw an arrow from A to B when A exerts, opposes, or overcomes such a force on B. A causal edge is not the same as temporal succession: if A merely happens before B, shares a topic with B, or is co-mentioned with B without exerting any such force on it, do NOT draw an arrow.
+Causation is conceived of as tendency to action and rest, force, opposition to
+force, and the overcoming of force. Draw an arrow from A to B when A is a causal
+factor for B in this sense.
 
-Participants (people, organizations, things) can be causes: a participant may act on an event or on another participant (e.g. "the referee" -> "the match was halted"). Prefer arrows between events; add a participant -> event arrow only when the participant is the direct causal agent of that event.
+Participants — the people and things named in the text, the grammatical subjects
+and objects associated with events — are causal too. In a participant-centered
+graph, people and things directly act on one another and also act as the
+initiating agents or causal endpoints of events (e.g. a pathogen causes a
+disease). Draw a causal arrow from a participant to an event it initiates, from an
+event to a participant that is its causal endpoint, and between participants that
+act on one another.
