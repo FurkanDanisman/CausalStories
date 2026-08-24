@@ -19,6 +19,7 @@ left to fill in when we pick a backend (see README).
 from __future__ import annotations
 
 import json
+import os
 from typing import Protocol, Type, TypeVar
 
 from pydantic import BaseModel
@@ -160,6 +161,39 @@ def _extract_json(text: str) -> dict | None:
                     break
         start = text.find("{", start + 1)
     return None
+
+
+class VLLMClient:
+    """Runs a local open-source model in-process via vLLM, with schema-guided JSON
+    decoding (reliable structured output). Best backend for a GPU node with local
+    weights. Load ONE model per process — vLLM does not cleanly free GPU memory
+    in-process, so orchestrate multiple models as separate processes.
+
+    Env knobs: VLLM_TP (tensor-parallel GPUs, default 1), VLLM_GPU_UTIL (0.90),
+    VLLM_MAX_LEN (8192)."""
+
+    def __init__(self, model: str, max_tokens: int = 1024):
+        from vllm import LLM  # lazy
+
+        self.max_tokens = max_tokens
+        self.llm = LLM(
+            model=model,
+            tensor_parallel_size=int(os.environ.get("VLLM_TP", "1")),
+            gpu_memory_utilization=float(os.environ.get("VLLM_GPU_UTIL", "0.90")),
+            max_model_len=int(os.environ.get("VLLM_MAX_LEN", "8192")),
+            dtype="bfloat16",
+            trust_remote_code=True,
+        )
+
+    def complete(self, *, task: str, prompt: str, schema: Type[T], temperature: float = 0.0) -> T:
+        from vllm import SamplingParams
+        from vllm.sampling_params import GuidedDecodingParams
+
+        guided = GuidedDecodingParams(json=schema.model_json_schema())
+        sp = SamplingParams(temperature=temperature, max_tokens=self.max_tokens,
+                            guided_decoding=guided)
+        out = self.llm.chat([{"role": "user", "content": prompt}], sampling_params=sp)
+        return schema.model_validate_json(out[0].outputs[0].text)
 
 
 class HFClient:

@@ -47,6 +47,31 @@ python run.py --backend openai --base-url http://<node>:8000/v1 \
 python run.py --backend hf --model Qwen/Qwen2.5-7B-Instruct
 ```
 
+## Compare several local models on one example (cluster)
+
+`compare_models.sh` runs each model in its **own process** (so vLLM releases GPU
+memory between models), then judges all of them once with a fixed model:
+
+```bash
+pip install vllm                 # + the pipeline's requirements
+bash compare_models.sh           # edit TAGS/PATHS/JUDGE at the top first
+# -> out_compare/summary.json (P/R/F1 + judge per model) and *.comparison.html
+```
+
+Set `VLLM_TP=2` (etc.) if a model needs tensor-parallel across GPUs. Under the
+hood it uses the three run.py modes:
+
+```bash
+# extract with ONE model (one process each -> clean GPU teardown)
+python run.py --mode extract --backend vllm --model /model-weights/Qwen3.5-27B \
+              --tag qwen3.5-27b --torque-id <id> --outdir out_compare
+# judge every saved graph once with the fixed judge
+python run.py --mode judge   --backend vllm --model $JUDGE \
+              --torque-id <id> --outdir out_compare
+```
+
+`--backend vllm` decodes with schema-guided JSON (reliable structured output).
+
 ### Held-out eval example + a separate evaluator
 
 The current eval target (fully held out; the prompt's few-shot example is
