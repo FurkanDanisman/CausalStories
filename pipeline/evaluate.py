@@ -22,8 +22,8 @@ from dataclasses import dataclass
 
 from .dataset import Example
 from .llm_client import LLMClient
-from .prompts import align_nodes_prompt, judge_prompt
-from .schema import CausalGraph, JudgeScore, NodeAlignment
+from .prompts import align_nodes_prompt, judge_edge_prompt, judge_prompt
+from .schema import CausalGraph, EdgeValidityBatch, JudgeScore, NodeAlignment
 
 
 @dataclass
@@ -40,6 +40,8 @@ class EvalReport:
     alignment: dict
     matched_pred: set          # predicted (head, tail) that matched a gold edge
     recovered_gold: set        # gold (head, tail) that were recovered
+    paper_precision: float     # fraction of predicted edges judged valid vs text+definition
+    n_valid: int               # count of predicted edges judged causally valid
 
 
 def structural_validity(graph: CausalGraph) -> bool:
@@ -79,9 +81,24 @@ def evaluate(client: LLMClient, graph: CausalGraph, example: Example) -> EvalRep
         schema=JudgeScore, temperature=0.0,
     )
 
+    # precision-by-paper: is each PREDICTED edge causally valid vs the text + the
+    # causal-edge definition (independent of gold). Separates "extra edges that are
+    # actually valid" (gold too strict) from "extra edges that are noise".
+    n_valid = 0
+    if graph.edges:
+        pairs = [(e.head, e.tail) for e in graph.edges]
+        vb = client.complete(
+            task="judge_edges", prompt=judge_edge_prompt(example.text, pairs),
+            schema=EdgeValidityBatch, temperature=0.0,
+        )
+        valid_idx = {v.index for v in vb.verdicts if v.valid}
+        n_valid = sum(1 for i in range(len(pairs)) if i in valid_idx)
+    paper_precision = n_valid / len(graph.edges) if graph.edges else 0.0
+
     return EvalReport(
         valid=valid, precision=p, recall=r, f1=f,
         matched=matched, n_pred=len(graph.edges), n_gold=len(gold),
         judge_score=judge.score, judge_rationale=judge.rationale, alignment=align,
         matched_pred=matched_pred, recovered_gold=recovered_gold,
+        paper_precision=paper_precision, n_valid=n_valid,
     )

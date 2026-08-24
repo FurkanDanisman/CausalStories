@@ -118,29 +118,33 @@ def do_judge(args, outdir: Path) -> None:
         per_tag[tag].append(report)
         detail.append({"model": tag, "torque_id": tid, "precision": round(report.precision, 3),
                        "recall": round(report.recall, 3), "f1": round(report.f1, 3),
-                       "judge": report.judge_score, "n_pred": report.n_pred, "n_gold": report.n_gold})
+                       "paper_precision": round(report.paper_precision, 3),
+                       "judge": report.judge_score, "n_pred": report.n_pred,
+                       "n_valid": report.n_valid, "n_gold": report.n_gold})
         if len(files) <= 6:  # only render for small single-example-style runs
             _render(graph, report, ex, outdir, gf.name[:-len(".graph.json")], backend=tag)
-        print(f"  {tag} · {tid}: P={report.precision:.3f} R={report.recall:.3f} "
-              f"F1={report.f1:.3f} judge={report.judge_score}")
+        print(f"  {tag} · {tid}: goldP={report.precision:.3f} R={report.recall:.3f} "
+              f"F1={report.f1:.3f} | paperP={report.paper_precision:.3f} judge={report.judge_score}")
 
     summary = []
     for tag, reports in per_tag.items():
         n = len(reports)
         summary.append({"model": tag, "n_examples": n,
-                        "precision": round(sum(r.precision for r in reports) / n, 3),
+                        "gold_precision": round(sum(r.precision for r in reports) / n, 3),
                         "recall": round(sum(r.recall for r in reports) / n, 3),
-                        "f1": round(sum(r.f1 for r in reports) / n, 3),
+                        "gold_f1": round(sum(r.f1 for r in reports) / n, 3),
+                        "paper_precision": round(sum(r.paper_precision for r in reports) / n, 3),
                         "judge": round(sum(r.judge_score for r in reports) / n, 2)})
-    summary.sort(key=lambda s: -s["f1"])
+    summary.sort(key=lambda s: -s["gold_f1"])
     (outdir / "summary.json").write_text(json.dumps(summary, indent=2))
     (outdir / "summary_detail.json").write_text(json.dumps(detail, indent=2))
-    print("=" * 72)
-    print(f"{'model':<18}{'n':>4}{'P':>9}{'R':>9}{'F1':>9}{'judge':>8}")
+    print("=" * 78)
+    print(f"{'model':<16}{'n':>4}{'goldP':>8}{'R':>8}{'goldF1':>8}{'paperP':>8}{'judge':>8}")
     for r in summary:
-        print(f"{r['model']:<18}{r['n_examples']:>4}{r['precision']:>9.3f}"
-              f"{r['recall']:>9.3f}{r['f1']:>9.3f}{r['judge']:>8.2f}")
-    print(f"\nwrote {outdir}/summary.json (means over examples) + summary_detail.json")
+        print(f"{r['model']:<16}{r['n_examples']:>4}{r['gold_precision']:>8.3f}"
+              f"{r['recall']:>8.3f}{r['gold_f1']:>8.3f}{r['paper_precision']:>8.3f}{r['judge']:>8.2f}")
+    print(f"\ngoldP/R/F1 = vs gold graph;  paperP = predicted edges judged causally valid")
+    print(f"wrote {outdir}/summary.json (means) + summary_detail.json")
 
 
 def do_full(args, outdir: Path) -> None:
@@ -184,8 +188,11 @@ def _print_report(report) -> None:
     print("\n    node alignment (predicted -> gold):")
     for k_, v_ in report.alignment.items():
         print(f"        {k_!r}  ->  {v_!r}")
-    print(f"\n    edge precision : {report.precision:.3f}   recall : {report.recall:.3f}   "
-          f"F1 : {report.f1:.3f}   judge : {report.judge_score}/5")
+    print(f"\n    gold  precision : {report.precision:.3f}   recall : {report.recall:.3f}   "
+          f"F1 : {report.f1:.3f}")
+    print(f"    paper precision : {report.paper_precision:.3f}  "
+          f"({report.n_valid}/{report.n_pred} predicted edges judged causally valid)")
+    print(f"    LLM-judge (holistic) : {report.judge_score}/5 -- {report.judge_rationale}")
 
 
 def main() -> None:

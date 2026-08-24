@@ -60,3 +60,8 @@ def align_nodes_prompt(extracted_ids: list[str], gold_ids: list[str]) -> str:
 def judge_prompt(text: str, extracted_edges: list[dict], gold_edges: list[dict]) -> str:
     return render("judge.md", TEXT=text,
                   EXTRACTED_EDGES=str(extracted_edges), GOLD_EDGES=str(gold_edges))
+
+
+def judge_edge_prompt(text: str, edges: list[tuple[str, str]]) -> str:
+    listing = "\n".join(f"  [{i}] {h} -> {t}" for i, (h, t) in enumerate(edges))
+    return render("judge_edge.md", TEXT=text, EDGES=listing)

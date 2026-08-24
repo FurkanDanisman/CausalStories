@@ -56,6 +56,14 @@ _KEATING = {
                      "court->ruling agent edge not present in gold. Polarity of the parole "
                      "node differs but the event referent matches.",
     },
+    "judge_edges": {
+        "verdicts": [
+            {"index": 0, "valid": True},
+            {"index": 1, "valid": True},
+            {"index": 2, "valid": True},
+            {"index": 3, "valid": True},
+        ]
+    },
 }
 
 _FIXTURES = {"keating": _KEATING}
@@ -72,5 +80,6 @@ def empty_for(schema: Type[BaseModel]) -> dict:
         "EdgeExtraction": {"edges": []},
         "NodeAlignment": {"mapping": {}},
         "JudgeScore": {"score": 1, "rationale": "n/a"},
+        "EdgeValidityBatch": {"verdicts": []},
         "CausalGraph": {"nodes": [], "edges": []},
     }.get(name, {})

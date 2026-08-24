@@ -76,3 +76,14 @@ class NodeAlignment(BaseModel):
 class JudgeScore(BaseModel):
     score: int = Field(..., ge=1, le=5)
     rationale: str
+
+
+class EdgeVerdict(BaseModel):
+    index: int = Field(..., description="0-based index of the edge being judged")
+    valid: bool = Field(..., description="True if this is a valid causal edge for the text")
+
+
+class EdgeValidityBatch(BaseModel):
+    """Per-edge causal-validity verdicts (precision-by-paper, independent of gold)."""
+
+    verdicts: List[EdgeVerdict]

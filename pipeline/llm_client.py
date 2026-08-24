@@ -191,20 +191,38 @@ class VLLMClient:
             trust_remote_code=True,
         )
 
-    def complete(self, *, task: str, prompt: str, schema: Type[T], temperature: float = 0.0) -> T:
+    def _sampling_params(self, schema_json: dict, max_tokens: int, temperature: float):
         from vllm import SamplingParams
-
-        schema_json = schema.model_json_schema()
         try:  # vLLM v1 (>=0.11 / Alliance 0.25): structured outputs
             from vllm.sampling_params import StructuredOutputsParams
-            sp = SamplingParams(temperature=temperature, max_tokens=self.max_tokens,
-                                structured_outputs=StructuredOutputsParams(json=schema_json))
+            return SamplingParams(temperature=temperature, max_tokens=max_tokens,
+                                  structured_outputs=StructuredOutputsParams(json=schema_json))
         except Exception:  # older vLLM: guided decoding
             from vllm.sampling_params import GuidedDecodingParams
-            sp = SamplingParams(temperature=temperature, max_tokens=self.max_tokens,
-                                guided_decoding=GuidedDecodingParams(json=schema_json))
-        out = self.llm.chat([{"role": "user", "content": prompt}], sampling_params=sp)
-        return schema.model_validate_json(out[0].outputs[0].text)
+            return SamplingParams(temperature=temperature, max_tokens=max_tokens,
+                                  guided_decoding=GuidedDecodingParams(json=schema_json))
+
+    def complete(self, *, task: str, prompt: str, schema: Type[T], temperature: float = 0.0) -> T:
+        # Guided decoding guarantees schema-valid JSON only if generation COMPLETES;
+        # if it hits max_tokens (truncation) or loops, the JSON is invalid. Retry with
+        # a bigger budget, then with a concise nudge + a little temperature to break a
+        # repetition loop. Small models (Gemma/Llama) otherwise return empty ~20-35%.
+        schema_json = schema.model_json_schema()
+        attempts = [
+            (prompt, self.max_tokens, temperature),
+            (prompt, self.max_tokens * 2, temperature),
+            (prompt + "\n\nBe concise: output ONLY the minimal valid JSON, no repetition.",
+             self.max_tokens * 2, max(temperature, 0.3)),
+        ]
+        last_err = None
+        for p, mt, temp in attempts:
+            sp = self._sampling_params(schema_json, mt, temp)
+            out = self.llm.chat([{"role": "user", "content": p}], sampling_params=sp)
+            try:
+                return schema.model_validate_json(out[0].outputs[0].text)
+            except Exception as e:
+                last_err = e
+        raise last_err
 
 
 class HFClient:
