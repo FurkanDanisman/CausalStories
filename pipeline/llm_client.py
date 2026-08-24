@@ -173,6 +173,12 @@ class VLLMClient:
     VLLM_MAX_LEN (8192)."""
 
     def __init__(self, model: str, max_tokens: int = 1024):
+        # Use vLLM's native PyTorch sampler instead of FlashInfer, whose sampler
+        # JIT-compiles a CUDA kernel at runtime (needs nvcc). On clusters where the
+        # CUDA toolkit is module-gated (e.g. Alliance/Killarney) nvcc isn't on the
+        # node and FlashInfer's sampler crashes: "Could not find nvcc". We decode
+        # greedily, so the native sampler is all we need.
+        os.environ.setdefault("VLLM_USE_FLASHINFER_SAMPLER", "0")
         from vllm import LLM  # lazy
 
         self.max_tokens = max_tokens
