@@ -13,6 +13,7 @@ Template syntax:
 
 from __future__ import annotations
 
+import os
 import re
 from pathlib import Path
 
@@ -22,7 +23,12 @@ _COMMENT = re.compile(r"<!--.*?-->\s*", re.DOTALL)
 
 
 def _load(name: str) -> str:
-    return _COMMENT.sub("", (TEMPLATE_DIR / name).read_text()).strip()
+    # A/B experiments: PROMPT_TEMPLATE_DIR overrides individual templates; any file
+    # absent there falls back to the baseline dir (so a variant need only ship the
+    # files it changes, and eval prompts align/judge stay on baseline).
+    override = os.environ.get("PROMPT_TEMPLATE_DIR")
+    path = Path(override) / name if override and (Path(override) / name).exists() else TEMPLATE_DIR / name
+    return _COMMENT.sub("", path.read_text()).strip()
 
 
 def render(template_file: str, **vars: str) -> str:
