@@ -87,3 +87,9 @@ class EdgeValidityBatch(BaseModel):
     """Per-edge causal-validity verdicts (precision-by-paper, independent of gold)."""
 
     verdicts: List[EdgeVerdict]
+
+
+class Variant(BaseModel):
+    """One synthetic retelling of a base text (simulating a different narrator)."""
+
+    text: str

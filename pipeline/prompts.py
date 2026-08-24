@@ -65,3 +65,24 @@ def judge_prompt(text: str, extracted_edges: list[dict], gold_edges: list[dict])
 def judge_edge_prompt(text: str, edges: list[tuple[str, str]]) -> str:
     listing = "\n".join(f"  [{i}] {h} -> {t}" for i, (h, t) in enumerate(edges))
     return render("judge_edge.md", TEXT=text, EDGES=listing)
+
+
+# Angles for synthetic retellings — each induces a different aggregation challenge
+# (omission, granularity, added detail, re-wording, reordering).
+PERSPECTIVES = [
+    "a brief summary that keeps only the two or three most central events",
+    "a detailed eyewitness account that foregrounds one participant and describes "
+    "their actions step by step, breaking events into finer sub-steps",
+    "a secondhand retelling by someone unsure of some details, using vaguer, more "
+    "general wording and omitting at least one event",
+    "a fuller account that adds one plausible related event (a cause or a "
+    "consequence) that fits the story but was not stated in the original",
+    "a version told from a different participant's point of view, mentioning only "
+    "what that person would plausibly know and omitting the rest",
+    "a neutral rephrasing that uses different words for the same events and reorders "
+    "the sentences",
+]
+
+
+def generate_variant_prompt(base_text: str, perspective: str) -> str:
+    return render("generate_variant.md", TEXT=base_text, PERSPECTIVE=perspective)

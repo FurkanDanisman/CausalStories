@@ -81,5 +81,6 @@ def empty_for(schema: Type[BaseModel]) -> dict:
         "NodeAlignment": {"mapping": {}},
         "JudgeScore": {"score": 1, "rationale": "n/a"},
         "EdgeValidityBatch": {"verdicts": []},
+        "Variant": {"text": ""},
         "CausalGraph": {"nodes": [], "edges": []},
     }.get(name, {})

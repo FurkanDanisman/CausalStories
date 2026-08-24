@@ -24,10 +24,10 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
-from pipeline import dataset, evaluate, extract, visualize
+from pipeline import dataset, evaluate, extract, prompts, visualize
 from pipeline.llm_client import (AnthropicClient, HFClient, MockLLMClient,
                                  OllamaClient, OpenAIClient, VLLMClient)
-from pipeline.schema import CausalGraph
+from pipeline.schema import CausalGraph, Variant
 
 
 def build_client(backend: str, model: str | None, base_url: str | None = None):
@@ -147,6 +147,34 @@ def do_judge(args, outdir: Path) -> None:
     print(f"wrote {outdir}/summary.json (means) + summary_detail.json")
 
 
+def do_generate(args, outdir: Path) -> None:
+    """For each base example, generate N synthetic retellings (different narrators)
+    and save a story-set JSON that downstream extraction + aggregation consumes."""
+    bases = _examples(args)
+    n = args.n_variants
+    print(f"=== GENERATE · {args.backend}:{args.model} · {len(bases)} base(s) x {n} variants ===")
+    client = build_client(args.backend, args.model, args.base_url)
+    for tid, split in bases:
+        ex = dataset.get_example(tid, split)
+        print(f"\n[{tid}] base: {ex.text}")
+        variants = []
+        for idx in range(n):
+            persp = prompts.PERSPECTIVES[idx % len(prompts.PERSPECTIVES)]
+            try:
+                v = client.complete(task="generate", schema=Variant, temperature=0.8,
+                                    prompt=prompts.generate_variant_prompt(ex.text, persp))
+                text = v.text.strip()
+            except Exception as e:
+                print(f"  v{idx}: FAILED {type(e).__name__}: {e}")
+                continue
+            variants.append({"perspective": persp, "text": text})
+            print(f"  v{idx}: {text}")
+        data = {"base_torque_id": tid, "base_split": split, "base_text": ex.text,
+                "gold_edges": ex.gold_edges, "variants": variants}
+        (outdir / f"{tid.replace('/', '_')}.variants.json").write_text(json.dumps(data, indent=2))
+    print(f"\nwrote {len(bases)} story-set(s) to {outdir}/*.variants.json")
+
+
 def do_full(args, outdir: Path) -> None:
     ex = dataset.get_example(args.torque_id, args.split)
     client = build_client(args.backend, args.model, args.base_url)
@@ -197,7 +225,7 @@ def _print_report(report) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", default="full", choices=["full", "extract", "judge"])
+    ap.add_argument("--mode", default="full", choices=["full", "extract", "judge", "generate"])
     ap.add_argument("--backend", default="mock",
                     choices=["mock", "anthropic", "openai", "ollama", "hf", "vllm"])
     ap.add_argument("--model", default=None)
@@ -212,6 +240,7 @@ def main() -> None:
     ap.add_argument("--examples-file", default=None,
                     help="file of 'torque_id [split]' lines; overrides --torque-id")
     ap.add_argument("--k", type=int, default=1, help="self-consistency samples")
+    ap.add_argument("--n-variants", type=int, default=6, help="synthetic retellings per base (generate mode)")
     ap.add_argument("--outdir", default="out")
     args = ap.parse_args()
 
@@ -222,6 +251,8 @@ def main() -> None:
         do_extract(args, outdir)
     elif args.mode == "judge":
         do_judge(args, outdir)
+    elif args.mode == "generate":
+        do_generate(args, outdir)
     else:
         do_full(args, outdir)
 
