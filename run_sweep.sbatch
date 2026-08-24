@@ -7,12 +7,11 @@
 #SBATCH --time=02:00:00
 #SBATCH --output=sweep-%j.out
 #
-# A/B the paper-grounded prompt variants on the held-out example:
+# A/B the paper-only prompt variant on the held-out example:
 #   baseline  = current prompts
-#   variantA  = Q1 direction test (participant head/tail rule)   [experiments/variantA]
-#   variantB  = Q2 salience/connected/causal-participant/SVO      [experiments/variantB]
-#   variantC  = A + B combined                                    [experiments/variantC]
-# Each variant runs all 3 models + the fixed judge into out_<variant>/.
+#   paper_v1  = explicit participant head/tail direction + salience/connected/SVO
+#               node pruning, all grounded strictly in the paper  [experiments/paper_v1]
+# Each arm runs all 3 models + the fixed judge into out_<arm>/.
 set -uo pipefail
 
 module load gcc opencv
@@ -25,7 +24,7 @@ JUDGE=$HOME/projects/aip-rgrosse/furkanbd/model-weights/gemma-4-31B-it
 TAGS=(qwen3.5-27b            llama3.1-8b                            gemma3-12b)
 PATHS=(/model-weights/Qwen3.5-27B  /model-weights/Meta-Llama-3.1-8B-Instruct  /model-weights/gemma-3-12b-it)
 
-for V in baseline variantA variantB variantC; do
+for V in baseline paper_v1; do
   echo "################## VARIANT: $V ##################"
   OUT=out_$V
   mkdir -p "$OUT"; rm -f "$OUT"/*.graph.json "$OUT"/summary.json
@@ -41,6 +40,6 @@ done
 unset PROMPT_TEMPLATE_DIR
 
 echo "################## SWEEP RESULTS ##################"
-for V in baseline variantA variantB variantC; do
+for V in baseline paper_v1; do
   echo "== $V =="; cat "out_$V/summary.json"; echo
 done

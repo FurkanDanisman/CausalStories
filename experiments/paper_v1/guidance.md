@@ -1,17 +1,10 @@
 <!--
 PARTIAL: injected wherever {{GUIDANCE}} appears in another template.
-Every definition here is taken from Michael's paper (Regan et al., "Causal schema
-induction for knowledge discovery"): the causal relations of Table 2, the force-
-dynamic view of §3.1, and the participant-centered structure of §3.2. Nothing
-here should state anything the paper does not.
-
-VARIANT A change (Q1, edge direction): the final "Participants" paragraph adds a
-paper-cited DIRECTION TEST distinguishing a participant that is an initiating
-agent / enabling precondition of an event (drawn participant -> event) from a
-participant that is a causal endpoint / result of the event (drawn event ->
-participant). Cited to §3.2 ("initiating agents or causal endpoints of events";
-"a precondition or cause ... a postcondition or effect"), Table 2 ENABLES-ADDS
-("cf. sufficient condition"), and Fig. 2 (the ousting removes the leader).
+paper_v1 variant. Same as baseline guidance, plus one paper-only sentence making
+the participant<->event arrow DIRECTION explicit. Grounded ONLY in the paper:
+participants act as "initiating agents or causal endpoints of events" (§3.2) and
+Fig. 2 draws the endpoint case (the ousting removes the leader: ousting -> leader).
+No gold-fitting: nothing here claims a location/site/host is a cause.
 -->
 A causal edge is a directed arrow  A -> B : A is a causal factor for B — A affects
 whether or how B happens. A cause acts in one of two directions; draw the arrow
@@ -45,16 +38,8 @@ Participants — the people and things named in the text, the grammatical subjec
 and objects associated with events — are causal too. In a participant-centered
 graph, people and things directly act on one another and also act as the
 initiating agents or causal endpoints of events (e.g. a pathogen causes a
-disease). Draw a causal arrow from a participant to an event it initiates, from an
-event to a participant that is its causal endpoint, and between participants that
-act on one another.
-
-Direction test for a participant and an event. A participant is the HEAD
-(participant -> event) when it is what makes the event happen or possible: its
-initiating agent, or an enabling precondition/sufficient condition of the event
-(Table 2, ENABLES-ADDS, "cf. sufficient condition"; the paper frames an event by
-"a precondition or cause"). A participant is the TAIL (event -> participant) only
-when it is a causal endpoint — a result or outcome the event brings about (in
-Fig. 2 the ousting removes the leader, so ousting -> leader). Do not draw
-event -> participant for a participant that merely enabled, hosted, or was the
-setting of the event; that participant is a HEAD (participant -> event).
+disease). When a participant and an event are connected, point the arrow by the
+participant's role: draw participant -> event when the participant is the
+initiating agent of the event, and event -> participant when the participant is
+the causal endpoint of the event — the result or outcome the event brings about.
+Also draw arrows between participants that act on one another.
