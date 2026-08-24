@@ -1,0 +1,8 @@
+# Core (needed for the mock/offline run)
+pydantic>=2.6
+
+# Optional backends -- install only what you use:
+# openai>=1.40                          # --backend openai  (also vLLM/TGI/llama.cpp via --base-url)
+# anthropic>=0.40                       # --backend anthropic
+# transformers>=4.44  torch  accelerate # --backend hf  (in-process model on a GPU node)
+# vllm                                  # to *serve* a model as an OpenAI-compatible endpoint
