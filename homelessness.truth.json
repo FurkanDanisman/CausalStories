@@ -1,0 +1,25 @@
+{
+  "tag": "TRUTH",
+  "id": "synthetic_homelessness",
+  "text": "Ground-truth causal graph for the single-story set (David, told from 6 perspectives). Reference only; not used for scoring. Edge prob = intended agreement across the 6 perspectives (1.0 = ~all mention it). The shopkeeper's 'addiction -> street' claim is deliberately EXCLUDED as an uncorroborated (false) edge the aggregation should filter.",
+  "nodes": [
+    {"id": "warehouse laid David off", "kind": "event", "event_types": []},
+    {"id": "fell behind on rent", "kind": "event", "event_types": []},
+    {"id": "evicted", "kind": "event", "event_types": []},
+    {"id": "became homeless", "kind": "event", "event_types": []},
+    {"id": "health declined", "kind": "event", "event_types": []},
+    {"id": "found a shelter bed", "kind": "event", "event_types": []},
+    {"id": "no fixed address", "kind": "event", "event_types": []},
+    {"id": "could not get hired", "kind": "event", "event_types": []}
+  ],
+  "edges": [
+    {"head": "warehouse laid David off", "tail": "fell behind on rent", "prob": 0.33},
+    {"head": "fell behind on rent", "tail": "evicted", "prob": 0.5},
+    {"head": "evicted", "tail": "became homeless", "prob": 0.83},
+    {"head": "became homeless", "tail": "health declined", "prob": 0.83},
+    {"head": "became homeless", "tail": "found a shelter bed", "prob": 0.5},
+    {"head": "became homeless", "tail": "no fixed address", "prob": 0.67},
+    {"head": "no fixed address", "tail": "could not get hired", "prob": 0.67},
+    {"head": "could not get hired", "tail": "became homeless", "prob": 0.5}
+  ]
+}
