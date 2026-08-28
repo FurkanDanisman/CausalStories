@@ -47,7 +47,9 @@ def main() -> None:
                 label = n["id"][len("Entity::"):] if n["id"].startswith("Entity::") else n["id"]
                 L.append(f'    "{nid}" [shape={shape}, fillcolor="{FILL[n["kind"]]}", label="{esc(label)}"];')
             for e in d["edges"]:
-                L.append(f'    "{esc(cid + "::" + e["head"])}" -> "{esc(cid + "::" + e["tail"])}";')
+                p = e.get("prob", 1.0)
+                attrs = f' [label="{p:.2f}", penwidth={1 + 2 * p:.1f}]' if p < 0.999 else ""
+                L.append(f'    "{esc(cid + "::" + e["head"])}" -> "{esc(cid + "::" + e["tail"])}"{attrs};')
             L.append("  }")
         L.append("}")
         png = out / f"{tag}.png"

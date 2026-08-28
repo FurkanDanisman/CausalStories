@@ -218,6 +218,7 @@ def do_agg_extract(args, outdir: Path) -> None:
             vgs.append({"idx": idx, **g.model_dump(mode="json")})
             print(f"  {d['base_torque_id']} v{idx}: {len(g.nodes)} nodes, {len(g.edges)} edges")
         out = {"base_torque_id": d["base_torque_id"], "base_split": d["base_split"], "tag": tag,
+               "base_text": d.get("base_text"), "gold_edges": d.get("gold_edges", []),
                "variant_graphs": vgs}
         (outdir / f"{d['base_torque_id']}__{tag}.varsgraphs.json").write_text(json.dumps(out, indent=2))
     print(f"saved variant graphs for {tag}")
@@ -235,26 +236,39 @@ def do_agg_combine(args, outdir: Path) -> None:
     detail = []
     for f in files:
         d = json.loads(f.read_text())
-        base_ex = dataset.get_example(d["base_torque_id"], d["base_split"])
+        gold_edges = d.get("gold_edges", [])
+        if d.get("base_text") is not None:   # synthetic / carried set (may have no gold)
+            gold_nodes = sorted({n for e in gold_edges for n in (e["head"], e["tail"])})
+            base_ex = dataset.Example(torque_id=d["base_torque_id"], split=d.get("base_split", "train"),
+                                      text=d["base_text"], gold_edges=gold_edges, gold_node_ids=gold_nodes)
+        else:                                 # older dataset-backed set
+            base_ex = dataset.get_example(d["base_torque_id"], d["base_split"])
         graphs = [CausalGraph.model_validate({"nodes": vg["nodes"], "edges": vg["edges"]})
                   for vg in d["variant_graphs"]]
         n = len(graphs)
         node2canon = aggregate.canonicalize(judge, base_ex.text, graphs)
         agg = aggregate.aggregate(graphs, node2canon, n_variants=n, min_count=args.agg_min_count)
-        report = evaluate.evaluate(judge, agg, base_ex)
         name = f"{d['base_torque_id']}__{d['tag']}"
-        _render(agg, report, base_ex, outdir, name, backend=f"AGG({d['tag']}, min>={args.agg_min_count}/{n})")
-        (outdir / f"{name}.aggregated.json").write_text(json.dumps(
-            {"base_torque_id": d["base_torque_id"], "tag": d["tag"],
-             "edges": [{"head": e.head, "tail": e.tail, "prob": e.prob} for e in agg.edges]}, indent=2))
-        per_model[d["tag"]].append(report)
-        detail.append({"model": d["tag"], "base": d["base_torque_id"],
-                       "gold_precision": round(report.precision, 3), "recall": round(report.recall, 3),
-                       "gold_f1": round(report.f1, 3), "paper_precision": round(report.paper_precision, 3),
-                       "judge": report.judge_score, "n_agg_edges": report.n_pred, "n_gold": report.n_gold})
-        print(f"  {d['tag']} · {d['base_torque_id']}: goldP={report.precision:.3f} "
-              f"R={report.recall:.3f} F1={report.f1:.3f} | paperP={report.paper_precision:.3f} "
-              f"({report.n_pred} agg edges) -> {name}.comparison.html")
+
+        # always save the aggregated (estimated) graph in a PNG-renderable form
+        aggfile = {"tag": f"AGG-{d['tag']}", "id": d["base_torque_id"], "text": base_ex.text}
+        aggfile.update(agg.model_dump(mode="json"))
+        (outdir / f"{name}.aggregated.graph.json").write_text(json.dumps(aggfile, indent=2))
+
+        if base_ex.gold_edges:               # score + true-vs-estimated only if a gold graph exists
+            report = evaluate.evaluate(judge, agg, base_ex)
+            _render(agg, report, base_ex, outdir, name, backend=f"AGG({d['tag']}, min>={args.agg_min_count}/{n})")
+            per_model[d["tag"]].append(report)
+            detail.append({"model": d["tag"], "base": d["base_torque_id"],
+                           "gold_precision": round(report.precision, 3), "recall": round(report.recall, 3),
+                           "gold_f1": round(report.f1, 3), "paper_precision": round(report.paper_precision, 3),
+                           "judge": report.judge_score, "n_agg_edges": report.n_pred, "n_gold": report.n_gold})
+            print(f"  {d['tag']} · {d['base_torque_id']}: goldP={report.precision:.3f} "
+                  f"R={report.recall:.3f} F1={report.f1:.3f} | paperP={report.paper_precision:.3f} "
+                  f"({report.n_pred} agg edges) -> {name}.comparison.html")
+        else:
+            print(f"  {d['tag']} · {d['base_torque_id']}: {len(agg.edges)} aggregated edges "
+                  f"(no gold; saved {name}.aggregated.graph.json)")
 
     summary = []
     for tag, reps in per_model.items():
