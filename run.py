@@ -175,6 +175,28 @@ def do_generate(args, outdir: Path) -> None:
     print(f"\nwrote {len(bases)} story-set(s) to {outdir}/*.variants.json")
 
 
+def do_raw_extract(args, outdir: Path) -> None:
+    """Extract a causal graph from arbitrary texts (a JSON list of {id, text}) with
+    ONE model. No gold, no judging — just the graph, for rendering."""
+    tag = _tag(args)
+    items = json.loads(Path(args.texts_file).read_text())
+    print(f"=== RAW-EXTRACT · {tag} · {len(items)} text(s) ===")
+    client = build_client(args.backend, args.model, args.base_url)
+    for it in items:
+        try:
+            g = extract.extract_graph(client, it["text"], k=args.k)
+        except Exception as e:
+            print(f"  {it['id']}: FAILED {type(e).__name__}: {e}")
+            g = CausalGraph(nodes=[], edges=[])
+        data = {"tag": tag, "id": it["id"], "text": it["text"]}
+        data.update(g.model_dump(mode="json"))
+        (outdir / f"{tag}##{it['id']}.graph.json").write_text(json.dumps(data, indent=2))
+        print(f"  {it['id']}: {len(g.nodes)} nodes, {len(g.edges)} edges")
+        for e in g.edges:
+            print(f"      {e.head} -> {e.tail}")
+    print(f"saved graphs for {tag} in {outdir}")
+
+
 def do_agg_extract(args, outdir: Path) -> None:
     """Extract a causal graph from each synthetic variant with ONE model."""
     tag = _tag(args)
@@ -305,7 +327,8 @@ def _print_report(report) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", default="full",
-                    choices=["full", "extract", "judge", "generate", "agg-extract", "agg-combine"])
+                    choices=["full", "extract", "judge", "generate", "agg-extract",
+                             "agg-combine", "raw-extract"])
     ap.add_argument("--backend", default="mock",
                     choices=["mock", "anthropic", "openai", "ollama", "hf", "vllm"])
     ap.add_argument("--model", default=None)
@@ -322,6 +345,7 @@ def main() -> None:
     ap.add_argument("--k", type=int, default=1, help="self-consistency samples")
     ap.add_argument("--n-variants", type=int, default=6, help="synthetic retellings per base (generate mode)")
     ap.add_argument("--synth-dir", default="out_synth", help="dir of *.variants.json (agg-extract)")
+    ap.add_argument("--texts-file", default="narratives.json", help="JSON [{id,text}] (raw-extract)")
     ap.add_argument("--agg-min-count", type=int, default=2,
                     help="keep aggregated edges seen in >= this many variants")
     ap.add_argument("--outdir", default="out")
@@ -340,6 +364,8 @@ def main() -> None:
         do_agg_extract(args, outdir)
     elif args.mode == "agg-combine":
         do_agg_combine(args, outdir)
+    elif args.mode == "raw-extract":
+        do_raw_extract(args, outdir)
     else:
         do_full(args, outdir)
 
