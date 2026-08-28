@@ -23,7 +23,7 @@ JUDGE=$HOME/projects/aip-rgrosse/furkanbd/model-weights/gemma-4-31B-it
 TAGS=(qwen3.5-27b            llama3.1-8b                            gemma3-12b)
 PATHS=(/model-weights/Qwen3.5-27B  /model-weights/Meta-Llama-3.1-8B-Instruct  /model-weights/gemma-3-12b-it)
 
-mkdir -p "$SYNTH"; cp homelessness.variants.json "$SYNTH"/
+mkdir -p "$SYNTH"; cp homelessness.variants.json homelessness_individuals.variants.json "$SYNTH"/
 mkdir -p "$AGG"; rm -f "$AGG"/*.varsgraphs.json "$AGG"/*.aggregated.graph.json
 
 for i in "${!TAGS[@]}"; do
