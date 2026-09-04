@@ -17,7 +17,11 @@ EVERY node (verbatim) to one canonical name. Abstract aggressively:
     — map them to a single short canonical name of your choosing.
   * Use short, general canonical names (a few words), never long surface-specific
     phrases.
-  * Map minor procedural or filler mentions (e.g. "money ran out", "panicked",
+  * KEEP protective / preventive factors — anything that helped, supported, or
+    intervened to stop a bad outcome (e.g. "my sister covered the rent", "a friend
+    took me in", "benefits came through") — and map them to a single canonical node
+    named "support". These are important; do NOT drop them.
+  * Map only genuinely contentless filler (e.g. "money ran out", "panicked",
     "tightened up"), and any first-person narrator / self node (e.g. "I",
     "narrator", "me"), to the exact string "IGNORE" so they can be dropped.
 

@@ -41,8 +41,13 @@ def relabel_graph(graph: CausalGraph, node2canon: dict[str, str]) -> CausalGraph
     """Apply the canonical-name mapping to one graph (naming standardization).
     Nodes the canonicalizer maps to "IGNORE" (filler / first-person narrator) are
     dropped along with their edges."""
+    # never drop a node that participates in a BLOCKS edge (protective factor),
+    # even if the canonicalizer maps it to IGNORE — keep it under its own name.
+    blocks_ep = {x for e in graph.edges if e.rel == "blocks" for x in (e.head, e.tail)}
+
     def c(x: str) -> str:
-        return node2canon.get(x, x)
+        cx = node2canon.get(x, x)
+        return x if _dropped(cx) and x in blocks_ep else cx
 
     kinds: dict[str, Counter] = defaultdict(Counter)
     types: dict[str, set] = defaultdict(set)
