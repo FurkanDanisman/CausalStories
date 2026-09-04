@@ -33,8 +33,14 @@ def canonicalize(client: LLMClient, base_text: str, graphs: list[CausalGraph]) -
     return mapping
 
 
+def _dropped(name: str) -> bool:
+    return name.strip().upper() == "IGNORE"
+
+
 def relabel_graph(graph: CausalGraph, node2canon: dict[str, str]) -> CausalGraph:
-    """Apply the canonical-name mapping to one graph (naming standardization)."""
+    """Apply the canonical-name mapping to one graph (naming standardization).
+    Nodes the canonicalizer maps to "IGNORE" (filler / first-person narrator) are
+    dropped along with their edges."""
     def c(x: str) -> str:
         return node2canon.get(x, x)
 
@@ -42,12 +48,14 @@ def relabel_graph(graph: CausalGraph, node2canon: dict[str, str]) -> CausalGraph
     types: dict[str, set] = defaultdict(set)
     for nd in graph.nodes:
         cid = c(nd.id)
+        if _dropped(cid):
+            continue
         kinds[cid][nd.kind.value] += 1
         types[cid].update(nd.event_types)
     edges = set()
     for e in graph.edges:
         h, t = c(e.head), c(e.tail)
-        if h != t:
+        if h != t and not _dropped(h) and not _dropped(t):
             edges.add((h, t))
     nodes = [Node(id=k, kind=NodeKind(v.most_common(1)[0][0]), event_types=sorted(types[k]))
              for k, v in kinds.items()]
@@ -64,6 +72,8 @@ def aggregate(graphs: list[CausalGraph], node2canon: dict[str, str],
     for g in graphs:
         for nd in g.nodes:
             c = canon(nd.id)
+            if _dropped(c):
+                continue
             kind_votes[c][nd.kind.value] += 1
             types[c].update(nd.event_types)
 
@@ -72,7 +82,7 @@ def aggregate(graphs: list[CausalGraph], node2canon: dict[str, str],
         seen = set()
         for e in g.edges:
             h, t = canon(e.head), canon(e.tail)
-            if h != t and (h, t) not in seen:   # count each edge once per variant
+            if h != t and not _dropped(h) and not _dropped(t) and (h, t) not in seen:
                 edge_count[(h, t)] += 1
                 seen.add((h, t))
 

@@ -1,21 +1,31 @@
 <!--
-AGGREGATION PROMPT: cluster nodes from N retellings of the SAME story into
-canonical concepts, so the same event/participant worded differently is unified.
-Vars: {{TEXT}}, {{NODES}}.
+AGGREGATION PROMPT: cluster nodes from N accounts of the SAME kind of story into a
+SMALL set of high-level canonical life-events. Aggressive abstraction; drop filler
+and the first-person narrator via the sentinel "IGNORE". Vars: {{TEXT}}, {{NODES}}.
 -->
-Several people retold the same real events. Below are the graph nodes extracted
-from their separate retellings. The same underlying event or participant is often
-worded differently across retellings (e.g. "suffocated Aguda", "smothered her",
-"pressed a pillow over her face" all denote one event).
+Several people gave separate accounts of the same kind of experience. Below are the
+graph nodes extracted from their accounts. The same underlying event is often
+worded very differently across accounts.
 
-Group the nodes that denote the SAME underlying event or participant, and give
-each group ONE canonical name (a clear subject-verb-object phrase for an event; a
-short name for a participant). Return a mapping from EVERY listed node, verbatim,
-to its canonical name. Nodes that denote the same thing MUST map to the same
-canonical name; genuinely distinct nodes keep their own.
+Cluster these nodes into a SMALL set of high-level, canonical life-events, and map
+EVERY node (verbatim) to one canonical name. Abstract aggressively:
 
-Story (for reference):
+  * Merge all nodes that denote the same underlying event, even if the surface
+    wording is very different. In particular, different triggering misfortunes
+    (for example "laid off", "factory closed", "hours cut", "fell ill", "a divorce",
+    "a medical bill", "benefits delayed") are all instances of ONE high-level event
+    — map them to a single short canonical name of your choosing.
+  * Use short, general canonical names (a few words), never long surface-specific
+    phrases.
+  * Map minor procedural or filler mentions (e.g. "money ran out", "panicked",
+    "tightened up"), and any first-person narrator / self node (e.g. "I",
+    "narrator", "me"), to the exact string "IGNORE" so they can be dropped.
+
+Prefer FEW canonical names. Two nodes that denote the same high-level event MUST
+map to the same canonical name; genuinely distinct events keep their own.
+
+Reference (the kind of story):
 """{{TEXT}}"""
 
-Nodes (from all retellings):
+Nodes (from all accounts):
 {{NODES}}
