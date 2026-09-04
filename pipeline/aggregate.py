@@ -52,14 +52,16 @@ def relabel_graph(graph: CausalGraph, node2canon: dict[str, str]) -> CausalGraph
             continue
         kinds[cid][nd.kind.value] += 1
         types[cid].update(nd.event_types)
-    edges = set()
+    edge_rel: dict[tuple[str, str], Counter] = defaultdict(Counter)
     for e in graph.edges:
         h, t = c(e.head), c(e.tail)
         if h != t and not _dropped(h) and not _dropped(t):
-            edges.add((h, t))
+            edge_rel[(h, t)][e.rel] += 1
     nodes = [Node(id=k, kind=NodeKind(v.most_common(1)[0][0]), event_types=sorted(types[k]))
              for k, v in kinds.items()]
-    return CausalGraph(nodes=nodes, edges=[Edge(head=h, tail=t, prob=1.0) for h, t in edges])
+    edges = [Edge(head=h, tail=t, prob=1.0, rel=rv.most_common(1)[0][0])
+             for (h, t), rv in edge_rel.items()]
+    return CausalGraph(nodes=nodes, edges=edges)
 
 
 def aggregate(graphs: list[CausalGraph], node2canon: dict[str, str],
@@ -78,15 +80,19 @@ def aggregate(graphs: list[CausalGraph], node2canon: dict[str, str],
             types[c].update(nd.event_types)
 
     edge_count: Counter = Counter()
+    edge_rel: dict[tuple[str, str], Counter] = defaultdict(Counter)
     for g in graphs:
         seen = set()
         for e in g.edges:
             h, t = canon(e.head), canon(e.tail)
-            if h != t and not _dropped(h) and not _dropped(t) and (h, t) not in seen:
-                edge_count[(h, t)] += 1
-                seen.add((h, t))
+            if h != t and not _dropped(h) and not _dropped(t):
+                edge_rel[(h, t)][e.rel] += 1
+                if (h, t) not in seen:
+                    edge_count[(h, t)] += 1
+                    seen.add((h, t))
 
-    edges = [Edge(head=h, tail=t, prob=round(c / n_variants, 3))
+    edges = [Edge(head=h, tail=t, prob=round(c / n_variants, 3),
+                  rel=edge_rel[(h, t)].most_common(1)[0][0])
              for (h, t), c in edge_count.items() if c >= min_count]
     edges.sort(key=lambda e: (-e.prob, e.head, e.tail))
 

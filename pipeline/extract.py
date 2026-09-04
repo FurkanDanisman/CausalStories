@@ -32,13 +32,14 @@ def extract_nodes(client: LLMClient, text: str) -> list[Node]:
 
 
 def extract_edges_once(client: LLMClient, text: str, node_ids: list[str],
-                       temperature: float) -> list[tuple[str, str]]:
+                       temperature: float) -> list[tuple[str, str, str]]:
     out = client.complete(
         task="extract_edges", prompt=extract_edges_prompt(text, node_ids),
         schema=EdgeExtraction, temperature=temperature,
     )
     valid = set(node_ids)
-    return [(e.head, e.tail) for e in out.edges
+    return [(e.head, e.tail, "blocks" if e.rel.strip().lower() == "blocks" else "enables")
+            for e in out.edges
             if e.head in valid and e.tail in valid and e.head != e.tail]
 
 
@@ -49,9 +50,16 @@ def extract_graph(client: LLMClient, text: str, k: int = 1) -> CausalGraph:
 
     temp = 0.0 if k == 1 else 0.7
     counter: Counter[tuple[str, str]] = Counter()
+    rel_votes: dict[tuple[str, str], Counter] = {}
     for _ in range(k):
-        counter.update(set(extract_edges_once(client, text, node_ids, temp)))
+        seen = set()
+        for h, t, rel in extract_edges_once(client, text, node_ids, temp):
+            if (h, t) not in seen:                 # count each edge once per sample
+                seen.add((h, t))
+                counter[(h, t)] += 1
+            rel_votes.setdefault((h, t), Counter())[rel] += 1
 
-    edges = [Edge(head=h, tail=t, prob=c / k) for (h, t), c in counter.items()]
+    edges = [Edge(head=h, tail=t, prob=c / k, rel=rel_votes[(h, t)].most_common(1)[0][0])
+             for (h, t), c in counter.items()]
     edges.sort(key=lambda e: (-e.prob, e.head, e.tail))
     return CausalGraph(nodes=nodes, edges=edges)

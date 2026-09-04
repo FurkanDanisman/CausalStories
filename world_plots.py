@@ -156,9 +156,10 @@ def do_pipeline(W: Path) -> None:
             if indeg[y] == 0: q.append(y)
     order += [e for e in events if e not in order]
 
-    render("0_raw", "0) individual graphs — NO naming standardization",
+    dash = lambda e: "dashed" if e.get("rel") == "blocks" else None
+    render("0_raw", "0) individual graphs — NO naming standardization  (solid=enables, dashed=blocks)",
            [(pid, [(n["id"], KIND_FILL[n["kind"]], None) for n in g["nodes"]],
-             [(e["head"], e["tail"], None) for e in g["edges"]]) for pid, g in raw.items()])
+             [(e["head"], e["tail"], None, dash(e)) for e in g["edges"]]) for pid, g in raw.items()])
     ce = [(order[i], order[i + 1], None) for i in range(len(order) - 1)]
     col = lambda v: GREEN if v == 1 else RED if v == 0 else GRAY
     render("1_standardized", "1) standardized — same nodes; green=present, red=refuted, gray=missing",
@@ -171,16 +172,20 @@ def do_pipeline(W: Path) -> None:
     render("2_imputed", "2) after MICE — same nodes; grays filled (blue border = imputed)",
            [(pid, [n2(pid, ev) for ev in order], ce) for pid in ids])
     N = len(std); ec: Counter = Counter(); kind = {}
+    erel: dict = defaultdict(Counter)
     for g in std.values():
         for nn in g["nodes"]: kind[nn["id"]] = nn["kind"]
         seen = set()
         for e in g["edges"]:
             k = (e["head"], e["tail"])
+            erel[k][e.get("rel", "enables")] += 1
             if k not in seen: ec[k] += 1; seen.add(k)
     agg_nodes = {x for (h, t) in ec for x in (h, t)}
-    render("3_aggregated", "3) aggregated graph — edge label = fraction of the accounts supporting it",
+    agg_edges = [(h, t, f"{c/N:.2f}", "dashed" if erel[(h, t)].most_common(1)[0][0] == "blocks" else None)
+                 for (h, t), c in ec.items()]
+    render("3_aggregated", "3) aggregated — edge=fraction of accounts  (solid=enables, dashed=blocks)",
            [("aggregated", [(u, KIND_FILL.get(kind.get(u, "event"), "#EA9999"), None) for u in agg_nodes],
-             [(h, t, f"{c/N:.2f}") for (h, t), c in ec.items()])])
+             agg_edges)])
     print("done (out_w pipeline) -> out_w_png/{0_raw,1_standardized,2_imputed,3_aggregated}.png")
 
 

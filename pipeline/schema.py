@@ -32,6 +32,7 @@ class Node(BaseModel):
 class Edge(BaseModel):
     head: str = Field(..., description="Source node id (the cause).")
     tail: str = Field(..., description="Target node id (the effect).")
+    rel: str = Field("enables", description="'enables' (makes tail happen/more likely) or 'blocks' (prevents it/less likely)")
     prob: float = Field(
         1.0,
         ge=0.0,
@@ -61,6 +62,7 @@ class NodeExtraction(BaseModel):
 class EdgeSpec(BaseModel):
     head: str
     tail: str
+    rel: str = Field("enables", description="'enables' or 'blocks'")
 
 
 class EdgeExtraction(BaseModel):
