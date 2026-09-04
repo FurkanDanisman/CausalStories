@@ -1,35 +1,23 @@
 {
   "tag": "TRUTH",
   "id": "synthetic_homelessness_individuals",
-  "text": "Ground-truth causal graph for the 6-different-people set. Reference only; not used for scoring. The BACKBONE edges (prob 1.0) are the common causal chain of homelessness that every story shares and the aggregation should recover with high probability. The TRIGGER edges (prob ~0.17 = 1 of 6) are person-specific causes; each appears in only one story and should get low probability.",
+  "text": "Ground-truth common causal chain shared by the 6 different people's stories. Reference only; not scored. Each person's specific trigger (layoff, illness, domestic violence, rent hike, addiction, depression) is an instance of the single entry node 'a crisis'. All edges are simply true (no probabilities).",
   "nodes": [
-    {"id": "lost income", "kind": "event", "event_types": []},
-    {"id": "could not pay rent", "kind": "event", "event_types": []},
+    {"id": "a crisis (job loss, illness, rent hike, ...)", "kind": "event", "event_types": []},
+    {"id": "couldn't afford rent", "kind": "event", "event_types": []},
     {"id": "evicted / lost housing", "kind": "event", "event_types": []},
     {"id": "became homeless", "kind": "event", "event_types": []},
     {"id": "health declined", "kind": "event", "event_types": []},
     {"id": "no fixed address", "kind": "event", "event_types": []},
-    {"id": "could not get work", "kind": "event", "event_types": []},
-    {"id": "factory closed", "kind": "event", "event_types": []},
-    {"id": "fell ill", "kind": "event", "event_types": []},
-    {"id": "fled domestic violence", "kind": "event", "event_types": []},
-    {"id": "rent doubled", "kind": "event", "event_types": []},
-    {"id": "addiction relapse", "kind": "event", "event_types": []},
-    {"id": "depression", "kind": "event", "event_types": []}
+    {"id": "couldn't get work", "kind": "event", "event_types": []}
   ],
   "edges": [
-    {"head": "lost income", "tail": "could not pay rent", "prob": 1.0},
-    {"head": "could not pay rent", "tail": "evicted / lost housing", "prob": 1.0},
+    {"head": "a crisis (job loss, illness, rent hike, ...)", "tail": "couldn't afford rent", "prob": 1.0},
+    {"head": "couldn't afford rent", "tail": "evicted / lost housing", "prob": 1.0},
     {"head": "evicted / lost housing", "tail": "became homeless", "prob": 1.0},
     {"head": "became homeless", "tail": "health declined", "prob": 1.0},
     {"head": "became homeless", "tail": "no fixed address", "prob": 1.0},
-    {"head": "no fixed address", "tail": "could not get work", "prob": 1.0},
-    {"head": "could not get work", "tail": "became homeless", "prob": 1.0},
-    {"head": "factory closed", "tail": "lost income", "prob": 0.17},
-    {"head": "fell ill", "tail": "lost income", "prob": 0.17},
-    {"head": "fled domestic violence", "tail": "became homeless", "prob": 0.17},
-    {"head": "rent doubled", "tail": "could not pay rent", "prob": 0.17},
-    {"head": "addiction relapse", "tail": "lost income", "prob": 0.17},
-    {"head": "depression", "tail": "lost income", "prob": 0.17}
+    {"head": "no fixed address", "tail": "couldn't get work", "prob": 1.0},
+    {"head": "couldn't get work", "tail": "became homeless", "prob": 1.0}
   ]
 }
