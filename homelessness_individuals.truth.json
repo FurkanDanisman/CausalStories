@@ -1,7 +1,7 @@
 {
   "tag": "TRUTH",
   "id": "synthetic_homelessness_individuals",
-  "text": "Ground-truth common causal chain shared by the 6 different people's stories. Reference only; not scored. Each person's specific trigger (layoff, illness, domestic violence, rent hike, addiction, depression) is an instance of the single entry node 'a crisis'. All edges are simply true (no probabilities).",
+  "text": "Ground-truth common causal chain shared by the 6 different people's stories. Reference only; not scored. Each person's specific trigger (layoff, illness, domestic violence, rent hike, addiction, depression) is an instance of the single entry node 'a crisis'. Directed acyclic graph; all edges are simply true.",
   "nodes": [
     {"id": "a crisis (job loss, illness, rent hike, ...)", "kind": "event", "event_types": []},
     {"id": "couldn't afford rent", "kind": "event", "event_types": []},
@@ -9,7 +9,8 @@
     {"id": "became homeless", "kind": "event", "event_types": []},
     {"id": "health declined", "kind": "event", "event_types": []},
     {"id": "no fixed address", "kind": "event", "event_types": []},
-    {"id": "couldn't get work", "kind": "event", "event_types": []}
+    {"id": "couldn't get work", "kind": "event", "event_types": []},
+    {"id": "remains homeless (can't recover)", "kind": "event", "event_types": []}
   ],
   "edges": [
     {"head": "a crisis (job loss, illness, rent hike, ...)", "tail": "couldn't afford rent", "prob": 1.0},
@@ -18,6 +19,6 @@
     {"head": "became homeless", "tail": "health declined", "prob": 1.0},
     {"head": "became homeless", "tail": "no fixed address", "prob": 1.0},
     {"head": "no fixed address", "tail": "couldn't get work", "prob": 1.0},
-    {"head": "couldn't get work", "tail": "became homeless", "prob": 1.0}
+    {"head": "couldn't get work", "tail": "remains homeless (can't recover)", "prob": 1.0}
   ]
 }

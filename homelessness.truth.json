@@ -10,7 +10,8 @@
     {"id": "health declined", "kind": "event", "event_types": []},
     {"id": "found a shelter bed", "kind": "event", "event_types": []},
     {"id": "no fixed address", "kind": "event", "event_types": []},
-    {"id": "could not get hired", "kind": "event", "event_types": []}
+    {"id": "could not get hired", "kind": "event", "event_types": []},
+    {"id": "stayed homeless", "kind": "event", "event_types": []}
   ],
   "edges": [
     {"head": "warehouse laid David off", "tail": "fell behind on rent", "prob": 0.33},
@@ -20,6 +21,6 @@
     {"head": "became homeless", "tail": "found a shelter bed", "prob": 0.5},
     {"head": "became homeless", "tail": "no fixed address", "prob": 0.67},
     {"head": "no fixed address", "tail": "could not get hired", "prob": 0.67},
-    {"head": "could not get hired", "tail": "became homeless", "prob": 0.5}
+    {"head": "could not get hired", "tail": "stayed homeless", "prob": 0.5}
   ]
 }
