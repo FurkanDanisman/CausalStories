@@ -27,7 +27,7 @@ from pathlib import Path
 from pipeline import aggregate, dataset, evaluate, extract, prompts, visualize
 from pipeline.llm_client import (AnthropicClient, HFClient, MockLLMClient,
                                  OllamaClient, OpenAIClient, VLLMClient)
-from pipeline.schema import CausalGraph, Variant
+from pipeline.schema import CausalGraph, RefuteBatch, Variant
 
 
 def build_client(backend: str, model: str | None, base_url: str | None = None):
@@ -173,6 +173,71 @@ def do_generate(args, outdir: Path) -> None:
                 "gold_edges": ex.gold_edges, "variants": variants}
         (outdir / f"{tid.replace('/', '_')}.variants.json").write_text(json.dumps(data, indent=2))
     print(f"\nwrote {len(bases)} story-set(s) to {outdir}/*.variants.json")
+
+
+def _write_graph(path: Path, pid: str, tag: str, text: str, g: CausalGraph) -> None:
+    data = {"tag": tag, "id": pid, "text": text}
+    data.update(g.model_dump(mode="json"))
+    path.write_text(json.dumps(data, indent=2))
+
+
+def do_world_extract(args, outdir: Path) -> None:
+    """Qwen-only steps of the world experiment: extract a graph per narrative (raw),
+    canonicalize node names across them (standardized), and build the event x person
+    table with a refutation pass (1 = present, 0 = refuted, null = missing -> MICE).
+    No judge, no scoring. MICE + plotting happen locally afterwards."""
+    d = json.loads(Path(args.world_file).read_text())
+    (outdir / "raw").mkdir(parents=True, exist_ok=True)
+    (outdir / "std").mkdir(parents=True, exist_ok=True)
+    client = build_client(args.backend, args.model, args.base_url)
+
+    print(f"=== WORLD-EXTRACT · {args.model} · {len(d['variants'])} narratives ===")
+    raw = []
+    for i, v in enumerate(d["variants"]):
+        pid = f"p{i}"
+        try:
+            g = extract.extract_graph(client, v["text"], k=args.k)
+        except Exception as e:
+            print(f"  {pid}: FAILED {type(e).__name__}: {e}")
+            g = CausalGraph(nodes=[], edges=[])
+        raw.append((pid, v["text"], g))
+        _write_graph(outdir / "raw" / f"{pid}.graph.json", pid, "0_raw", v["text"], g)
+        print(f"  {pid}: {len(g.nodes)} nodes, {len(g.edges)} edges")
+
+    print("  canonicalizing node names across all narratives ...")
+    node2canon = aggregate.canonicalize(client, d["base_text"], [g for _, _, g in raw])
+    (outdir / "mapping.json").write_text(json.dumps(node2canon, indent=2))
+
+    std = []
+    for pid, text, g in raw:
+        sg = aggregate.relabel_graph(g, node2canon)
+        std.append((pid, text, sg))
+        _write_graph(outdir / "std" / f"{pid}.graph.json", pid, "1_standardized", text, sg)
+
+    events = []
+    for _, _, sg in std:
+        for n in sg.nodes:
+            if n.kind.value == "event" and n.id not in events:
+                events.append(n.id)
+
+    print(f"  refutation pass over {len(events)} canonical events ...")
+    rows = []
+    for pid, text, sg in std:
+        present = {n.id for n in sg.nodes if n.kind.value == "event"}
+        absent = [e for e in events if e not in present]
+        refuted = set()
+        if absent:
+            try:
+                rb = client.complete(task="refute", schema=RefuteBatch, temperature=0.0,
+                                     prompt=prompts.refute_prompt(text, absent))
+                refuted = {absent[v.index] for v in rb.verdicts
+                           if 0 <= v.index < len(absent) and v.refuted}
+            except Exception as e:
+                print(f"  {pid}: refute failed ({e}); leaving as missing")
+        row = [1 if e in present else (0 if e in refuted else None) for e in events]
+        rows.append({"id": pid, "row": row})
+    (outdir / "table.json").write_text(json.dumps({"events": events, "rows": rows}, indent=2))
+    print(f"saved raw/, std/, mapping.json, table.json in {outdir}")
 
 
 def do_raw_extract(args, outdir: Path) -> None:
@@ -342,7 +407,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", default="full",
                     choices=["full", "extract", "judge", "generate", "agg-extract",
-                             "agg-combine", "raw-extract"])
+                             "agg-combine", "raw-extract", "world-extract"])
     ap.add_argument("--backend", default="mock",
                     choices=["mock", "anthropic", "openai", "ollama", "hf", "vllm"])
     ap.add_argument("--model", default=None)
@@ -360,6 +425,8 @@ def main() -> None:
     ap.add_argument("--n-variants", type=int, default=6, help="synthetic retellings per base (generate mode)")
     ap.add_argument("--synth-dir", default="out_synth", help="dir of *.variants.json (agg-extract)")
     ap.add_argument("--texts-file", default="narratives.json", help="JSON [{id,text}] (raw-extract)")
+    ap.add_argument("--world-file", default="world_homelessness.variants.json",
+                    help="story-set for the world experiment (world-extract)")
     ap.add_argument("--agg-min-count", type=int, default=2,
                     help="keep aggregated edges seen in >= this many variants")
     ap.add_argument("--outdir", default="out")
@@ -380,6 +447,8 @@ def main() -> None:
         do_agg_combine(args, outdir)
     elif args.mode == "raw-extract":
         do_raw_extract(args, outdir)
+    elif args.mode == "world-extract":
+        do_world_extract(args, outdir)
     else:
         do_full(args, outdir)
 

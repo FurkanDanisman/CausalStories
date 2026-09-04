@@ -45,7 +45,8 @@ def main() -> None:
                 nid = esc(f'{cid}::{n["id"]}')
                 shape = "ellipse" if n["kind"] == "participant" else "box"
                 label = n["id"][len("Entity::"):] if n["id"].startswith("Entity::") else n["id"]
-                L.append(f'    "{nid}" [shape={shape}, fillcolor="{FILL[n["kind"]]}", label="{esc(label)}"];')
+                fill = "#7FB3D5" if n.get("imputed") else FILL[n["kind"]]   # blue = MICE-imputed
+                L.append(f'    "{nid}" [shape={shape}, fillcolor="{fill}", label="{esc(label)}"];')
             for e in d["edges"]:
                 p = e.get("prob", 1.0)
                 attrs = f' [label="{p:.2f}", penwidth={1 + 2 * p:.1f}]' if p < 0.999 else ""

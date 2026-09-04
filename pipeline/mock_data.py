@@ -82,6 +82,7 @@ def empty_for(schema: Type[BaseModel]) -> dict:
         "JudgeScore": {"score": 1, "rationale": "n/a"},
         "EdgeValidityBatch": {"verdicts": []},
         "Variant": {"text": ""},
+        "RefuteBatch": {"verdicts": []},
         "NodeClustering": {"mapping": {}},
         "CausalGraph": {"nodes": [], "edges": []},
     }.get(name, {})

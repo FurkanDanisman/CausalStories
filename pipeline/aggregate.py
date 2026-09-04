@@ -33,6 +33,27 @@ def canonicalize(client: LLMClient, base_text: str, graphs: list[CausalGraph]) -
     return mapping
 
 
+def relabel_graph(graph: CausalGraph, node2canon: dict[str, str]) -> CausalGraph:
+    """Apply the canonical-name mapping to one graph (naming standardization)."""
+    def c(x: str) -> str:
+        return node2canon.get(x, x)
+
+    kinds: dict[str, Counter] = defaultdict(Counter)
+    types: dict[str, set] = defaultdict(set)
+    for nd in graph.nodes:
+        cid = c(nd.id)
+        kinds[cid][nd.kind.value] += 1
+        types[cid].update(nd.event_types)
+    edges = set()
+    for e in graph.edges:
+        h, t = c(e.head), c(e.tail)
+        if h != t:
+            edges.add((h, t))
+    nodes = [Node(id=k, kind=NodeKind(v.most_common(1)[0][0]), event_types=sorted(types[k]))
+             for k, v in kinds.items()]
+    return CausalGraph(nodes=nodes, edges=[Edge(head=h, tail=t, prob=1.0) for h, t in edges])
+
+
 def aggregate(graphs: list[CausalGraph], node2canon: dict[str, str],
               n_variants: int, min_count: int = 2) -> CausalGraph:
     def canon(nid: str) -> str:

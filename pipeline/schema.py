@@ -95,6 +95,18 @@ class Variant(BaseModel):
     text: str
 
 
+class RefuteVerdict(BaseModel):
+    index: int = Field(..., description="0-based index of the candidate event")
+    refuted: bool = Field(..., description="True if the narrative implies this event did NOT happen")
+
+
+class RefuteBatch(BaseModel):
+    """Per-event refutation verdicts, to turn 'not mentioned' into a hard 0 vs a
+    genuine missing value (NA) before MICE imputation."""
+
+    verdicts: List[RefuteVerdict]
+
+
 class NodeClustering(BaseModel):
     """Maps each node (verbatim, across all retellings) to a canonical name, so the
     same event/participant worded differently in different retellings is unified."""

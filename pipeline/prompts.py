@@ -90,3 +90,8 @@ def generate_variant_prompt(base_text: str, perspective: str) -> str:
 
 def canonicalize_prompt(base_text: str, nodes_listing: str) -> str:
     return render("canonicalize.md", TEXT=base_text, NODES=nodes_listing)
+
+
+def refute_prompt(text: str, events: list[str]) -> str:
+    listing = "\n".join(f"  [{i}] {e}" for i, e in enumerate(events))
+    return render("refute.md", TEXT=text, EVENTS=listing)
