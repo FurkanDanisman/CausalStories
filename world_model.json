@@ -1,0 +1,18 @@
+{
+  "nodes": [
+    "crisis",
+    "support (protective)",
+    "couldn't afford rent",
+    "eviction",
+    "homelessness",
+    "health decline"
+  ],
+  "cpd": {
+    "support": 0.25,
+    "rent_trouble | crisis": 0.95,
+    "eviction | rent_trouble,no_support": 0.9,
+    "eviction | rent_trouble,support": 0.3,
+    "homeless | eviction": 0.95,
+    "health_decline | homeless": 0.7
+  }
+}

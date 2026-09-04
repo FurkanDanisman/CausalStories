@@ -1,0 +1,59 @@
+{
+  "base_torque_id": "synthetic_world_homelessness",
+  "base_split": "train",
+  "base_text": "Ten different people describe how they coped after a financial crisis; most became homeless, a few did not.",
+  "gold_edges": [],
+  "note": "Sampled from world_model.json (seed 0). Each story mentions only the events that actually happened to that person. Aggregation target = marginal edge frequencies: crisis->rent 9/10, rent->eviction 7/10, eviction->homeless 7/10, homeless->health 5/10. 3 of 10 averted homelessness (p3 chain didn't fire, p6 no rent trouble, p8 protected by support).",
+  "variants": [
+    {
+      "perspective": "p0: hours cut -> homeless -> ill",
+      "true_events": {"crisis": 1, "support": 0, "rent_trouble": 1, "eviction": 1, "homeless": 1, "health_decline": 1},
+      "text": "When my hours were cut at work I couldn't keep up with the rent. I fell behind, got evicted, and ended up sleeping rough. Months on the street have left me ill most of the time."
+    },
+    {
+      "perspective": "p1: plant closed -> homeless -> ill",
+      "true_events": {"crisis": 1, "support": 0, "rent_trouble": 1, "eviction": 1, "homeless": 1, "health_decline": 1},
+      "text": "After the plant closed I lost my income and the rent piled up. The landlord evicted me, and I have been homeless ever since; my health has fallen apart out here."
+    },
+    {
+      "perspective": "p2: illness -> homeless -> ill",
+      "true_events": {"crisis": 1, "support": 0, "rent_trouble": 1, "eviction": 1, "homeless": 1, "health_decline": 1},
+      "text": "A sudden illness stopped me working and I couldn't pay the rent. I was evicted within weeks, ended up on the streets, and my body has been breaking down ever since."
+    },
+    {
+      "perspective": "p3: car broke down -> AVERTED (kept flat)",
+      "true_events": {"crisis": 1, "support": 0, "rent_trouble": 1, "eviction": 0, "homeless": 0, "health_decline": 0},
+      "text": "When my car broke down I suddenly couldn't cover both the repairs and the rent, and I fell behind for a couple of months. It was tight and stressful, but I caught up before it went any further and kept my flat."
+    },
+    {
+      "perspective": "p4: lost job -> homeless (no health decline)",
+      "true_events": {"crisis": 1, "support": 0, "rent_trouble": 1, "eviction": 1, "homeless": 1, "health_decline": 0},
+      "text": "Losing my job meant I couldn't make rent, and after a few missed payments I was evicted. I have been homeless since, sleeping in a shelter when I can get a bed."
+    },
+    {
+      "perspective": "p5: divorce -> homeless -> ill",
+      "true_events": {"crisis": 1, "support": 0, "rent_trouble": 1, "eviction": 1, "homeless": 1, "health_decline": 1},
+      "text": "A messy divorce left me unable to afford the flat on my own. I got behind, was evicted, and ended up on the street, where my health has steadily got worse."
+    },
+    {
+      "perspective": "p6: medical bill scare -> AVERTED (never fell behind)",
+      "true_events": {"crisis": 1, "support": 0, "rent_trouble": 0, "eviction": 0, "homeless": 0, "health_decline": 0},
+      "text": "I had a real scare when a big medical bill landed, and for a while I panicked about money. In the end I tightened everything up and never actually fell behind on the rent."
+    },
+    {
+      "perspective": "p7: benefits delayed -> homeless -> ill",
+      "true_events": {"crisis": 1, "support": 0, "rent_trouble": 1, "eviction": 1, "homeless": 1, "health_decline": 1},
+      "text": "When my benefits were delayed the money ran out and I couldn't pay rent. The eviction came fast, I ended up homeless, and living outside has wrecked my health."
+    },
+    {
+      "perspective": "p8: laid off + SUPPORT -> AVERTED (sister helped)",
+      "true_events": {"crisis": 1, "support": 1, "rent_trouble": 1, "eviction": 0, "homeless": 0, "health_decline": 0},
+      "text": "After I was laid off I quickly fell behind on rent and thought I'd lose the flat. But my sister stepped in and covered a couple of months, so the eviction never happened and I stayed housed."
+    },
+    {
+      "perspective": "p9: shifts dried up -> homeless (no health decline)",
+      "true_events": {"crisis": 1, "support": 0, "rent_trouble": 1, "eviction": 1, "homeless": 1, "health_decline": 0},
+      "text": "When my shifts dried up I couldn't make rent, and the landlord had me out within a couple of months. I have been homeless since, staying at a hostel."
+    }
+  ]
+}
