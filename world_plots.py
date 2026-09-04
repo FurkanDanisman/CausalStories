@@ -42,9 +42,17 @@ def render(name: str, title: str, clusters: list) -> None:
         for nid, fill, border in nodes:
             b = f', color="{border}", penwidth=3' if border else ''
             L.append(f'    "{ci}:{esc(nid)}" [fillcolor="{fill}", label="{esc(nid)}"{b}];')
-        for h, t, el in edges:
-            lab = f' [label="{el}"]' if el else ''
-            L.append(f'    "{ci}:{esc(h)}" -> "{ci}:{esc(t)}"{lab};')
+        for edge in edges:
+            h, t = edge[0], edge[1]
+            el = edge[2] if len(edge) > 2 else None
+            style = edge[3] if len(edge) > 3 else None
+            attrs = []
+            if el:
+                attrs.append(f'label="{esc(el)}"')
+            if style == "dashed":                       # dashed = BLOCKS, solid = ENABLES
+                attrs.append("style=dashed")
+            a = f' [{", ".join(attrs)}]' if attrs else ""
+            L.append(f'    "{ci}:{esc(h)}" -> "{ci}:{esc(t)}"{a};')
         L.append("  }")
     L.append("}")
     subprocess.run(["dot", "-Tpng", "-o", str(PNG / f"{name}.png")], input="\n".join(L), text=True, check=True)
@@ -57,9 +65,12 @@ def do_masked(p_mask: float = 0.25) -> None:
     DISP = {"crisis": "crisis", "support": "support", "rent_trouble": "couldn't afford rent",
             "eviction": "eviction", "homeless": "became homeless", "health_decline": "health declined"}
     NODES = [DISP[k] for k in KEYS]
-    WEDGES = [("crisis", "couldn't afford rent"), ("couldn't afford rent", "eviction"),
-              ("eviction", "became homeless"), ("became homeless", "health declined"),
-              ("support", "eviction")]
+    # (head, tail, relation): ENABLES = solid arrow, BLOCKS = dashed arrow.
+    WEDGES = [("crisis", "couldn't afford rent", "enable"),
+              ("couldn't afford rent", "eviction", "enable"),
+              ("eviction", "became homeless", "enable"),
+              ("became homeless", "health declined", "enable"),
+              ("support", "eviction", "block")]   # support BLOCKS eviction (protective)
     people = [f"p{i}" for i in range(len(D["variants"]))]
     T = np.array([[D["variants"][i]["true_events"][k] for k in KEYS] for i in range(len(people))], float)
 
@@ -68,28 +79,40 @@ def do_masked(p_mask: float = 0.25) -> None:
     O = T.copy(); O[M] = np.nan
     Xb = (IterativeImputer(max_iter=30, random_state=0, min_value=0, max_value=1).fit_transform(O) >= 0.5).astype(int)
 
-    edges = [(h, t, None) for (h, t) in WEDGES]
+    def edge_tuples(labelfn=None):
+        out = []
+        for h, t, rel in WEDGES:
+            style = "dashed" if rel == "block" else None
+            out.append((h, t, (labelfn(h, t, rel) if labelfn else None), style))
+        return out
 
     def nodes_from(colourfn):
-        return [(people[i], [(NODES[j], *colourfn(i, j)) for j in range(len(KEYS))], edges)
+        return [(people[i], [(NODES[j], *colourfn(i, j)) for j in range(len(KEYS))], edge_tuples())
                 for i in range(len(people))]
 
-    render("0_true", "0) TRUE table  (green=1, red=0)",
+    sub = "  (solid = enables, dashed = blocks)"
+    render("0_true", "0) TRUE table  (green=1, red=0)" + sub,
            nodes_from(lambda i, j: (GREEN if T[i, j] == 1 else RED, None)))
-    render("1_masked", f"1) MASKED input to MICE  (~{int(p_mask*100)}% hidden = gray)",
+    render("1_masked", f"1) MASKED input to MICE  (~{int(p_mask*100)}% hidden = gray)" + sub,
            nodes_from(lambda i, j: (GRAY if M[i, j] else (GREEN if T[i, j] == 1 else RED), None)))
-    render("2_imputed", "2) after MICE  (grays filled; blue border = imputed cell)",
+    render("2_imputed", "2) after MICE  (grays filled; blue border = imputed cell)" + sub,
            nodes_from(lambda i, j: (GREEN if Xb[i, j] == 1 else RED, IMP_BORDER if M[i, j] else None)))
 
-    # stage 3: aggregate the completed table into a probability graph
+    # stage 3: aggregate the completed table into a probability graph.
     n = len(people)
     idx = {DISP[k]: j for j, k in enumerate(KEYS)}
-    agg_edges = []
-    for h, t in WEDGES:
-        c = sum(1 for i in range(n) if Xb[i, idx[h]] == 1 and Xb[i, idx[t]] == 1)
-        agg_edges.append((h, t, f"{c/n:.2f}"))
-    render("3_aggregated", "3) aggregated  (edge = fraction of people with that causal step)",
-           [("aggregated", [(nm, KIND_FILL["event"], None) for nm in NODES], agg_edges)])
+
+    def agg_label(h, t, rel):
+        if rel == "enable":                                 # P(both endpoints happen)
+            c = sum(1 for i in range(n) if Xb[i, idx[h]] == 1 and Xb[i, idx[t]] == 1)
+            return f"{c/n:.2f}"
+        sup = [i for i in range(n) if Xb[i, idx[h]] == 1]   # BLOCKS: among head=1, how often tail=0
+        if not sup:
+            return "blocks n/a"
+        return f"blocks {sum(1 for i in sup if Xb[i, idx[t]] == 0) / len(sup):.2f}"
+
+    render("3_aggregated", "3) aggregated  (enable = fraction with the step; blocks = block rate)" + sub,
+           [("aggregated", [(nm, KIND_FILL["event"], None) for nm in NODES], edge_tuples(agg_label))])
     print("done (masked input) -> out_w_png/{0_true,1_masked,2_imputed,3_aggregated}.png")
 
 
