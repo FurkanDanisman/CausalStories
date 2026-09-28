@@ -114,3 +114,14 @@ class NodeClustering(BaseModel):
     same event/participant worded differently in different retellings is unified."""
 
     mapping: dict[str, str]
+
+
+# ---- chain-walk extraction (chain.py) ----
+
+class NegatedName(BaseModel):
+    id: str
+    opposite: str = Field(..., description="Name for the opposite event, e.g. 'support' -> 'no support'")
+
+
+class NegatedNames(BaseModel):
+    names: List[NegatedName]

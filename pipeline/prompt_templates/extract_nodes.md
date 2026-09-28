@@ -27,6 +27,7 @@ mentions that neither cause nor are caused by an event and only add detail — f
 example, a chain of nested mentions that connect to each other but not to the
 central events; fold such detail into the single node it modifies. Keep the graph
 to the salient, connected causal chain. Use concise, self-contained node ids.
+{{NODE_LIMIT}}
 
 {{WORKED_EXAMPLE}}
 

@@ -42,8 +42,31 @@ def render(template_file: str, **vars: str) -> str:
     return text
 
 
-def extract_nodes_prompt(text: str) -> str:
-    return render("extract_nodes.md", TEXT=text)
+def extract_nodes_prompt(text: str, max_nodes: int | None = None) -> str:
+    limit = (f"Return at most {max_nodes} nodes: the {max_nodes} most important for "
+             f"the causal chain." if max_nodes else "")
+    return render("extract_nodes.md", TEXT=text, NODE_LIMIT=limit)
+
+
+def _listing(node_ids: list[str]) -> str:
+    return "\n".join(f"  - {nid}" for nid in node_ids)
+
+
+# Kev choice options for kev_arrow.md; descriptions follow extract_edges.md.
+KEV_ARROW_OPTIONS = {
+    "enables": 'the first node makes the second happen, start, continue, or become more likely',
+    "blocks": 'the first node makes the second stop, or prevents it / makes it less likely',
+    "none": 'the text does not justify a direct causal arrow from the first node to the second',
+}
+
+
+def kev_arrow_question(head: str, tail: str, node_ids: list[str]) -> dict:
+    return {"type": "choice", "criteria": KEV_ARROW_OPTIONS,
+            "instructions": render("kev_arrow.md", HEAD=head, TAIL=tail, NODE_LIST=_listing(node_ids))}
+
+
+def negate_nodes_prompt(text: str, node_ids: list[str]) -> str:
+    return render("negate_nodes.md", TEXT=text, NODE_LIST=_listing(node_ids))
 
 
 def extract_edges_prompt(text: str, node_ids: list[str]) -> str:

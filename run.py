@@ -24,7 +24,8 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
-from pipeline import aggregate, dataset, evaluate, extract, prompts, visualize
+from pipeline import aggregate, chain, dataset, evaluate, extract, prompts, visualize
+from pipeline.kev_client import KevClient
 from pipeline.llm_client import (AnthropicClient, HFClient, MockLLMClient,
                                  OllamaClient, OpenAIClient, VLLMClient)
 from pipeline.schema import CausalGraph, RefuteBatch, Variant
@@ -355,6 +356,49 @@ def do_agg_combine(args, outdir: Path) -> None:
     print(f"\nwrote {outdir}/summary_agg.json + per (base,model) *.comparison.html (true vs estimated)")
 
 
+def do_chain_nodes(args, outdir: Path) -> None:
+    """Chain walk, LLM part (e.g. Gemma): the K most important nodes of each narrative
+    in --texts-file, plus the opposite name of each node (for the polarity step).
+    Writes <outdir>/chain_nodes.json, the input for --mode chain-kev."""
+    items = json.loads(Path(args.texts_file).read_text())
+    client = build_client(args.backend, args.model, args.base_url)
+    print(f"=== CHAIN-NODES · {_tag(args)} · {len(items)} narrative(s) · K={args.max_nodes} ===")
+    out = []
+    for it in items:
+        ids = chain.llm_nodes(client, it["text"], args.max_nodes)
+        opp = chain.llm_opposites(client, it["text"], ids) if ids else {}
+        print(f"\n[{it['id']}] {it['text']}")
+        for n in ids:
+            print(f"  {n!r}   opposite: {opp.get(n)!r}")
+        out.append({"id": it["id"], "text": it["text"], "nodes": ids, "opposites": opp})
+    (outdir / "chain_nodes.json").write_text(json.dumps(out, indent=2))
+    print(f"\nsaved {outdir}/chain_nodes.json")
+
+
+def do_chain_kev(args, outdir: Path) -> None:
+    """Chain walk, Kev part: walk, connectivity, polarity for each narrative in
+    --nodes-file ({id, text, nodes, opposites}). Needs a running Kev server at --kev-url."""
+    items = json.loads(Path(args.nodes_file).read_text())
+    kev = KevClient(args.kev_url)
+    tag = args.tag or "kev"
+    print(f"=== CHAIN-KEV · {tag} · {len(items)} narrative(s) · {args.kev_url} ===")
+    for it in items:
+        print(f"\n[{it['id']}] {it['text']}")
+        g = chain.run_chain(kev, it["text"], it["nodes"], it.get("opposites", {}), seed=args.seed)
+        rel = {(h, t): r for h, t, r, _ in g.edges}
+        print("SUBGRAPHS (every chain the walk produced)")
+        for k, c in enumerate(g.chains, 1):
+            path = c[0] + "".join(f" {'-|' if rel[(h, t)] == 'blocks' else '->'} {t}" for h, t in zip(c, c[1:]))
+            print(f"  {k}. {path}")
+        print("FULL GRAPH")
+        for h, t, r, p in g.edges:
+            print(f"  {h} {'-|' if r == 'blocks' else '->'} {t}   p={p:.2f}")
+        print(f"  Kev requests: {g.kev_requests} · connected: {g.connected} · all enabling: {g.balanced}")
+        data = {"tag": tag, "id": it["id"], "text": it["text"], **g.to_json()}
+        (outdir / f"{it['id']}__{tag}.chain.json").write_text(json.dumps(data, indent=2))
+    print(f"\nsaved *__{tag}.chain.json in {outdir}")
+
+
 def do_full(args, outdir: Path) -> None:
     ex = dataset.get_example(args.torque_id, args.split)
     client = build_client(args.backend, args.model, args.base_url)
@@ -407,7 +451,8 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", default="full",
                     choices=["full", "extract", "judge", "generate", "agg-extract",
-                             "agg-combine", "raw-extract", "world-extract"])
+                             "agg-combine", "raw-extract", "world-extract",
+                             "chain-nodes", "chain-kev"])
     ap.add_argument("--backend", default="mock",
                     choices=["mock", "anthropic", "openai", "ollama", "hf", "vllm"])
     ap.add_argument("--model", default=None)
@@ -427,6 +472,10 @@ def main() -> None:
     ap.add_argument("--texts-file", default="narratives.json", help="JSON [{id,text}] (raw-extract)")
     ap.add_argument("--world-file", default="world_homelessness.variants.json",
                     help="story-set for the world experiment (world-extract)")
+    ap.add_argument("--max-nodes", type=int, default=5, help="K: most important nodes (chain-nodes)")
+    ap.add_argument("--seed", type=int, default=0, help="random start nodes (chain-kev)")
+    ap.add_argument("--nodes-file", default="controlled_kev.json", help="input for chain-kev")
+    ap.add_argument("--kev-url", default="http://127.0.0.1:8009", help="Kev server (chain-kev)")
     ap.add_argument("--agg-min-count", type=int, default=2,
                     help="keep aggregated edges seen in >= this many variants")
     ap.add_argument("--outdir", default="out")
@@ -447,6 +496,10 @@ def main() -> None:
         do_agg_combine(args, outdir)
     elif args.mode == "raw-extract":
         do_raw_extract(args, outdir)
+    elif args.mode == "chain-nodes":
+        do_chain_nodes(args, outdir)
+    elif args.mode == "chain-kev":
+        do_chain_kev(args, outdir)
     elif args.mode == "world-extract":
         do_world_extract(args, outdir)
     else:
