@@ -82,13 +82,22 @@ def kev_agent_question(head: str, tail: str, node_ids: list[str]) -> dict:
             "instructions": render("kev_agent.md", HEAD=head, TAIL=tail, NODE_LIST=_listing(node_ids))}
 
 
+# Kev choice options for kev_implied.md (Section 2, Step 4).
+KEV_IMPLIED_OPTIONS = {
+    "happened": "the text states or implies that it happened",
+    "not happened": "the text states or implies that it did not happen",
+    "cannot tell": "the text does not say whether it happened",
+}
+
+
+def kev_implied_question(concept: str) -> dict:
+    return {"type": "choice", "criteria": KEV_IMPLIED_OPTIONS,
+            "instructions": render("kev_implied.md", CONCEPT=concept)}
+
+
 def kev_arrow_question(head: str, tail: str, node_ids: list[str]) -> dict:
     return {"type": "choice", "criteria": KEV_ARROW_OPTIONS,
             "instructions": render("kev_arrow.md", HEAD=head, TAIL=tail, NODE_LIST=_listing(node_ids))}
-
-
-def negate_nodes_prompt(text: str, node_ids: list[str]) -> str:
-    return render("negate_nodes.md", TEXT=text, NODE_LIST=_listing(node_ids))
 
 
 def extract_edges_prompt(text: str, node_ids: list[str]) -> str:

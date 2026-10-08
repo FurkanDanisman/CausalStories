@@ -151,9 +151,9 @@ def abstract(client: LLMClient, graphs: list[dict], M: int = 1, log=print) -> di
         concept_edges[j] = [{"head": a, "tail": b, "rel": r, "prob": p} for (a, b), (r, p) in best.items()]
 
     return {
-        "concepts": {c: {"kind": concept_kind[c], "members": [f"{j}: {v}" for j, v in ms]}
+        "concepts": {c: {"kind": concept_kind[c], "members": [[j, v] for j, v in ms]}
                      for c, ms in members.items()},
-        "dropped": [f"{j}: {v}" for (j, v), c in concept_of.items() if c is None],
+        "dropped": [[j, v] for (j, v), c in concept_of.items() if c is None],
         "table": table,
         "concept_edges": concept_edges,
     }

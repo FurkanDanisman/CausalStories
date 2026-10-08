@@ -7,9 +7,10 @@
 #SBATCH --time=03:00:00
 #SBATCH --output=kev-chain-%j.out
 #
-# Chain walk on world stories p0, p4, p8 (controlled_kev.json): Gemma picks the nodes
-# and their opposite names, then Kev-27B does the walk, then Gemma merges the nodes
-# of all graphs into shared concepts. Gemma runs first and exits,
+# Full pipeline on world stories p0, p4, p8 (controlled_kev.json): Gemma picks events
+# and participants, Kev-27B does the walk, Gemma merges the nodes into shared concepts,
+# Kev decides missing concepts and reruns the walk, then MICE + Rubin's rules give the
+# causal Bayesian network. Gemma runs first and exits,
 # then the Kev server starts: one 80 GB GPU, used in turn (Kev-27B needs ~66 GB).
 # The first run also sets up Kev inside the job (clone, env, ~55 GB of weights);
 # later runs skip that step.
@@ -45,7 +46,7 @@ print('base:', m.base, '@', m.base_revision, '->', snapshot_download(m.base, rev
 fi
 export HF_HUB_OFFLINE=1
 
-echo "############ Gemma: nodes + opposites ############"
+echo "############ Gemma: events + participants ############"
 VLLM_MAX_LEN=8192 python run.py --mode chain-nodes --backend vllm --model "$GEMMA" \
   --texts-file controlled_kev.json --max-nodes 5 --outdir "$OUT"
 
@@ -71,4 +72,20 @@ echo "############ Gemma: merge into shared concepts (Section 2, Steps 2-3) ####
 VLLM_MAX_LEN=8192 python run.py --mode abstract --backend vllm --model "$GEMMA" \
   --graphs-glob "$OUT/*__gemma-kev.chain.json" --merge-groups 2 --outdir "$OUT"
 
-echo "Done. Saved in $OUT/: *.chain.json (graphs) and abstraction.json (concepts)"
+echo "############ Kev again: missing concepts (Section 2, Step 4) ############"
+(cd "$KEV_DIR" && .venv/bin/python -m kev.serve --run jaredpalmer/kev-27b --port $PORT) >> "$OUT/kev_server.log" 2>&1 &
+KEV_PID=$!
+for i in $(seq 1 120); do
+  curl -sf "http://127.0.0.1:$PORT/v1/models" >/dev/null && break
+  kill -0 $KEV_PID 2>/dev/null || { echo "Kev server died:"; tail -40 "$OUT/kev_server.log"; exit 1; }
+  sleep 10
+done
+python run.py --mode implied --kev-url "http://127.0.0.1:$PORT" \
+  --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT"
+kill $KEV_PID 2>/dev/null; wait $KEV_PID 2>/dev/null
+
+echo "############ Steps 5-6: imputation, Rubin's rules, causal Bayesian network ############"
+python -c "import sklearn" 2>/dev/null || pip install -q scikit-learn
+python run.py --mode combine --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT"
+
+echo "Done. Saved in $OUT/: *.chain.json, abstraction.json, implied.json, network.json"
