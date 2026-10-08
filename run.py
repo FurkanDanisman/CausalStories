@@ -425,7 +425,6 @@ def do_abstract(args, outdir: Path) -> None:
     for j, es in res["concept_edges"].items():
         for e in es:
             print(f"  {j}: {e['head']} -> {e['tail']}   p={e['prob']:.2f}")
-    print("FLAGS: " + ("\n  ".join([""] + res["flags"]) if res["flags"] else "none"))
     (outdir / "abstraction.json").write_text(json.dumps(res, indent=2))
     print(f"\nsaved {outdir}/abstraction.json")
 

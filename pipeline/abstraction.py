@@ -9,11 +9,8 @@ Merging is a constructive abstraction (Beckers & Halpern 2019):
           Rules (merge_concepts.md): R1 partition, R2 no invented concepts, R3 same
           causal role, R4 dependent concepts merged, R5 cause and effect never merged,
           R6 events and participants never merged with each other.
-  Code enforces R1 (unassigned items keep their own concept), R2 (concepts come only
-  from items), R5 (a concept with an arrow inside it is split) and R6 (one kind per
-  call). A concept's value in narrative x_j is 1 if any of x_j's nodes are in it
-  (OR), else missing. The check flags concepts whose members have no concept-level
-  cause or effect in common.
+  Events and participants are merged in separate calls (R6). A concept's value in
+  narrative x_j is 1 if any of x_j's nodes are in it (OR), else missing.
 """
 
 from __future__ import annotations
@@ -132,22 +129,6 @@ def abstract(client: LLMClient, graphs: list[dict], M: int = 1, log=print) -> di
         for key in dropped:
             concept_of[key] = None
 
-    # R5: an arrow inside a concept means cause and effect were merged -> split the effect off
-    flags: list[str] = []
-    changed = True
-    while changed:
-        changed = False
-        for j, es in edges.items():
-            for h, t, _, _ in es:
-                ch, ct = concept_of.get((j, h)), concept_of.get((j, t))
-                if ch is not None and ch == ct:
-                    new = t if t not in concept_kind else f"{t} ({j})"
-                    concept_kind[new] = kind[(j, t)]
-                    concept_of[(j, t)] = new
-                    flags.append(f"R5 split: {h!r} -> {t!r} in {j} were both in {ch!r}; "
-                                 f"{t!r} is now its own concept")
-                    changed = True
-
     members: dict[str, list[Key]] = defaultdict(list)
     for key, c in concept_of.items():
         if c is not None:
@@ -169,28 +150,10 @@ def abstract(client: LLMClient, graphs: list[dict], M: int = 1, log=print) -> di
                 best[(ch, ct)] = (r, p)
         concept_edges[j] = [{"head": a, "tail": b, "rel": r, "prob": p} for (a, b), (r, p) in best.items()]
 
-    # check: members of a concept should share some concept-level cause or effect
-    def neigh(key: Key) -> set[tuple[str, str]]:
-        j, v = key
-        out = set()
-        for h, t, _, _ in edges[j]:
-            if h == v and concept_of.get((j, t)):
-                out.add(("effect", concept_of[(j, t)]))
-            if t == v and concept_of.get((j, h)):
-                out.add(("cause", concept_of[(j, h)]))
-        return out
-    for c, ms in members.items():
-        for a in range(len(ms)):
-            for b in range(a + 1, len(ms)):
-                na, nb = neigh(ms[a]), neigh(ms[b])
-                if na and nb and not (na & nb):
-                    flags.append(f"check: {c!r} members {ms[a]} and {ms[b]} share no cause or effect")
-
     return {
         "concepts": {c: {"kind": concept_kind[c], "members": [f"{j}: {v}" for j, v in ms]}
                      for c, ms in members.items()},
         "dropped": [f"{j}: {v}" for (j, v), c in concept_of.items() if c is None],
         "table": table,
         "concept_edges": concept_edges,
-        "flags": flags,
     }
