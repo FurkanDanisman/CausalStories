@@ -48,14 +48,17 @@ class ChainGraph:
 # ------------------------------------------------------------ LLM (Gemma) steps
 
 def llm_nodes(client: LLMClient, text: str, max_nodes: int | None) -> dict[str, str]:
-    """Node id -> kind ("event" | "participant"), in the LLM's order."""
-    out = client.complete(task="extract_nodes", schema=NodeExtraction, temperature=0.0,
-                          prompt=prompts.extract_nodes_prompt(text, max_nodes))
-    kinds: dict[str, str] = {}
-    for n in out.nodes:
-        kinds.setdefault(n.id, n.kind.value)
-    ids = list(kinds)[:max_nodes] if max_nodes else list(kinds)
-    return {i: kinds[i] for i in ids}
+    """Node id -> kind. Two calls: the K most important events, then the participants."""
+    ev = client.complete(task="extract_events", schema=NodeExtraction, temperature=0.0,
+                         prompt=prompts.extract_events_prompt(text, max_nodes))
+    events = list(dict.fromkeys(n.id for n in ev.nodes))
+    events = events[:max_nodes] if max_nodes else events
+    pa = client.complete(task="extract_participants", schema=NodeExtraction, temperature=0.0,
+                         prompt=prompts.extract_participants_prompt(text))
+    kinds = {e: "event" for e in events}
+    for n in pa.nodes:
+        kinds.setdefault(n.id, "participant")
+    return kinds
 
 
 def llm_opposites(client: LLMClient, text: str, ids: list[str]) -> dict[str, str]:
@@ -66,27 +69,46 @@ def llm_opposites(client: LLMClient, text: str, ids: list[str]) -> dict[str, str
 
 # ------------------------------------------------------------------ Kev steps
 
-def kev_arrows(kev: KevClient, text: str, ids: list[str],
-               pairs: list[tuple[str, str]]) -> list[tuple[str, str, str, dict]]:
+def kev_arrows(kev: KevClient, text: str, ids: list[str], pairs: list[tuple[str, str]],
+               kinds: dict[str, str] | None = None) -> list[tuple[str, str, str, dict]]:
     """One Kev request, one choice question per (head, tail) pair. Returns
-    (head, tail, most likely option, all option probabilities)."""
-    qs = {f"q{i}": prompts.kev_arrow_question(h, t, ids) for i, (h, t) in enumerate(pairs)}
+    (head, tail, most likely option, all option probabilities).
+    participant -> event: "does head carry out or initiate tail?" (yes = arrow);
+    event -> participant: not asked; all other pairs: enables / blocks / none."""
+    kinds = kinds or {}
+    asked, qs = [], {}
+    for h, t in pairs:
+        kh, kt = kinds.get(h, "event"), kinds.get(t, "event")
+        if kh == "event" and kt == "participant":
+            continue
+        q = (prompts.kev_agent_question(h, t, ids) if (kh, kt) == ("participant", "event")
+             else prompts.kev_arrow_question(h, t, ids))
+        qs[f"q{len(asked)}"] = q
+        asked.append((h, t, q["criteria"] is prompts.KEV_AGENT_OPTIONS))
+    if not qs:
+        return []
     ans = kev.ask(text, qs)
     out = []
-    for i, (h, t) in enumerate(pairs):
+    for i, (h, t, agent) in enumerate(asked):
         a = ans[f"q{i}"]
-        out.append((h, t, a["choice"], a["probabilities"]))
+        if agent:                                    # yes -> enables arrow, no -> none
+            pr = a["probabilities"]
+            out.append((h, t, "enables" if a["choice"] == "yes" else "none",
+                        {"enables": pr["yes"], "none": pr["no"]}))
+        else:
+            out.append((h, t, a["choice"], a["probabilities"]))
     return out
 
 
-def walk(kev: KevClient, text: str, ids: list[str], seed: int = 0, log=print):
+def walk(kev: KevClient, text: str, ids: list[str], seed: int = 0, log=print,
+         kinds: dict[str, str] | None = None):
     children: dict[str, list[tuple[str, str, float]]] = {}
     chains: list[list[str]] = []
 
     def ask(path: list[str]) -> list[tuple[str, str, float]]:
         x = path[-1]
         if x not in children:                     # candidates: every node not on the current chain
-            res = kev_arrows(kev, text, ids, [(x, y) for y in ids if y not in path])
+            res = kev_arrows(kev, text, ids, [(x, y) for y in ids if y not in path], kinds)
             children[x] = [(t, c, p[c]) for _, t, c, p in res if c != "none"]
             log(f"  ask #{len(children)} {x!r}")
             for _, t, c, p in res:
@@ -190,7 +212,7 @@ def run_chain(kev: KevClient, text: str, ids: list[str], opposites: dict[str, st
               seed: int = 0, log=print, kinds: dict[str, str] | None = None) -> ChainGraph:
     start = kev.requests
     log("WALK (Kev choice)")
-    edges, chains = walk(kev, text, ids, seed=seed, log=log)
+    edges, chains = walk(kev, text, ids, seed=seed, log=log, kinds=kinds)
     log("CONNECT")
     parts = components(ids, edges)
     ok = len(parts) == 1

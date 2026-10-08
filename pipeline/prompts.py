@@ -60,6 +60,28 @@ KEV_ARROW_OPTIONS = {
 }
 
 
+def extract_events_prompt(text: str, max_nodes: int | None = None) -> str:
+    limit = (f"Return at most {max_nodes} events: the {max_nodes} most important for "
+             f"the causal chain." if max_nodes else "")
+    return render("extract_events.md", TEXT=text, NODE_LIMIT=limit)
+
+
+def extract_participants_prompt(text: str) -> str:
+    return render("extract_participants.md", TEXT=text)
+
+
+# Kev choice options for kev_agent.md (participant -> event); "yes" is drawn as an arrow.
+KEV_AGENT_OPTIONS = {
+    "yes": "the participant carries out or initiates the event in the text",
+    "no": "the text does not say the participant carries out or initiates the event",
+}
+
+
+def kev_agent_question(head: str, tail: str, node_ids: list[str]) -> dict:
+    return {"type": "choice", "criteria": KEV_AGENT_OPTIONS,
+            "instructions": render("kev_agent.md", HEAD=head, TAIL=tail, NODE_LIST=_listing(node_ids))}
+
+
 def kev_arrow_question(head: str, tail: str, node_ids: list[str]) -> dict:
     return {"type": "choice", "criteria": KEV_ARROW_OPTIONS,
             "instructions": render("kev_arrow.md", HEAD=head, TAIL=tail, NODE_LIST=_listing(node_ids))}
