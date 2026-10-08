@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --account=aip-rgrosse
 #SBATCH --job-name=kev-chain
-#SBATCH --gres=gpu:h100:1
+#SBATCH --gres=gpu:2
 #SBATCH --mem=128G
 #SBATCH --cpus-per-task=16
 #SBATCH --time=03:00:00
@@ -10,8 +10,8 @@
 # Full pipeline on world stories p0, p4, p8 (controlled_kev.json): Gemma picks events
 # and participants, Kev-27B does the walk, Gemma merges the nodes into shared concepts,
 # Kev decides missing concepts and reruns the walk, then MICE + Rubin's rules give the
-# causal Bayesian network. Gemma runs first and exits,
-# then the Kev server starts: one 80 GB GPU, used in turn (Kev-27B needs ~66 GB).
+# causal Bayesian network. Two GPUs (e.g. 2 x L40S), one model at a time: Gemma is
+# split across both by vLLM (VLLM_TP=2), Kev-27B by kev_serve_2gpu.py.
 # The first run also sets up Kev inside the job (clone, env, ~55 GB of weights);
 # later runs skip that step.
 #   sbatch run_kev_chain.sbatch
@@ -24,6 +24,8 @@ export HF_HOME=$BASE/hf_cache
 KEV_DIR=$BASE/kev
 GEMMA=$BASE/model-weights/gemma-4-31B-it
 OUT=out_kev
+PIPE=$PWD
+export VLLM_TP=2
 PORT=8009
 mkdir -p "$OUT"
 
@@ -51,10 +53,10 @@ VLLM_MAX_LEN=8192 python run.py --mode chain-nodes --backend vllm --model "$GEMM
   --texts-file controlled_kev.json --max-nodes 5 --outdir "$OUT"
 
 echo "############ starting Kev-27B server ############"
-(cd "$KEV_DIR" && .venv/bin/python -m kev.serve --run jaredpalmer/kev-27b --port $PORT) > "$OUT/kev_server.log" 2>&1 &
+(cd "$KEV_DIR" && .venv/bin/python "$PIPE/kev_serve_2gpu.py" --run jaredpalmer/kev-27b --port $PORT) > "$OUT/kev_server.log" 2>&1 &
 KEV_PID=$!
 trap 'kill $KEV_PID 2>/dev/null' EXIT
-for i in $(seq 1 120); do
+for i in $(seq 1 240); do
   curl -sf "http://127.0.0.1:$PORT/v1/models" >/dev/null && break
   kill -0 $KEV_PID 2>/dev/null || { echo "Kev server died:"; tail -40 "$OUT/kev_server.log"; exit 1; }
   sleep 10
@@ -73,9 +75,9 @@ VLLM_MAX_LEN=8192 python run.py --mode abstract --backend vllm --model "$GEMMA" 
   --graphs-glob "$OUT/*__gemma-kev.chain.json" --merge-groups 2 --outdir "$OUT"
 
 echo "############ Kev again: missing concepts (Section 2, Step 4) ############"
-(cd "$KEV_DIR" && .venv/bin/python -m kev.serve --run jaredpalmer/kev-27b --port $PORT) >> "$OUT/kev_server.log" 2>&1 &
+(cd "$KEV_DIR" && .venv/bin/python "$PIPE/kev_serve_2gpu.py" --run jaredpalmer/kev-27b --port $PORT) >> "$OUT/kev_server.log" 2>&1 &
 KEV_PID=$!
-for i in $(seq 1 120); do
+for i in $(seq 1 240); do
   curl -sf "http://127.0.0.1:$PORT/v1/models" >/dev/null && break
   kill -0 $KEV_PID 2>/dev/null || { echo "Kev server died:"; tail -40 "$OUT/kev_server.log"; exit 1; }
   sleep 10
