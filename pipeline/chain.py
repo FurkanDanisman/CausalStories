@@ -35,22 +35,27 @@ class ChainGraph:
     connected: bool = True
     balanced: bool = True                       # every arrow could be made "enables"
     renamed: dict[str, str] = field(default_factory=dict)
+    kinds: dict[str, str] = field(default_factory=dict)   # node id -> "event" | "participant"
 
     def to_json(self) -> dict:
         e = lambda es: [{"head": h, "tail": t, "rel": r, "prob": round(p, 3)} for h, t, r, p in es]
         return {"nodes": self.nodes,
                 "edges": e(self.edges), "raw_edges": e(self.raw_edges), "chains": self.chains,
                 "kev_requests": self.kev_requests, "connected": self.connected,
-                "balanced": self.balanced, "renamed": self.renamed}
+                "balanced": self.balanced, "renamed": self.renamed, "kinds": self.kinds}
 
 
 # ------------------------------------------------------------ LLM (Gemma) steps
 
-def llm_nodes(client: LLMClient, text: str, max_nodes: int | None) -> list[str]:
+def llm_nodes(client: LLMClient, text: str, max_nodes: int | None) -> dict[str, str]:
+    """Node id -> kind ("event" | "participant"), in the LLM's order."""
     out = client.complete(task="extract_nodes", schema=NodeExtraction, temperature=0.0,
                           prompt=prompts.extract_nodes_prompt(text, max_nodes))
-    ids = list(dict.fromkeys(n.id for n in out.nodes))
-    return ids[:max_nodes] if max_nodes else ids
+    kinds: dict[str, str] = {}
+    for n in out.nodes:
+        kinds.setdefault(n.id, n.kind.value)
+    ids = list(kinds)[:max_nodes] if max_nodes else list(kinds)
+    return {i: kinds[i] for i in ids}
 
 
 def llm_opposites(client: LLMClient, text: str, ids: list[str]) -> dict[str, str]:
@@ -172,6 +177,7 @@ def apply_polarity(g: ChainGraph, opposites: dict[str, str], log=print) -> Chain
                 "enables" if sign[h] * sign[t] * (-1 if r == "blocks" else 1) == 1 else "blocks", p)
                for h, t, r, p in g.edges]
     g.chains = [[name[n] for n in c] for c in g.chains]
+    g.kinds = {name[n]: k for n, k in g.kinds.items()}
     g.nodes = [name[n] for n in g.nodes]
     if not g.balanced:
         log("  a loop has an odd number of blocks arrows: at least one arrow stays 'blocks'")
@@ -181,7 +187,7 @@ def apply_polarity(g: ChainGraph, opposites: dict[str, str], log=print) -> Chain
 # ------------------------------------------------------------------ pipeline
 
 def run_chain(kev: KevClient, text: str, ids: list[str], opposites: dict[str, str],
-              seed: int = 0, log=print) -> ChainGraph:
+              seed: int = 0, log=print, kinds: dict[str, str] | None = None) -> ChainGraph:
     start = kev.requests
     log("WALK (Kev choice)")
     edges, chains = walk(kev, text, ids, seed=seed, log=log)
@@ -190,6 +196,7 @@ def run_chain(kev: KevClient, text: str, ids: list[str], opposites: dict[str, st
     ok = len(parts) == 1
     log(f"  connected: {ok}" + ("" if ok else f"  FLAGGED: {len(parts)} parts {parts}"))
     g = ChainGraph(nodes=list(ids), edges=list(edges), raw_edges=list(edges), chains=chains,
-                   kev_requests=kev.requests - start, connected=ok)
+                   kev_requests=kev.requests - start, connected=ok,
+                   kinds={n: (kinds or {}).get(n, "event") for n in ids})
     log("POLARITY")
     return apply_polarity(g, opposites, log=log)

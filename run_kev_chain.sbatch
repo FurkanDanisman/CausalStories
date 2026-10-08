@@ -8,7 +8,8 @@
 #SBATCH --output=kev-chain-%j.out
 #
 # Chain walk on world stories p0, p4, p8 (controlled_kev.json): Gemma picks the nodes
-# and their opposite names, then Kev-27B does the walk. Gemma runs first and exits,
+# and their opposite names, then Kev-27B does the walk, then Gemma merges the nodes
+# of all graphs into shared concepts. Gemma runs first and exits,
 # then the Kev server starts: one 80 GB GPU, used in turn (Kev-27B needs ~66 GB).
 # The first run also sets up Kev inside the job (clone, env, ~55 GB of weights);
 # later runs skip that step.
@@ -63,4 +64,11 @@ echo "############ Kev: chain walk on Gemma nodes ############"
 python run.py --mode chain-kev --kev-url "http://127.0.0.1:$PORT" \
   --nodes-file "$OUT/chain_nodes.json" --tag gemma-kev --outdir "$OUT"
 
-echo "Done. Everything above is also saved in $OUT/*.chain.json"
+echo "############ stopping Kev (frees the GPU for Gemma) ############"
+kill $KEV_PID 2>/dev/null; wait $KEV_PID 2>/dev/null
+
+echo "############ Gemma: merge into shared concepts (Section 2, Steps 2-3) ############"
+VLLM_MAX_LEN=8192 python run.py --mode abstract --backend vllm --model "$GEMMA" \
+  --graphs-glob "$OUT/*__gemma-kev.chain.json" --merge-groups 2 --outdir "$OUT"
+
+echo "Done. Saved in $OUT/: *.chain.json (graphs) and abstraction.json (concepts)"

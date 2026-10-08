@@ -24,7 +24,7 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
-from pipeline import aggregate, chain, dataset, evaluate, extract, prompts, visualize
+from pipeline import abstraction, aggregate, chain, dataset, evaluate, extract, prompts, visualize
 from pipeline.kev_client import KevClient
 from pipeline.llm_client import (AnthropicClient, HFClient, MockLLMClient,
                                  OllamaClient, OpenAIClient, VLLMClient)
@@ -365,12 +365,14 @@ def do_chain_nodes(args, outdir: Path) -> None:
     print(f"=== CHAIN-NODES · {_tag(args)} · {len(items)} narrative(s) · K={args.max_nodes} ===")
     out = []
     for it in items:
-        ids = chain.llm_nodes(client, it["text"], args.max_nodes)
+        kinds = chain.llm_nodes(client, it["text"], args.max_nodes)
+        ids = list(kinds)
         opp = chain.llm_opposites(client, it["text"], ids) if ids else {}
         print(f"\n[{it['id']}] {it['text']}")
         for n in ids:
-            print(f"  {n!r}   opposite: {opp.get(n)!r}")
-        out.append({"id": it["id"], "text": it["text"], "nodes": ids, "opposites": opp})
+            print(f"  {n!r} ({kinds[n]})   opposite: {opp.get(n)!r}")
+        out.append({"id": it["id"], "text": it["text"], "nodes": ids, "kinds": kinds,
+                    "opposites": opp})
     (outdir / "chain_nodes.json").write_text(json.dumps(out, indent=2))
     print(f"\nsaved {outdir}/chain_nodes.json")
 
@@ -384,7 +386,8 @@ def do_chain_kev(args, outdir: Path) -> None:
     print(f"=== CHAIN-KEV · {tag} · {len(items)} narrative(s) · {args.kev_url} ===")
     for it in items:
         print(f"\n[{it['id']}] {it['text']}")
-        g = chain.run_chain(kev, it["text"], it["nodes"], it.get("opposites", {}), seed=args.seed)
+        g = chain.run_chain(kev, it["text"], it["nodes"], it.get("opposites", {}), seed=args.seed,
+                            kinds=it.get("kinds"))
         rel = {(h, t): r for h, t, r, _ in g.edges}
         print("SUBGRAPHS (every chain the walk produced)")
         for k, c in enumerate(g.chains, 1):
@@ -397,6 +400,34 @@ def do_chain_kev(args, outdir: Path) -> None:
         data = {"tag": tag, "id": it["id"], "text": it["text"], **g.to_json()}
         (outdir / f"{it['id']}__{tag}.chain.json").write_text(json.dumps(data, indent=2))
     print(f"\nsaved *__{tag}.chain.json in {outdir}")
+
+
+def do_abstract(args, outdir: Path) -> None:
+    """Section 2, Steps 2-3: merge the nodes of all narrative graphs (--graphs-glob,
+    *.chain.json) into shared concepts with the LLM. Writes <outdir>/abstraction.json."""
+    import glob
+    files = sorted(glob.glob(args.graphs_glob))
+    if not files:
+        raise SystemExit(f"no graphs match {args.graphs_glob}")
+    graphs = [json.loads(Path(f).read_text()) for f in files]
+    client = build_client(args.backend, args.model, args.base_url)
+    print(f"=== ABSTRACT · {_tag(args)} · {len(graphs)} graph(s) · M={args.merge_groups} ===")
+    res = abstraction.abstract(client, graphs, M=args.merge_groups)
+    print("CONCEPTS")
+    for c, d in res["concepts"].items():
+        print(f"  [{d['kind']}] {c}: " + "; ".join(d["members"]))
+    print("DROPPED: " + ("; ".join(res["dropped"]) or "-"))
+    print("TABLE (1 = in the narrative, . = missing)")
+    names = list(res["concepts"])
+    for j, row in res["table"].items():
+        print(f"  {j}: " + "  ".join(f"{c}={'1' if row[c] else '.'}" for c in names))
+    print("CONCEPT-LEVEL ARROWS")
+    for j, es in res["concept_edges"].items():
+        for e in es:
+            print(f"  {j}: {e['head']} -> {e['tail']}   p={e['prob']:.2f}")
+    print("FLAGS: " + ("\n  ".join([""] + res["flags"]) if res["flags"] else "none"))
+    (outdir / "abstraction.json").write_text(json.dumps(res, indent=2))
+    print(f"\nsaved {outdir}/abstraction.json")
 
 
 def do_full(args, outdir: Path) -> None:
@@ -452,7 +483,7 @@ def main() -> None:
     ap.add_argument("--mode", default="full",
                     choices=["full", "extract", "judge", "generate", "agg-extract",
                              "agg-combine", "raw-extract", "world-extract",
-                             "chain-nodes", "chain-kev"])
+                             "chain-nodes", "chain-kev", "abstract"])
     ap.add_argument("--backend", default="mock",
                     choices=["mock", "anthropic", "openai", "ollama", "hf", "vllm"])
     ap.add_argument("--model", default=None)
@@ -476,6 +507,8 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=0, help="random start nodes (chain-kev)")
     ap.add_argument("--nodes-file", default="controlled_kev.json", help="input for chain-kev")
     ap.add_argument("--kev-url", default="http://127.0.0.1:8009", help="Kev server (chain-kev)")
+    ap.add_argument("--graphs-glob", default="out_kev/*__gemma-kev.chain.json", help="graphs to merge (abstract)")
+    ap.add_argument("--merge-groups", type=int, default=1, help="M: narrative subgroups per round (abstract)")
     ap.add_argument("--agg-min-count", type=int, default=2,
                     help="keep aggregated edges seen in >= this many variants")
     ap.add_argument("--outdir", default="out")
@@ -500,6 +533,8 @@ def main() -> None:
         do_chain_nodes(args, outdir)
     elif args.mode == "chain-kev":
         do_chain_kev(args, outdir)
+    elif args.mode == "abstract":
+        do_abstract(args, outdir)
     elif args.mode == "world-extract":
         do_world_extract(args, outdir)
     else:

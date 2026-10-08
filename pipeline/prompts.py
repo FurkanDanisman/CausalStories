@@ -118,3 +118,20 @@ def canonicalize_prompt(base_text: str, nodes_listing: str) -> str:
 def refute_prompt(text: str, events: list[str]) -> str:
     listing = "\n".join(f"  [{i}] {e}" for i, e in enumerate(events))
     return render("refute.md", TEXT=text, EVENTS=listing)
+
+
+# Naming guidance for merge_concepts.md, by node kind.
+MERGE_NAMING = {
+    "event": "Name each concept by its meaning, as a short general phrase "
+             "(e.g. \"hours were cut\", \"lost my job\" and \"was laid off\" -> \"loss of income\").",
+    "participant": "Name each concept by the participant's role in the story, not by who they are. "
+                   "The person the events happen to (e.g. \"I\", \"my brother\", \"she\") is "
+                   "\"PROTAGONIST\". Other participants get a role name in capitals (e.g. "
+                   "\"FAMILY MEMBER\", \"LANDLORD\", \"EMPLOYER\"). A narrator who only tells the "
+                   "story and does not act in it is \"DROP\".",
+}
+
+
+def merge_concepts_prompt(kind: str, items: str) -> str:
+    return render("merge_concepts.md", KIND=kind, NAMING=MERGE_NAMING[kind], ITEMS=items)
+
