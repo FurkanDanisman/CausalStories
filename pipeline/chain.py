@@ -48,18 +48,24 @@ class ChainGraph:
 
 # ------------------------------------------------------------ LLM (Gemma) step
 
-def llm_nodes(client: LLMClient, text: str, max_nodes: int | None) -> dict[str, str]:
-    """Node id -> kind. Two calls: the K most important events, then the participants."""
+def llm_nodes(client: LLMClient, text: str, max_nodes: int | None) -> tuple[dict[str, str], dict]:
+    """(node id -> kind, Gemma's raw answers). Two calls: the K most important events, then
+    the participants. The kind Gemma gives each item is kept: only items labelled "event"
+    in the event call are events (and count toward K); items labelled "participant" in
+    either call are participants."""
     ev = client.complete(task="extract_events", schema=NodeExtraction, temperature=0.0,
                          prompt=prompts.extract_events_prompt(text, max_nodes))
-    events = list(dict.fromkeys(n.id for n in ev.nodes))
-    events = events[:max_nodes] if max_nodes else events
     pa = client.complete(task="extract_participants", schema=NodeExtraction, temperature=0.0,
                          prompt=prompts.extract_participants_prompt(text))
+    raw = {"events_call": [{"id": n.id, "kind": n.kind.value} for n in ev.nodes],
+           "participants_call": [{"id": n.id, "kind": n.kind.value} for n in pa.nodes]}
+    events = list(dict.fromkeys(n.id for n in ev.nodes if n.kind.value == "event"))
+    events = events[:max_nodes] if max_nodes else events
     kinds = {e: "event" for e in events}
-    for n in pa.nodes:
-        kinds.setdefault(n.id, "participant")
-    return kinds
+    for n in list(ev.nodes) + list(pa.nodes):
+        if n.kind.value == "participant":
+            kinds.setdefault(n.id, "participant")
+    return kinds, raw
 
 
 # ------------------------------------------------------------------ Kev steps

@@ -1,14 +1,15 @@
 <!--
 NODE STEP, part 1: events only. Same definitions and inclusion rule as
 extract_nodes.md, restricted to events. Vars: {{TEXT}}, {{NODE_LIMIT}}.
-Partials: {{GUIDANCE}}.
+Partials: {{GUIDANCE_EVENTS}}.
 -->
 You identify the events of a causal graph for a natural language text.
 
-{{GUIDANCE}}
+{{GUIDANCE_EVENTS}}
 
 An event is a salient happening, in subject-verb-object form (a short natural
-language description, never a single token). Set "kind" to "event" and assign 1-3
+language description, never a single token). People, organizations, places and
+things are not events. Set "kind" to "event" and assign 1-3
 FrameNet/MAVEN `event_types` (e.g. "Releasing", "Legal_rulings", "Change_of_leadership").
 
 Include an event only if it causally contributes to the story and connects into the

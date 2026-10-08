@@ -365,12 +365,14 @@ def do_chain_nodes(args, outdir: Path) -> None:
     print(f"=== CHAIN-NODES · {_tag(args)} · {len(items)} narrative(s) · K={args.max_nodes} ===")
     out = []
     for it in items:
-        kinds = chain.llm_nodes(client, it["text"], args.max_nodes)
+        kinds, raw = chain.llm_nodes(client, it["text"], args.max_nodes)
         ids = list(kinds)
         print(f"\n[{it['id']}] {it['text']}")
+        print("  Gemma, event call:       " + ", ".join(f"{x['id']} ({x['kind']})" for x in raw["events_call"]))
+        print("  Gemma, participant call: " + ", ".join(f"{x['id']} ({x['kind']})" for x in raw["participants_call"]))
         for n in ids:
             print(f"  {n!r} ({kinds[n]})")
-        out.append({"id": it["id"], "text": it["text"], "nodes": ids, "kinds": kinds})
+        out.append({"id": it["id"], "text": it["text"], "nodes": ids, "kinds": kinds, "raw": raw})
     (outdir / "chain_nodes.json").write_text(json.dumps(out, indent=2))
     print(f"\nsaved {outdir}/chain_nodes.json")
 

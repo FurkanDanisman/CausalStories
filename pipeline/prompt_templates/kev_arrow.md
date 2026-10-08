@@ -3,9 +3,9 @@ KEV CHOICE QUESTION (instructions): the direct causal relation from HEAD to TAIL
 Same definition as extract_edges.md ({{GUIDANCE}}, "justify from the text"),
 asked as one pair at a time with the full node list. The options
 (enables / blocks / none) are in prompts.KEV_ARROW_OPTIONS.
-Vars: {{HEAD}}, {{TAIL}}, {{NODE_LIST}}. Partials: {{GUIDANCE}}.
+Vars: {{HEAD}}, {{TAIL}}, {{NODE_LIST}}. Partials: {{GUIDANCE_EVENTS}}.
 -->
-{{GUIDANCE}}
+{{GUIDANCE_EVENTS}}
 
 The nodes of this text's causal graph are:
 {{NODE_LIST}}

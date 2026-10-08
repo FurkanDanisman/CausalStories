@@ -18,7 +18,8 @@ import re
 from pathlib import Path
 
 TEMPLATE_DIR = Path(__file__).parent / "prompt_templates"
-_PARTIALS = {"GUIDANCE": "guidance.md", "WORKED_EXAMPLE": "worked_example.md"}
+_PARTIALS = {"GUIDANCE": "guidance.md", "GUIDANCE_EVENTS": "guidance_events.md",
+             "WORKED_EXAMPLE": "worked_example.md"}
 _COMMENT = re.compile(r"<!--.*?-->\s*", re.DOTALL)
 
 

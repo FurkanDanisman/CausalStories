@@ -1,18 +1,15 @@
 <!--
-NODE STEP, part 2: participants only. Vars: {{TEXT}}. Partials: {{GUIDANCE}}.
+NODE STEP, part 2: participants only. A participant is a person or organization that
+carries out or initiates an event in the story (not things or places). Vars: {{TEXT}}.
 -->
 You identify the participants of a causal graph for a natural language text.
 
-{{GUIDANCE}}
-
-A participant is a person, organization, or thing named in the text: a grammatical
-subject or object associated with the events. Set "kind" to "participant" and leave
-`event_types` empty.
-
-Include every participant who carries out or initiates an event in the text (for
-example, someone who pays, helps, evicts, fires, decides, or leaves). Include the
-narrator ("I") whenever the narrator carries out or initiates an event. Use short ids
-(e.g. "I", "sister", "landlord", "employer").
+A participant is a person or organization that carries out or initiates an event in
+the story: someone who pays, helps, evicts, fires, hires, decides, or leaves. Things
+and places (e.g. work, street, flat, bed, shelter) are not participants. Include the
+narrator ("I") only when the narrator carries out or initiates an event, not when
+events only happen to them. Set "kind" to "participant" and leave `event_types` empty.
+Use short ids (e.g. "I", "sister", "landlord", "employer").
 
 --- worked example ---
 Text: "My sister covered the rent, so the landlord did not evict me."
