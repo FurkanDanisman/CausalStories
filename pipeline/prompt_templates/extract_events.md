@@ -7,9 +7,11 @@ You identify the events of a causal graph for a natural language text.
 
 {{GUIDANCE_EVENTS}}
 
-An event is a salient happening, in subject-verb-object form (a short natural
-language description, never a single token). People, organizations, places and
-things are not events. Set "kind" to "event" and assign 1-3
+An event is a salient happening, named by what happens (a short natural language
+description). Name the event itself, never whether it happened: "eviction",
+"being homeless", "covering rent", not "eviction happened", "eviction avoided" or
+"was not evicted". Leave out who does it: "covering rent", not "sister covered
+rent". People, organizations, places and things are not events. Set "kind" to "event" and assign 1-3
 FrameNet/MAVEN `event_types` (e.g. "Releasing", "Legal_rulings", "Change_of_leadership").
 
 Include an event only if it causally contributes to the story and connects into the
@@ -21,7 +23,7 @@ self-contained ids.
 --- worked example ---
 Text: "The rebels ousted the leader to end the conflict."
 Events:
-  - {"id": "ousted the leader", "kind": "event", "event_types": ["Change_of_leadership"]}
+  - {"id": "ousting the leader", "kind": "event", "event_types": ["Change_of_leadership"]}
   - {"id": "the conflict", "kind": "event", "event_types": ["Military_operation"]}
 --- end example ---
 

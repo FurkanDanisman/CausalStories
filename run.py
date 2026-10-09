@@ -434,7 +434,7 @@ def _graphs(args) -> list[dict]:
 
 def do_implied(args, outdir: Path) -> None:
     """Section 2, Step 4 (Kev): missing event concepts -> happened / not happened /
-    cannot tell, then rerun the subgraph extraction. Writes <outdir>/implied.json."""
+    cannot tell. Writes <outdir>/implied.json."""
     graphs = _graphs(args)
     abst = json.loads((outdir / "abstraction.json").read_text())
     print(f"=== IMPLIED · {len(graphs)} graph(s) · {args.kev_url} ===")

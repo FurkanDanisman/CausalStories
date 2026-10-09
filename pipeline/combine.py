@@ -2,8 +2,7 @@
 
   Step 4  implied   (Kev)  for each narrative and each event concept it does not mention,
                            Kev reads the text: happened (1) / not happened (0) / cannot tell
-                           (stays missing). The subgraph extraction is then run again for the
-                           narrative with the concepts set to 1 or 0 added as nodes.
+                           (stays missing).
                            Participant concepts are present (1) or absent (0).
   Step 5  imputed   (MICE) the still-missing cells of the narrative x concept table are
                            imputed; arrows to or from an imputed concept are unknown.
@@ -24,7 +23,7 @@ import math
 from collections import defaultdict
 from itertools import product
 
-from . import chain, prompts
+from . import prompts
 from .kev_client import KevClient
 
 ANSWERS = ("enables", "blocks", "none")
@@ -61,14 +60,7 @@ def implied(kev: KevClient, graphs: list[dict], abst: dict, seed: int = 0, log=p
                 values[c] = {"happened": 1, "not happened": 0}.get(a["choice"])
                 pr = " ".join(f"{k}={v:.2f}" for k, v in a["probabilities"].items())
                 log(f"  {c!r}: {a['choice']}   ({pr})")
-        added = [c for c in missing if values.get(c) is not None]
-        rerun = None
-        if added:
-            nodes = list(g["nodes"]) + added
-            kinds = dict(g.get("kinds") or {}) | {c: "event" for c in added}
-            log(f"  rerun subgraph extraction with {added}")
-            rerun = chain.run_chain(kev, text, nodes, seed=seed, kinds=kinds, log=log).to_json()
-        out[j] = {"values": values, "added": added, "graph": rerun}
+        out[j] = {"values": values}
     return out
 
 
@@ -123,11 +115,9 @@ def combine(graphs: list[dict], abst: dict, imp: dict, log=print) -> dict:
     per_pair: dict[tuple[str, str], list[dict]] = defaultdict(list)
     for g in graphs:
         j = g["id"]
-        graph = imp[j]["graph"] or g
-        local = {(j, v): of[(j, v)] for v in graph["nodes"] if (j, v) in of}
-        local |= {(j, c): c for c in imp[j]["added"]}
+        local = {(j, v): of[(j, v)] for v in g["nodes"] if (j, v) in of}
         best: dict[tuple[str, str], dict] = {}
-        for a in graph.get("asked", []):
+        for a in g.get("asked", []):
             ca, cb = local.get((j, a["head"])), local.get((j, a["tail"]))
             if ca is None or cb is None or ca == cb:
                 continue

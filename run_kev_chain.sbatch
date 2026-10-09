@@ -9,7 +9,7 @@
 #
 # Full pipeline on world stories p0, p4, p8 (controlled_kev.json): Gemma picks events
 # and participants, Kev-27B does the walk, Gemma merges the nodes into shared concepts,
-# Kev decides missing concepts and reruns the walk, then MICE + Rubin's rules give the
+# Kev decides missing concepts, then MICE + Rubin's rules give the
 # causal Bayesian network. Two GPUs (e.g. 2 x L40S), one model at a time: Gemma is
 # split across both by vLLM (VLLM_TP=2), Kev-27B by kev_serve_2gpu.py.
 # The first run also sets up Kev inside the job (clone, env, ~55 GB of weights);
