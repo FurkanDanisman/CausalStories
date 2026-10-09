@@ -1,0 +1,68 @@
+#!/bin/bash
+#SBATCH --account=aip-rgrosse
+#SBATCH --job-name=kev-gd3
+#SBATCH --gres=gpu:2
+#SBATCH --mem=128G
+#SBATCH --cpus-per-task=16
+#SBATCH --time=03:00:00
+#SBATCH --output=kev-gd3-%j.out
+#
+# Section 1 only (one graph per text) on the GD3 sample: 24 open-text answers,
+# 3 random respondents x 8 questions, in gd3_texts.json (not in git; paste it on the
+# cluster). Gemma picks events and participants, Kev-27B does the walk. No merge.
+#   sbatch run_kev_gd3.sbatch
+set -uo pipefail
+
+module load gcc opencv
+source .venv/bin/activate
+BASE=$HOME/projects/aip-rgrosse/furkanbd
+export HF_HOME=$BASE/hf_cache
+KEV_DIR=$BASE/kev
+GEMMA=$BASE/model-weights/gemma-4-31B-it
+OUT=out_gd3
+PIPE=$PWD
+export VLLM_TP=2
+PORT=8009
+mkdir -p "$OUT"
+
+echo "############ Kev setup (skipped if already done) ############"
+if [ ! -f "$KEV_DIR/.setup_done" ]; then
+  set -e
+  [ -d "$KEV_DIR" ] || git clone https://github.com/jaredpalmer/kev.git "$KEV_DIR"
+  command -v uv >/dev/null || pip install uv          # into the active pipeline venv (pip --user fails inside a venv)
+  (cd "$KEV_DIR" && uv sync --extra serve \
+     && uv pip install "flash-linear-attention==0.5.2" "triton>=3.7.1" \
+     && uv run python -c "
+from huggingface_hub import snapshot_download
+from kev.checkpoint import read_meta, resolve_run
+p = resolve_run('jaredpalmer/kev-27b'); m = read_meta(p)
+print('Kev-27B adapter:', p)
+print('base:', m.base, '@', m.base_revision, '->', snapshot_download(m.base, revision=m.base_revision))
+")
+  touch "$KEV_DIR/.setup_done"
+  set +e
+fi
+export HF_HUB_OFFLINE=1
+
+echo "############ Gemma: events + participants ############"
+VLLM_MAX_LEN=8192 python run.py --mode chain-nodes --backend vllm --model "$GEMMA" \
+  --texts-file gd3_texts.json --max-nodes 5 --outdir "$OUT"
+
+echo "############ starting Kev-27B server ############"
+(cd "$KEV_DIR" && .venv/bin/python "$PIPE/kev_serve_2gpu.py" --run jaredpalmer/kev-27b --port $PORT) > "$OUT/kev_server.log" 2>&1 &
+KEV_PID=$!
+trap 'kill $KEV_PID 2>/dev/null' EXIT
+for i in $(seq 1 240); do
+  curl -sf "http://127.0.0.1:$PORT/v1/models" >/dev/null && break
+  kill -0 $KEV_PID 2>/dev/null || { echo "Kev server died:"; tail -40 "$OUT/kev_server.log"; exit 1; }
+  sleep 10
+done
+curl -s "http://127.0.0.1:$PORT/v1/models"; echo
+
+echo "############ Kev: chain walk on Gemma nodes ############"
+python run.py --mode chain-kev --kev-url "http://127.0.0.1:$PORT" \
+  --nodes-file "$OUT/chain_nodes.json" --tag gemma-kev --outdir "$OUT"
+
+echo "############ stopping Kev ############"
+kill $KEV_PID 2>/dev/null; wait $KEV_PID 2>/dev/null
+echo "Done. Saved in $OUT/: chain_nodes.json, *.chain.json"
