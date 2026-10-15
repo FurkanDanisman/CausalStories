@@ -10,11 +10,14 @@ See method_Oct.tex, Section 1. Who does what:
                             participant -> event        does X carry out or initiate Y? yes / no
                             event -> participant        not asked
                             participant -> participant  not asked
+                          With PARTICIPANT_ARROWS=paper (experiment), participant -> event and
+                          event -> participant get the enables / blocks / none question too.
   connect    algorithm    the graph must be connected; if not, the story is flagged
 """
 
 from __future__ import annotations
 
+import os
 import random
 from collections import deque
 from dataclasses import dataclass, field
@@ -78,15 +81,16 @@ def kev_arrows(kev: KevClient, text: str, ids: list[str], pairs: list[tuple[str,
     event -> participant and participant -> participant: not asked;
     event -> event: enables / blocks / none."""
     kinds = kinds or {}
+    paper = os.environ.get("PARTICIPANT_ARROWS") == "paper"   # experiment: Regan et al. participants
     asked, qs = [], {}
     for h, t in pairs:
         kh, kt = kinds.get(h, "event"), kinds.get(t, "event")
-        if kt == "participant":
+        if kh == kt == "participant" or (kt == "participant" and not paper):
             continue
-        q = (prompts.kev_agent_question(h, t, ids) if kh == "participant"
-             else prompts.kev_arrow_question(h, t, ids))
+        agent = kh == "participant" and not paper
+        q = prompts.kev_agent_question(h, t, ids) if agent else prompts.kev_arrow_question(h, t, ids)
         qs[f"q{len(asked)}"] = q
-        asked.append((h, t, kh == "participant"))
+        asked.append((h, t, agent))
     if not qs:
         return []
     ans = kev.ask(text, qs)
