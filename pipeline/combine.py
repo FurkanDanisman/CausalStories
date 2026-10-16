@@ -36,15 +36,27 @@ def concept_map(abst: dict) -> tuple[dict[tuple[str, str], str], dict[str, str]]
     of, kind = {}, {}
     for c, d in abst["concepts"].items():
         kind[c] = d["kind"]
-        for j, v in d["members"]:
-            of[(j, v)] = c
+        for m in d["members"]:
+            of[(m[0], m[1])] = c
     return of, kind
+
+
+def sign_map(abst: dict) -> dict[tuple[str, str], int]:
+    """(narrative, node) -> +1, or -1 if the node joined its concept as the opposite."""
+    return {(m[0], m[1]): (m[2] if len(m) > 2 else 1) for d in abst["concepts"].values() for m in d["members"]}
+
+
+def _flip(pr: dict) -> dict:
+    out = dict(pr)
+    out["enables"], out["blocks"] = pr.get("blocks", 0.0), pr.get("enables", 0.0)
+    return out
 
 
 # ---------------------------------------------------------------- Step 4
 
 def implied(kev: KevClient, graphs: list[dict], abst: dict, seed: int = 0, log=print) -> dict:
     of, kind = concept_map(abst)
+    sign = sign_map(abst)
     out = {}
     for g in graphs:
         j, text = g["id"], g["text"]
@@ -61,6 +73,8 @@ def implied(kev: KevClient, graphs: list[dict], abst: dict, seed: int = 0, log=p
             for i, v in enumerate(named):
                 a = ans[f"n{i}"]
                 node_val[v] = {"happened": 1, "not happened": 0}.get(a["choice"])
+                if node_val[v] is not None and sign.get((j, v), 1) < 0:
+                    node_val[v] = 1 - node_val[v]                      # opposite member: value flipped
                 node_ans[v] = {"choice": a["choice"], "probabilities": a["probabilities"]}
                 pr = " ".join(f"{k}={x:.2f}" for k, x in a["probabilities"].items())
                 log(f"  node {v!r}: {a['choice']}   ({pr})")
@@ -163,6 +177,7 @@ def rubin_cpd(qs: list[float], us: list[float]) -> dict:
 
 def combine(graphs: list[dict], abst: dict, imp: dict, log=print) -> dict:
     of, kind = concept_map(abst)
+    sign = sign_map(abst)
     concepts = list(kind)
     narr = [g["id"] for g in graphs]
 
@@ -186,6 +201,8 @@ def combine(graphs: list[dict], abst: dict, imp: dict, log=print) -> dict:
                 continue                                     # arrows of imputed concepts are unknown
             pr = {r: a["probs"].get(r, 0.0) for r in ANSWERS}
             reps = a.get("reps") or [a["probs"]]
+            if sign.get((j, a["head"]), 1) * sign.get((j, a["tail"]), 1) < 0:   # one opposite end: enables <-> blocks
+                pr, reps = _flip(pr), [_flip(r) for r in reps]
             if (ca, cb) not in best or 1 - pr["none"] > 1 - best[(ca, cb)][0]["none"]:
                 best[(ca, cb)] = (pr, reps)
         for pair, pr in best.items():

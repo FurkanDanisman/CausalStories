@@ -157,6 +157,27 @@ def refute_prompt(text: str, events: list[str]) -> str:
     return render("refute.md", TEXT=text, EVENTS=listing)
 
 
+# Kev choice options for kev_group.md / kev_group_participant.md (Section 2, Step 1).
+KEV_GROUP_OPTIONS = {
+    "same": "the event is the same kind of event as the group",
+    "opposite": "the event is the opposite of the group: one happening means the other did not",
+    "different": "the event is a different event from the group",
+}
+KEV_GROUP_P_OPTIONS = {
+    "same": "the participant plays the same role as the group",
+    "different": "the participant plays a different role from the group",
+}
+
+
+def kev_group_question(node: str, members: list[str], kind: str) -> dict:
+    listing = "\n".join(f'  - "{m}"' for m in members)
+    if kind == "participant":
+        return {"type": "choice", "criteria": KEV_GROUP_P_OPTIONS,
+                "instructions": render("kev_group_participant.md", NODE=node, MEMBERS=listing)}
+    return {"type": "choice", "criteria": KEV_GROUP_OPTIONS,
+            "instructions": render("kev_group.md", NODE=node, MEMBERS=listing)}
+
+
 # Naming guidance for merge_concepts.md, by node kind.
 MERGE_NAMING = {
     "event": "Name each concept by its meaning, as a short general phrase "

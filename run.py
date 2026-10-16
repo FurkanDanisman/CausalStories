@@ -24,7 +24,7 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
-from pipeline import abstraction, aggregate, chain, combine, dataset, evaluate, extract, prompts, visualize
+from pipeline import abstraction, aggregate, chain, combine, dataset, evaluate, extract, merge_kev, prompts, visualize
 from pipeline.kev_client import KevClient
 from pipeline.llm_client import (AnthropicClient, HFClient, MockLLMClient,
                                  OllamaClient, OpenAIClient, VLLMClient)
@@ -424,6 +424,20 @@ def do_abstract(args, outdir: Path) -> None:
     print(f"\nsaved {outdir}/abstraction.json")
 
 
+def do_merge_kev(args, outdir: Path) -> None:
+    """Section 2, Steps 1-2 (Kev): group the nodes of all narrative graphs (--graphs-glob)
+    one narrative at a time, with opposite members flagged. Writes <outdir>/abstraction.json."""
+    graphs = _graphs(args)
+    print(f"=== MERGE (Kev) · {len(graphs)} graph(s) · {args.kev_url} ===")
+    res = merge_kev.kev_merge(KevClient(args.kev_url), graphs)
+    print("GROUPS")
+    for c, d in res["concepts"].items():
+        print(f"  [{d['kind']}] {c}: " + "; ".join(f"{m[0]}: {m[1]}{' (opposite)' if m[2] < 0 else ''}"
+                                                   for m in d["members"]))
+    (outdir / "abstraction.json").write_text(json.dumps(res, indent=2))
+    print(f"\nsaved {outdir}/abstraction.json")
+
+
 def _graphs(args) -> list[dict]:
     import glob
     files = sorted(glob.glob(args.graphs_glob))
@@ -530,7 +544,7 @@ def main() -> None:
     ap.add_argument("--mode", default="full",
                     choices=["full", "extract", "judge", "generate", "agg-extract",
                              "agg-combine", "raw-extract", "world-extract",
-                             "chain-nodes", "chain-kev", "abstract", "implied", "combine"])
+                             "chain-nodes", "chain-kev", "abstract", "merge-kev", "implied", "combine"])
     ap.add_argument("--backend", default="mock",
                     choices=["mock", "anthropic", "openai", "ollama", "hf", "vllm"])
     ap.add_argument("--model", default=None)
@@ -582,6 +596,8 @@ def main() -> None:
         do_chain_kev(args, outdir)
     elif args.mode == "abstract":
         do_abstract(args, outdir)
+    elif args.mode == "merge-kev":
+        do_merge_kev(args, outdir)
     elif args.mode == "implied":
         do_implied(args, outdir)
     elif args.mode == "combine":
