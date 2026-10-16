@@ -91,6 +91,11 @@ KEV_IMPLIED_OPTIONS = {
 }
 
 
+def kev_happened_question(node: str) -> dict:
+    return {"type": "choice", "criteria": KEV_IMPLIED_OPTIONS,
+            "instructions": render("kev_happened.md", NODE=node)}
+
+
 def kev_implied_question(concept: str) -> dict:
     return {"type": "choice", "criteria": KEV_IMPLIED_OPTIONS,
             "instructions": render("kev_implied.md", CONCEPT=concept)}

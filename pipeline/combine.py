@@ -1,8 +1,10 @@
 """Section 2, Steps 4-6 and the output (see method_Oct.tex).
 
-  Step 4  implied   (Kev)  for each narrative and each event concept it does not mention,
-                           Kev reads the text: happened (1) / not happened (0) / cannot tell
-                           (stays missing).
+  Step 4  implied   (Kev)  for each narrative, every event node it names and every event
+                           concept it does not mention: Kev reads the text, happened (1) /
+                           not happened (0) / cannot tell (missing). Being named is not
+                           happening (p8: "the eviction never happened"). A named concept is
+                           1 if any of its nodes happened, 0 if all did not, else missing.
                            Participant concepts are present (1) or absent (0).
   Step 5  imputed   (MICE) the still-missing cells of the narrative x concept table are
                            imputed; arrows to or from an imputed concept are unknown.
@@ -47,12 +49,28 @@ def implied(kev: KevClient, graphs: list[dict], abst: dict, seed: int = 0, log=p
     for g in graphs:
         j, text = g["id"], g["text"]
         present = {of[(j, v)] for v in g["nodes"] if (j, v) in of}
-        values = {c: 1 for c in present}
+        values = {c: 1 for c in present if kind[c] == "participant"}   # participants: present or absent
         for c, k in kind.items():
             if c not in present and k == "participant":
-                values[c] = 0                                   # participants: present or absent
+                values[c] = 0
+        named = [v for v in g["nodes"] if (j, v) in of and kind[of[(j, v)]] == "event"]
+        log(f"[{j}] {len(named)} named event node(s)")
+        node_val, node_ans = {}, {}
+        if named:
+            ans = kev.ask(text, {f"n{i}": prompts.kev_happened_question(v) for i, v in enumerate(named)})
+            for i, v in enumerate(named):
+                a = ans[f"n{i}"]
+                node_val[v] = {"happened": 1, "not happened": 0}.get(a["choice"])
+                node_ans[v] = {"choice": a["choice"], "probabilities": a["probabilities"]}
+                pr = " ".join(f"{k}={x:.2f}" for k, x in a["probabilities"].items())
+                log(f"  node {v!r}: {a['choice']}   ({pr})")
+        for c in present:
+            if kind[c] != "event":
+                continue
+            vs = [node_val[v] for v in named if of[(j, v)] == c]
+            values[c] = 1 if 1 in vs else (0 if vs and all(x == 0 for x in vs) else None)
         missing = [c for c, k in kind.items() if k == "event" and c not in present]
-        log(f"[{j}] {len(missing)} missing event concept(s)")
+        log(f"  {len(missing)} missing event concept(s)")
         if missing:
             ans = kev.ask(text, {f"c{i}": prompts.kev_implied_question(c) for i, c in enumerate(missing)})
             for i, c in enumerate(missing):
@@ -60,7 +78,7 @@ def implied(kev: KevClient, graphs: list[dict], abst: dict, seed: int = 0, log=p
                 values[c] = {"happened": 1, "not happened": 0}.get(a["choice"])
                 pr = " ".join(f"{k}={v:.2f}" for k, v in a["probabilities"].items())
                 log(f"  {c!r}: {a['choice']}   ({pr})")
-        out[j] = {"values": values}
+        out[j] = {"values": values, "nodes": node_ans}
     return out
 
 
