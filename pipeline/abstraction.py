@@ -3,7 +3,7 @@
 Merging is a constructive abstraction (Beckers & Halpern 2019):
   Step 2  the low-level vocabulary L is the union of all narrative-level nodes, each
           tagged with its narrative; events and participants are kept apart.
-  Step 3  an LLM partitions L into concepts (plus DROP), in rounds: the narratives are
+  Step 3  an LLM partitions L into concepts (no node is dropped), in rounds: the narratives are
           split into M subgroups, each subgroup is merged, and the results are merged
           M at a time until one remains. The LLM sees each item's causes and effects.
           Rules (merge_concepts.md): R1 partition, R2 no invented concepts, R3 same
@@ -76,10 +76,9 @@ def _merge_once(client: LLMClient, items: list[Item], kind: str, edges: dict[str
     dropped: set[Key] = set()
     for i, it in enumerate(items):
         name = mapping.get(f"n{i}") or it.name                 # R1: unassigned keeps its own concept
-        if name.upper() == "DROP":
-            dropped |= it.members
-            log(f"    DROP  {it.name!r}")
-            continue
+        if name.upper() == "DROP":                             # no dropping: the item keeps its own concept
+            log(f"    (LLM said DROP for {it.name!r}; kept as its own concept)")
+            name = it.name
         merged.setdefault(name, Item(name=name, kind=kind)).members |= it.members
     return list(merged.values()), dropped
 

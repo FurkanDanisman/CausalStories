@@ -164,8 +164,7 @@ MERGE_NAMING = {
     "participant": "Name each concept by the participant's role in the story, not by who they are. "
                    "The person the events happen to (e.g. \"I\", \"my brother\", \"she\") is "
                    "\"PROTAGONIST\". Other participants get a role name in capitals (e.g. "
-                   "\"FAMILY MEMBER\", \"LANDLORD\", \"EMPLOYER\"). A narrator who only tells the "
-                   "story and does not act in it is \"DROP\".",
+                   "\"FAMILY MEMBER\", \"LANDLORD\", \"EMPLOYER\").",
 }
 
 

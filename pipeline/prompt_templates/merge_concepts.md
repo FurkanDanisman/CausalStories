@@ -15,8 +15,8 @@ Definitions (Beckers and Halpern, "Abstracting Causal Models"):
     relations: what a group of items causes at the low level, their concept must cause
     at the high level.
   * Constructive abstraction. Each concept is made from one group of items. The groups
-    do not overlap: every item is in exactly one group. Items that play no causal role
-    may be left out (DROP); every other item belongs to exactly one concept.
+    do not overlap: every item is in exactly one group. Every item belongs to exactly one
+    concept; an item that matches no other item is a concept on its own.
   * Items must work the same way. Items can be grouped only if they have the same
     effect when they happen. The paper's example: do not combine X, Y and Z into
     "X + Y + Z" if two settings with the same sum lead to different outcomes. In
@@ -28,7 +28,8 @@ Definitions (Beckers and Halpern, "Abstracting Causal Models"):
     without the other, they are one concept.
 
 Rules:
-  R1. Every item goes to exactly one concept, or to "DROP" if it has no causal role.
+  R1. Every item goes to exactly one concept. An item that matches no other item keeps a
+      concept of its own.
   R2. Use only concepts that the items support; do not invent concepts.
   R3. Merge items only if they have the same causal role: the same kind of causes
       and the same kind of effects.
@@ -43,4 +44,4 @@ Items:
 {{ITEMS}}
 
 Return a JSON object whose "mapping" maps EVERY item id (e.g. "n0") to its concept
-name, or to "DROP". Items with the same concept name are merged.
+name. Items with the same concept name are merged.
