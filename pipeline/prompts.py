@@ -189,6 +189,11 @@ MERGE_NAMING = {
 }
 
 
+def name_groups_prompt(kind: str, groups: str) -> str:
+    return render("name_groups.md", KIND="events" if kind == "event" else "participants",
+                  NAMING=MERGE_NAMING[kind], GROUPS=groups)
+
+
 def merge_concepts_prompt(kind: str, items: str) -> str:
     return render("merge_concepts.md", KIND=kind, NAMING=MERGE_NAMING[kind], ITEMS=items)
 

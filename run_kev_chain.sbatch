@@ -9,9 +9,10 @@
 #
 # Full pipeline: Gemma picks events and participants; Kev-27B does the walk, groups the
 # nodes across narratives one narrative at a time (opposites flagged), and decides what
-# happened; then MICE x30 and the random-effects meta-analysis give the causal Bayesian
-# network. Two GPUs (e.g. 2 x L40S), one model at a time: Gemma is split across both by
-# vLLM (VLLM_TP=2), Kev-27B by kev_serve_2gpu.py. Kev is loaded once.
+# happened; Gemma gives each group a high-level name in between; then MICE x30 and the
+# random-effects meta-analysis give the causal Bayesian network. Two GPUs (e.g. 2 x L40S),
+# one model at a time: Gemma is split across both by vLLM (VLLM_TP=2), Kev-27B by
+# kev_serve_2gpu.py.
 # The first run also sets up Kev inside the job (clone, env, ~55 GB of weights);
 # later runs skip that step.
 #   sbatch run_kev_chain.sbatch
@@ -73,7 +74,20 @@ echo "############ Kev: merge, one narrative at a time (Section 2, Steps 1-2) ##
 python run.py --mode merge-kev --kev-url "http://127.0.0.1:$PORT" \
   --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT"
 
-echo "############ Kev: did it happen? (Section 2, Step 3) ############"
+echo "############ stopping Kev (frees the GPU for Gemma) ############"
+kill $KEV_PID 2>/dev/null; wait $KEV_PID 2>/dev/null
+
+echo "############ Gemma: high-level names for the groups (Section 2, Step 1) ############"
+VLLM_MAX_LEN=8192 python run.py --mode name-groups --backend vllm --model "$GEMMA" --outdir "$OUT"
+
+echo "############ Kev again: did it happen? (Section 2, Step 3) ############"
+(cd "$KEV_DIR" && .venv/bin/python "$PIPE/kev_serve_2gpu.py" --run jaredpalmer/kev-27b --port $PORT) >> "$OUT/kev_server.log" 2>&1 &
+KEV_PID=$!
+for i in $(seq 1 240); do
+  curl -sf "http://127.0.0.1:$PORT/v1/models" >/dev/null && break
+  kill -0 $KEV_PID 2>/dev/null || { echo "Kev server died:"; tail -40 "$OUT/kev_server.log"; exit 1; }
+  sleep 10
+done
 python run.py --mode implied --kev-url "http://127.0.0.1:$PORT" \
   --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT"
 kill $KEV_PID 2>/dev/null; wait $KEV_PID 2>/dev/null

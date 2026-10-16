@@ -438,6 +438,17 @@ def do_merge_kev(args, outdir: Path) -> None:
     print(f"\nsaved {outdir}/abstraction.json")
 
 
+def do_name_groups(args, outdir: Path) -> None:
+    """Section 2, Step 1 naming (LLM): high-level names for the groups in
+    <outdir>/abstraction.json, written back in place."""
+    abst = json.loads((outdir / "abstraction.json").read_text())
+    client = build_client(args.backend, args.model, args.base_url)
+    print(f"=== NAME GROUPS · {_tag(args)} · {len(abst['concepts'])} group(s) ===")
+    abst = merge_kev.name_groups(client, abst)
+    (outdir / "abstraction.json").write_text(json.dumps(abst, indent=2))
+    print(f"\nsaved {outdir}/abstraction.json")
+
+
 def _graphs(args) -> list[dict]:
     import glob
     files = sorted(glob.glob(args.graphs_glob))
@@ -544,7 +555,7 @@ def main() -> None:
     ap.add_argument("--mode", default="full",
                     choices=["full", "extract", "judge", "generate", "agg-extract",
                              "agg-combine", "raw-extract", "world-extract",
-                             "chain-nodes", "chain-kev", "abstract", "merge-kev", "implied", "combine"])
+                             "chain-nodes", "chain-kev", "abstract", "merge-kev", "name-groups", "implied", "combine"])
     ap.add_argument("--backend", default="mock",
                     choices=["mock", "anthropic", "openai", "ollama", "hf", "vllm"])
     ap.add_argument("--model", default=None)
@@ -598,6 +609,8 @@ def main() -> None:
         do_abstract(args, outdir)
     elif args.mode == "merge-kev":
         do_merge_kev(args, outdir)
+    elif args.mode == "name-groups":
+        do_name_groups(args, outdir)
     elif args.mode == "implied":
         do_implied(args, outdir)
     elif args.mode == "combine":

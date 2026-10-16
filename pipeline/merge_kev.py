@@ -10,13 +10,17 @@ then align their direction. Replaces the Gemma merge (abstraction.py).
           "opposite" answer starts its own group. No node is dropped.
   Step 2  a node that joined as "opposite" gets sign -1: its value is flipped (Step 3)
           and its arrows flip enables <-> blocks (Step 5).
-A group is named after its first member.
+Naming (LLM, after Kev has grouped): each group gets a high-level concept name, events
+by meaning and participants by role (name_groups.md); until then a group is labelled by
+its first member.
 """
 
 from __future__ import annotations
 
 from . import prompts
 from .kev_client import KevClient
+from .llm_client import LLMClient
+from .schema import NodeClustering
 
 
 def kev_merge(kev: KevClient, graphs: list[dict], log=print) -> dict:
@@ -77,3 +81,39 @@ def kev_merge(kev: KevClient, graphs: list[dict], log=print) -> dict:
         concept_edges[j] = es
     return {"concepts": concepts, "dropped": [], "table": table,
             "concept_edges": concept_edges, "decisions": decisions}
+
+
+def name_groups(client: LLMClient, abst: dict, log=print) -> dict:
+    """High-level names for Kev's groups, one LLM call per kind. Renames the concepts in
+    abst (concepts, table, concept_edges); the grouping itself is unchanged."""
+    rename: dict[str, str] = {}
+    for kind in ("event", "participant"):
+        names = [c for c, d in abst["concepts"].items() if d["kind"] == kind]
+        if not names:
+            continue
+        lines = []
+        for i, c in enumerate(names):
+            ms = "; ".join(f'"{m[1]}"' + (" (opposite)" if m[2] < 0 else "") for m in abst["concepts"][c]["members"])
+            lines.append(f"  g{i}: {ms}")
+        try:
+            out = client.complete(task="name_groups", schema=NodeClustering, temperature=0.0,
+                                  prompt=prompts.name_groups_prompt(kind, "\n".join(lines)))
+            mapping = {k.strip(): v.strip() for k, v in out.mapping.items()}
+        except Exception as e:
+            log(f"  naming failed ({type(e).__name__}: {e}); groups keep their labels")
+            mapping = {}
+        used = set(rename.values())
+        for i, c in enumerate(names):
+            new = mapping.get(f"g{i}") or c
+            base, n = new, 2
+            while new in used:                      # different groups keep different names
+                new, n = f"{base} ({n})", n + 1
+            used.add(new)
+            rename[c] = new
+            log(f"  [{kind}] {new}  <-  " + "; ".join(m[1] for m in abst["concepts"][c]["members"]))
+    abst["concepts"] = {rename[c]: d for c, d in abst["concepts"].items()}
+    abst["table"] = {j: {rename[c]: v for c, v in row.items()} for j, row in abst["table"].items()}
+    abst["concept_edges"] = {j: [{**e, "head": rename[e["head"]], "tail": rename[e["tail"]]} for e in es]
+                             for j, es in abst["concept_edges"].items()}
+    abst["labels"] = {new: old for old, new in rename.items()}
+    return abst
