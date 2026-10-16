@@ -38,15 +38,16 @@ class ChainGraph:
     kev_requests: int = 0
     connected: bool = True
     kinds: dict[str, str] = field(default_factory=dict)   # node id -> "event" | "participant"
-    asked: list[tuple[str, str, dict]] = field(default_factory=list)  # every pair asked + probabilities
+    asked: list[tuple] = field(default_factory=list)  # every pair asked: (head, tail, mean probs, per-repeat probs)
 
     def to_json(self) -> dict:
         return {"nodes": self.nodes,
                 "edges": [{"head": h, "tail": t, "rel": r, "prob": round(p, 3)} for h, t, r, p in self.edges],
                 "chains": self.chains, "kev_requests": self.kev_requests,
                 "connected": self.connected, "kinds": self.kinds,
-                "asked": [{"head": h, "tail": t, "probs": {k: round(v, 4) for k, v in pr.items()}}
-                          for h, t, pr in self.asked]}
+                "asked": [{"head": h, "tail": t, "probs": {k: round(v, 4) for k, v in pr.items()},
+                           "reps": [{k: round(v, 4) for k, v in r.items()} for r in reps]}
+                          for h, t, pr, reps in self.asked]}
 
 
 # ------------------------------------------------------------ LLM (Gemma) step
@@ -73,10 +74,23 @@ def llm_nodes(client: LLMClient, text: str, max_nodes: int | None) -> tuple[dict
 
 # ------------------------------------------------------------------ Kev steps
 
+REPEATS = int(os.environ.get("KEV_REPEATS", "2"))   # each question asked R times, options reordered
+
+
+def _reordered(q: dict, k: int) -> dict:
+    """Repeat k of question q: options rotated by k, and reversed on odd k."""
+    items = list(q["criteria"].items())
+    items = items[k % len(items):] + items[:k % len(items)]
+    if k % 2:
+        items = items[::-1]
+    return {**q, "criteria": dict(items)}
+
+
 def kev_arrows(kev: KevClient, text: str, ids: list[str], pairs: list[tuple[str, str]],
                kinds: dict[str, str] | None = None) -> list[tuple[str, str, str, dict]]:
-    """One Kev request, one choice question per (head, tail) pair. Returns
-    (head, tail, most likely option, probabilities over enables / blocks / none).
+    """One Kev request, one choice question per (head, tail) pair, each asked REPEATS times
+    with the options reordered. Returns (head, tail, most likely option by mean probability,
+    mean probabilities over enables / blocks / none, per-repeat probabilities).
     participant -> event: "does head carry out or initiate tail?" (yes = enables arrow);
     event -> participant and participant -> participant: not asked;
     event -> event: enables / blocks / none."""
@@ -93,16 +107,15 @@ def kev_arrows(kev: KevClient, text: str, ids: list[str], pairs: list[tuple[str,
         asked.append((h, t, agent))
     if not qs:
         return []
-    ans = kev.ask(text, qs)
+    ans = kev.ask(text, {f"{qid}_{k}": _reordered(q, k) for qid, q in qs.items() for k in range(REPEATS)})
     out = []
     for i, (h, t, agent) in enumerate(asked):
-        a = ans[f"q{i}"]
-        if agent:                                    # yes -> enables arrow, no -> none
-            pr = a["probabilities"]
-            out.append((h, t, "enables" if a["choice"] == "yes" else "none",
-                        {"enables": pr["yes"], "blocks": 0.0, "none": pr["no"]}))
-        else:
-            out.append((h, t, a["choice"], a["probabilities"]))
+        reps = []
+        for k in range(REPEATS):
+            pr = ans[f"q{i}_{k}"]["probabilities"]
+            reps.append({"enables": pr["yes"], "blocks": 0.0, "none": pr["no"]} if agent else dict(pr))
+        mean = {r: sum(x[r] for x in reps) / REPEATS for r in reps[0]}
+        out.append((h, t, max(mean, key=mean.get), mean, reps))   # the walk uses the mean
     return out
 
 
@@ -116,10 +129,10 @@ def walk(kev: KevClient, text: str, ids: list[str], seed: int = 0, log=print,
         x = path[-1]
         if x not in children:                     # candidates: every node not on the current chain
             res = kev_arrows(kev, text, ids, [(x, y) for y in ids if y not in path], kinds)
-            children[x] = [(t, c, p[c]) for _, t, c, p in res if c != "none"]
-            asked.extend((h, t, p) for h, t, _, p in res)
+            children[x] = [(t, c, p[c]) for _, t, c, p, _ in res if c != "none"]
+            asked.extend((h, t, p, reps) for h, t, _, p, reps in res)
             log(f"  ask #{len(children)} {x!r}")
-            for _, t, c, p in res:
+            for _, t, c, p, _ in res:
                 probs = " ".join(f"{k}={v:.2f}" for k, v in p.items())
                 log(f"      -> {t!r}: {c.upper() if c != 'none' else 'none'}   ({probs})")
         return children[x]

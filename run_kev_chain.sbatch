@@ -15,6 +15,7 @@
 # The first run also sets up Kev inside the job (clone, env, ~55 GB of weights);
 # later runs skip that step.
 #   sbatch run_kev_chain.sbatch
+#   sbatch --export=ALL,TEXTS=world10.json,OUT=out_world10 run_kev_chain.sbatch   (all 10 world stories)
 set -uo pipefail
 
 module load gcc opencv
@@ -23,7 +24,8 @@ BASE=$HOME/projects/aip-rgrosse/furkanbd
 export HF_HOME=$BASE/hf_cache
 KEV_DIR=$BASE/kev
 GEMMA=$BASE/model-weights/gemma-4-31B-it
-OUT=out_kev
+OUT=${OUT:-out_kev}
+TEXTS=${TEXTS:-controlled_kev.json}
 PIPE=$PWD
 export VLLM_TP=2
 PORT=8009
@@ -50,7 +52,7 @@ export HF_HUB_OFFLINE=1
 
 echo "############ Gemma: events + participants ############"
 VLLM_MAX_LEN=8192 python run.py --mode chain-nodes --backend vllm --model "$GEMMA" \
-  --texts-file controlled_kev.json --max-nodes 5 --outdir "$OUT"
+  --texts-file "$TEXTS" --max-nodes 5 --outdir "$OUT"
 
 echo "############ starting Kev-27B server ############"
 (cd "$KEV_DIR" && .venv/bin/python "$PIPE/kev_serve_2gpu.py" --run jaredpalmer/kev-27b --port $PORT) > "$OUT/kev_server.log" 2>&1 &

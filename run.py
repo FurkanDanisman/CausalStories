@@ -446,8 +446,9 @@ def do_implied(args, outdir: Path) -> None:
 
 
 def do_combine(args, outdir: Path) -> None:
-    """Section 2, Steps 5-6 and the output (no model): MICE, Rubin's rules, causal
-    Bayesian network. Writes <outdir>/network.json."""
+    """Section 2, Steps 4-5 and the output (no model): MICE x30, random-effects
+    meta-analysis, causal Bayesian network (Rubin's rules over the imputations).
+    Writes <outdir>/network.json."""
     graphs = _graphs(args)
     abst = json.loads((outdir / "abstraction.json").read_text())
     imp = json.loads((outdir / "implied.json").read_text())
@@ -462,7 +463,8 @@ def do_combine(args, outdir: Path) -> None:
     for p in res["pairs"]:
         cells = "  ".join(f"{(r.upper() if r == p['displayed'] else r)} {a['estimate']:.2f} "
                           f"[{a['ci95'][0]:.2f}, {a['ci95'][1]:.2f}]" for r, a in p["answers"].items())
-        print(f"  {p['head']} -> {p['tail']} (n={p['n']}): {cells}")
+        tau = p["answers"][p["displayed"]]["tau2"]
+        print(f"  {p['head']} -> {p['tail']} (n={p['n']}, tau2={tau:.2f}): {cells}")
     print("CAUSAL BAYESIAN NETWORK")
     for a in res["network"]["arrows"]:
         print(f"  {a['head']} {'-|' if a['rel'] == 'blocks' else '->'} {a['tail']}   "
@@ -470,7 +472,7 @@ def do_combine(args, outdir: Path) -> None:
     for b, cpd in res["network"]["cpds"].items():
         for r in cpd["rows"]:
             cond = ", ".join(f"{k}={v}" for k, v in r["parents"].items()) or "-"
-            print(f"  P({b}=1 | {cond}) = {r['p_1']:.2f}  (n={r['n']})")
+            print(f"  P({b}=1 | {cond}) = {r['p_1']:.2f} [{r['ci95'][0]:.2f}, {r['ci95'][1]:.2f}]  (n={r['n']})")
     (outdir / "network.json").write_text(json.dumps(res, indent=2))
     print(f"saved {outdir}/network.json")
 
