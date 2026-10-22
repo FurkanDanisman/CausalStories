@@ -482,17 +482,21 @@ def do_node_happened(args, outdir: Path) -> None:
 
 
 def do_connect(args, outdir: Path) -> None:
-    """Connect the inferred groups to each story graph. New nodes = the event groups a story
-    does not name but Jev inferred as happened / not happened (implied.json; "cannot tell"
-    is left out), shown by their group name. Jev is asked every pair that involves a new
-    node, in both directions (event -> event and participant -> event: enables / blocks /
-    none; event -> participant: positive / negative / none), one request per story; when
-    both directions come back as arrows, only the more probable one is kept. The existing
-    graph is not changed. Writes <outdir>/<id>__connect.json."""
+    """Connect the inferred groups to each story graph, on top of the existing graph. New
+    nodes = the event groups a story does not name but Jev inferred as happened / not
+    happened (implied.json; "cannot tell" is left out), shown by their group name.
+    Walk (same rules as the chain walk): start from a random new node; when a node is first
+    reached it is asked only about nodes NOT on the current path (a new node about every
+    such node, an existing node only about the new ones; its existing arrows are reused, not
+    asked again); follow every child; restart from a node no path has reached, until every
+    node is on a path. Existing arrows are never changed. New event -> participant arrows
+    come from the separate influence question, as in the influence walk.
+    Writes <outdir>/<id>__connect.json."""
+    import random
     graphs = _graphs(args)
     abst = json.loads((outdir / "abstraction.json").read_text())
     imp = json.loads((outdir / "implied.json").read_text())
-    print(f"=== CONNECT · {len(graphs)} graph(s) · {args.kev_url} ===")
+    print(f"=== CONNECT (walk on top of the existing graphs) · {len(graphs)} graph(s) · {args.kev_url} ===")
 
     def one(g):
         j, kinds = g["id"], dict(g.get("kinds") or {})
@@ -504,33 +508,67 @@ def do_connect(args, outdir: Path) -> None:
                 name = c if c not in g["nodes"] else f"{c} (group)"
                 new[name] = {"group": c, "value": v}
         if not new:
-            return {"new_nodes": {}, "edges": [], "asked": []}
+            return {"new_nodes": {}, "edges": [], "asked": [], "chains": []}
         ids = list(g["nodes"]) + list(new)
         kinds.update({n: "event" for n in new})
-        pairs = [(a, b) for a in ids for b in ids if a != b and (a in new or b in new)]
-        res = chain.kev_arrows(KevClient(args.kev_url), g["text"], ids, pairs, kinds, into_participants=True)
-        found = {(h, t): (c, p[c], p) for h, t, c, p, _ in res}
-        edges = []
-        for (h, t), (c, pr, _) in found.items():
-            if c == "none":
-                continue
-            back = found.get((t, h))
-            if back and back[0] != "none" and (back[1] > pr or (back[1] == pr and (t, h) < (h, t))):
-                continue                                   # both directions: keep the more probable one
-            edges.append({"head": h, "tail": t, "rel": c, "prob": round(pr, 3)})
-        return {"new_nodes": new, "edges": edges,
-                "asked": [{"head": h, "tail": t, "probs": {k: round(v, 4) for k, v in p.items()}}
-                          for (h, t), (_, _, p) in found.items()]}
+        kev = KevClient(args.kev_url)
+        old = {}
+        for e in g["edges"]:
+            if kinds.get(e["tail"], "event") != "participant":          # existing chain arrows, reused
+                old.setdefault(e["head"], []).append((e["tail"], e["rel"], e["prob"]))
+        children, asked, added, log = {}, [], [], []
+
+        def ask(path):
+            x = path[-1]
+            if x not in children:
+                cand = [y for y in ids if y not in path and (x in new or y in new)]
+                res = chain.kev_arrows(kev, g["text"], ids, [(x, y) for y in cand], kinds) if cand else []
+                got = [(t, c, p[c]) for _, t, c, p, _ in res if c != "none"]
+                asked.extend({"head": x, "tail": t, "probs": {k: round(v, 4) for k, v in p.items()}}
+                             for _, t, _, p, _ in res)
+                added.extend({"head": x, "tail": t, "rel": c, "prob": round(pr, 3)} for t, c, pr in got)
+                children[x] = old.get(x, []) + got
+                log.append(f"  ask {x!r} (path {' > '.join(path)}): " +
+                           (", ".join(f"{t} {c} {pr:.2f}" for t, c, pr in got) or "no new arrows"))
+            return children[x]
+
+        chains = []
+
+        def expand(path):
+            kids = [t for t, _, _ in ask(path) if t not in path]
+            if not kids:
+                chains.append(path)
+                return
+            for t in kids:
+                expand(path + [t])
+
+        rng = random.Random(args.seed)
+        unvisited = list(new)                                         # start from the new nodes
+        while unvisited:
+            start = rng.choice(unvisited)
+            log.append(f"  start at {start!r}")
+            expand([start])
+            on = {n for c in chains for n in c}
+            unvisited = [n for n in new if n not in on] or [n for n in ids if n not in on]
+        # new event -> participant: the influence question, as in the influence walk
+        parts = [n for n in g["nodes"] if kinds.get(n) == "participant"]
+        pairs = [(e, p) for e in new for p in parts]
+        if pairs:
+            for h, t, c, p, _ in chain.kev_arrows(kev, g["text"], ids, pairs, kinds, into_participants=True):
+                asked.append({"head": h, "tail": t, "probs": {k: round(v, 4) for k, v in p.items()}})
+                if c != "none":
+                    added.append({"head": h, "tail": t, "rel": c, "prob": round(p[c], 3)})
+        return {"new_nodes": new, "edges": added, "asked": asked, "chains": chains, "log": log}
 
     from concurrent.futures import ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
         res = list(pool.map(one, graphs))
     for g, r in zip(graphs, res):
         print(f"[{g['id']}] new: " + ", ".join(f"{n}={d['value']}" for n, d in r["new_nodes"].items()))
+        print("\n".join(r.get("log", [])))
         for e in r["edges"]:
-            print(f"    {e['head']} {'-|' if e['rel'] == 'blocks' else '->'} {e['tail']}   p={e['prob']:.2f}")
+            print(f"    + {e['head']} {'-|' if e['rel'] == 'blocks' else '->'} {e['tail']}   p={e['prob']:.2f}")
         (outdir / f"{g['id']}__connect.json").write_text(json.dumps(r, indent=2))
-
 
 def _graphs(args) -> list[dict]:
     import glob
