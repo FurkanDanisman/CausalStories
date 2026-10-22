@@ -74,7 +74,7 @@ def llm_nodes(client: LLMClient, text: str, max_nodes: int | None) -> tuple[dict
 
 # ------------------------------------------------------------------ Kev steps
 
-REPEATS = int(os.environ.get("KEV_REPEATS", "2"))   # each question asked R times, options reordered
+REPEATS = int(os.environ.get("KEV_REPEATS", "1"))   # each question asked R times, options reordered (1 = once)
 
 
 def _reordered(q: dict, k: int) -> dict:
