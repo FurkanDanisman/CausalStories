@@ -8,8 +8,10 @@ See method_Oct.tex, Section 1. Who does what:
                           unvisited nodes. Questions by pair type:
                             event -> event              enables / blocks / none
                             participant -> event        enables / blocks / none
-                            event -> participant        positive / negative / none influence
-                                                        (kev_influence.md; drawn like enables / blocks)
+                            event -> participant        not in this walk: a separate influence walk
+                                                        asks every event about every participant,
+                                                        positive / negative / none (kev_influence.md;
+                                                        drawn like enables / blocks)
                             participant -> participant  not asked
                           PARTICIPANT_ARROWS=agent switches back to the yes/no "carries out" question.
   connect    algorithm    the graph must be connected; if not, the story is flagged
@@ -87,7 +89,7 @@ def _reordered(q: dict, k: int) -> dict:
 
 
 def kev_arrows(kev: KevClient, text: str, ids: list[str], pairs: list[tuple[str, str]],
-               kinds: dict[str, str] | None = None) -> list[tuple[str, str, str, dict]]:
+               kinds: dict[str, str] | None = None, into_participants: bool = False) -> list[tuple[str, str, str, dict]]:
     """One Kev request, one choice question per (head, tail) pair, each asked REPEATS times
     with the options reordered. Returns (head, tail, most likely option by mean probability,
     mean probabilities over enables / blocks / none, per-repeat probabilities).
@@ -99,8 +101,8 @@ def kev_arrows(kev: KevClient, text: str, ids: list[str], pairs: list[tuple[str,
     asked, qs = [], {}
     for h, t in pairs:
         kh, kt = kinds.get(h, "event"), kinds.get(t, "event")
-        if kh == kt == "participant" or (kt == "participant" and not paper):
-            continue
+        if kh == kt == "participant" or (kt == "participant" and not (paper and into_participants)):
+            continue                                   # event -> participant only in the influence walk
         agent = kh == "participant" and not paper
         influence = kt == "participant" and paper              # event -> participant: positive / negative
         q = (prompts.kev_agent_question(h, t, ids) if agent else
@@ -187,12 +189,35 @@ def components(ids: list[str], edges: list[Edge]) -> list[list[str]]:
 
 # ------------------------------------------------------------------ pipeline
 
+def influence_walk(kev: KevClient, text: str, ids: list[str], kinds: dict[str, str] | None = None,
+                   log=print):
+    """Walk 2, separate from the chain walk: every event is asked once about every participant,
+    positive / negative / no influence (kev_influence.md). Nothing leaves a participant here,
+    so each path is one step. Returns (edges, asked)."""
+    kinds = kinds or {}
+    events = [n for n in ids if kinds.get(n, "event") == "event"]
+    parts = [n for n in ids if kinds.get(n, "event") == "participant"]
+    pairs = [(e, p) for e in events for p in parts]
+    if not pairs:
+        return [], []
+    res = kev_arrows(kev, text, ids, pairs, kinds, into_participants=True)
+    for h, t, c, p, _ in res:
+        probs = " ".join(f"{k}={v:.2f}" for k, v in p.items())
+        log(f"  {h!r} -> {t!r}: {({'enables': 'POSITIVE', 'blocks': 'NEGATIVE'}).get(c, 'none')}   ({probs})")
+    edges = [(h, t, c, p[c]) for h, t, c, p, _ in res if c != "none"]
+    return edges, [(h, t, p, reps) for h, t, _, p, reps in res]
+
+
 def run_chain(kev: KevClient, text: str, ids: list[str], seed: int = 0, log=print,
               kinds: dict[str, str] | None = None) -> ChainGraph:
     start = kev.requests
-    log("WALK (Kev choice)")
+    log("WALK 1 (chain walk: event -> event, participant -> event)")
     edges, chains, asked = walk(kev, text, ids, seed=seed, log=log, kinds=kinds)
-    log("CONNECT")
+    if os.environ.get("PARTICIPANT_ARROWS", "paper") == "paper":
+        log("WALK 2 (influence: event -> participant)")
+        e2, a2 = influence_walk(kev, text, ids, kinds, log=log)
+        edges, asked = list(edges) + e2, list(asked) + a2
+    log("CONNECT (both walks)")
     parts = components(ids, edges)
     ok = len(parts) == 1
     log(f"  connected: {ok}" + ("" if ok else f"  FLAGGED: {len(parts)} parts {parts}"))
