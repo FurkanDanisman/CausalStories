@@ -4,16 +4,16 @@ then align their direction. Replaces the Gemma merge (abstraction.py).
   Step 1  narratives are taken one at a time. Each node of the first narrative starts a
           group. For each later narrative, every node is compared with every existing
           group of the same kind in one Kev request: events get "same / opposite /
-          different", participants "same / different". Each node joins the group with
-          its most probable "same" or "opposite" answer; several nodes of one narrative
-          may join the same group (each keeps its own node, with the group's name). A
-          node with no "same" or "opposite" answer starts its own group. No node is
-          dropped.
+          different", participants "same / different". Assignment takes the most
+          probable (node, group) pair first; a group takes at most one node per
+          narrative and a node joins at most one group. A node with no "same" or
+          "opposite" answer starts its own group. No node is dropped.
   Step 2  a node that joined as "opposite" gets sign -1: its value is flipped (Step 3)
           and its arrows flip enables <-> blocks (Step 5).
 Naming (LLM, after Kev has grouped): each group gets a high-level concept name, events
-by meaning and participants by role (name_groups.md); until then a group is labelled by
-its first member.
+by meaning and participants by role (name_groups.md); a group with opposite members also
+gets the high-level name of its opposite meaning ("opposite_name"), shown on those
+members' nodes. Until then a group is labelled by its first member.
 """
 
 from __future__ import annotations
@@ -49,10 +49,12 @@ def kev_merge(kev: KevClient, graphs: list[dict], log=print) -> dict:
                                   "probs": {r: round(x, 4) for r, x in pr.items()}, "choice": choice})
                 if choice in ("same", "opposite"):
                     cands.append((pr[choice], v, gi, 1 if choice == "same" else -1))
-        placed = {}
+        placed, taken = {}, set()
         for p, v, gi, sign in sorted(cands, key=lambda c: -c[0]):
-            if v not in placed:                            # best group for each node; groups may take several
-                placed[v] = (gi, sign)
+            if v in placed or gi in taken:
+                continue
+            placed[v] = (gi, sign)
+            taken.add(gi)
         log(f"[{j}]")
         for v in nodes:
             if v in placed:
@@ -104,12 +106,17 @@ def name_groups(client: LLMClient, abst: dict, log=print) -> dict:
         used = set(rename.values())
         for i, c in enumerate(names):
             new = mapping.get(f"g{i}") or c
+            opp_name = mapping.get(f"g{i}-opposite")
+            if opp_name and any(m[2] < 0 for m in abst["concepts"][c]["members"]):
+                abst["concepts"][c]["opposite_name"] = opp_name   # shown on opposite members' nodes
             base, n = new, 2
             while new in used:                      # different groups keep different names
                 new, n = f"{base} ({n})", n + 1
             used.add(new)
             rename[c] = new
-            log(f"  [{kind}] {new}  <-  " + "; ".join(m[1] for m in abst["concepts"][c]["members"]))
+            log(f"  [{kind}] {new}" + (f" / opposite: {abst['concepts'][c]['opposite_name']}"
+                                       if "opposite_name" in abst["concepts"][c] else "")
+                + "  <-  " + "; ".join(m[1] for m in abst["concepts"][c]["members"]))
     abst["concepts"] = {rename[c]: d for c, d in abst["concepts"].items()}
     abst["table"] = {j: {rename[c]: v for c, v in row.items()} for j, row in abst["table"].items()}
     abst["concept_edges"] = {j: [{**e, "head": rename[e["head"]], "tail": rename[e["tail"]]} for e in es]
