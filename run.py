@@ -481,6 +481,57 @@ def do_node_happened(args, outdir: Path) -> None:
         (outdir / f"{g['id']}__happened.json").write_text(json.dumps(r, indent=2))
 
 
+def do_connect(args, outdir: Path) -> None:
+    """Connect the inferred groups to each story graph. New nodes = the event groups a story
+    does not name but Jev inferred as happened / not happened (implied.json; "cannot tell"
+    is left out), shown by their group name. Jev is asked every pair that involves a new
+    node, in both directions (event -> event and participant -> event: enables / blocks /
+    none; event -> participant: positive / negative / none), one request per story; when
+    both directions come back as arrows, only the more probable one is kept. The existing
+    graph is not changed. Writes <outdir>/<id>__connect.json."""
+    graphs = _graphs(args)
+    abst = json.loads((outdir / "abstraction.json").read_text())
+    imp = json.loads((outdir / "implied.json").read_text())
+    print(f"=== CONNECT · {len(graphs)} graph(s) · {args.kev_url} ===")
+
+    def one(g):
+        j, kinds = g["id"], dict(g.get("kinds") or {})
+        present = {c for c, d in abst["concepts"].items() if any(m[0] == j for m in d["members"])}
+        new = {}
+        for c, d in abst["concepts"].items():
+            v = imp.get(j, {}).get("values", {}).get(c)
+            if d["kind"] == "event" and c not in present and v in (0, 1):
+                name = c if c not in g["nodes"] else f"{c} (group)"
+                new[name] = {"group": c, "value": v}
+        if not new:
+            return {"new_nodes": {}, "edges": [], "asked": []}
+        ids = list(g["nodes"]) + list(new)
+        kinds.update({n: "event" for n in new})
+        pairs = [(a, b) for a in ids for b in ids if a != b and (a in new or b in new)]
+        res = chain.kev_arrows(KevClient(args.kev_url), g["text"], ids, pairs, kinds, into_participants=True)
+        found = {(h, t): (c, p[c], p) for h, t, c, p, _ in res}
+        edges = []
+        for (h, t), (c, pr, _) in found.items():
+            if c == "none":
+                continue
+            back = found.get((t, h))
+            if back and back[0] != "none" and (back[1] > pr or (back[1] == pr and (t, h) < (h, t))):
+                continue                                   # both directions: keep the more probable one
+            edges.append({"head": h, "tail": t, "rel": c, "prob": round(pr, 3)})
+        return {"new_nodes": new, "edges": edges,
+                "asked": [{"head": h, "tail": t, "probs": {k: round(v, 4) for k, v in p.items()}}
+                          for (h, t), (_, _, p) in found.items()]}
+
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=args.workers) as pool:
+        res = list(pool.map(one, graphs))
+    for g, r in zip(graphs, res):
+        print(f"[{g['id']}] new: " + ", ".join(f"{n}={d['value']}" for n, d in r["new_nodes"].items()))
+        for e in r["edges"]:
+            print(f"    {e['head']} {'-|' if e['rel'] == 'blocks' else '->'} {e['tail']}   p={e['prob']:.2f}")
+        (outdir / f"{g['id']}__connect.json").write_text(json.dumps(r, indent=2))
+
+
 def _graphs(args) -> list[dict]:
     import glob
     files = sorted(glob.glob(args.graphs_glob))
@@ -590,7 +641,7 @@ def main() -> None:
     ap.add_argument("--mode", default="full",
                     choices=["full", "extract", "judge", "generate", "agg-extract",
                              "agg-combine", "raw-extract", "world-extract",
-                             "chain-nodes", "chain-kev", "abstract", "merge-kev", "name-groups", "implied", "combine", "node-happened"])
+                             "chain-nodes", "chain-kev", "abstract", "merge-kev", "name-groups", "implied", "combine", "node-happened", "connect"])
     ap.add_argument("--backend", default="mock",
                     choices=["mock", "anthropic", "openai", "openrouter", "ollama", "hf", "vllm"])
     ap.add_argument("--model", default=None)
@@ -649,6 +700,8 @@ def main() -> None:
         do_name_groups(args, outdir)
     elif args.mode == "node-happened":
         do_node_happened(args, outdir)
+    elif args.mode == "connect":
+        do_connect(args, outdir)
     elif args.mode == "implied":
         do_implied(args, outdir)
     elif args.mode == "combine":
