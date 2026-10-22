@@ -1,11 +1,21 @@
 <!--
-KEV CHOICE QUESTION (instructions): the direct causal relation from HEAD to TAIL.
-Same definition as extract_edges.md ({{GUIDANCE}}, "justify from the text"),
-asked as one pair at a time with the full node list. The options
-(enables / blocks / none) are in prompts.KEV_ARROW_OPTIONS.
+KEV CHOICE QUESTION (instructions): the direct causal relation from HEAD to TAIL, for
+event -> event, participant -> event and event -> participant pairs (participants as in
+Regan et al. 2023, Sec. 3.2: people and organizations only; no participant ->
+participant). Options (enables / blocks / none) in prompts.KEV_ARROW_OPTIONS.
 Vars: {{HEAD}}, {{TAIL}}, {{NODE_LIST}}. Partials: {{GUIDANCE_EVENTS}}.
 -->
 {{GUIDANCE_EVENTS}}
+
+Participants — the people and organizations named in the text, often the grammatical
+subjects and objects associated with events — are causal too. Things and places are
+not participants. A participant can be the initiating agent of an event or its causal
+endpoint. Draw participant -> event when the participant is a causal factor for the
+event: it makes the event happen, continue or become more likely, or it stops or
+prevents it. Draw event -> participant only when the participant is the one the event
+acts on (e.g. "ousting the leader" -> leader, "firing" -> employee). Never draw an
+event to the participant who carries it out or initiates it. Do not draw arrows
+between two participants.
 
 The nodes of this text's causal graph are:
 {{NODE_LIST}}

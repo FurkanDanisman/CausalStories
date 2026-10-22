@@ -7,11 +7,11 @@ See method_Oct.tex, Section 1. Who does what:
                           is reached); later chains reuse that answer. Chains start from random
                           unvisited nodes. Questions by pair type:
                             event -> event              enables / blocks / none
-                            participant -> event        does X carry out or initiate Y? yes / no
-                            event -> participant        not asked
+                            participant -> event        enables / blocks / none
+                            event -> participant        enables / blocks / none (only the participant
+                                                        the event acts on, kev_arrow.md)
                             participant -> participant  not asked
-                          With PARTICIPANT_ARROWS=paper (experiment), participant -> event and
-                          event -> participant get the enables / blocks / none question too.
+                          PARTICIPANT_ARROWS=agent switches back to the yes/no "carries out" question.
   connect    algorithm    the graph must be connected; if not, the story is flagged
 """
 
@@ -74,7 +74,7 @@ def llm_nodes(client: LLMClient, text: str, max_nodes: int | None) -> tuple[dict
 
 # ------------------------------------------------------------------ Kev steps
 
-REPEATS = int(os.environ.get("KEV_REPEATS", "2"))   # each question asked R times, options reordered
+REPEATS = int(os.environ.get("KEV_REPEATS", "1"))   # each question asked R times, options reordered (1 = once)
 
 
 def _reordered(q: dict, k: int) -> dict:
@@ -95,7 +95,7 @@ def kev_arrows(kev: KevClient, text: str, ids: list[str], pairs: list[tuple[str,
     event -> participant and participant -> participant: not asked;
     event -> event: enables / blocks / none."""
     kinds = kinds or {}
-    paper = os.environ.get("PARTICIPANT_ARROWS") == "paper"   # experiment: Regan et al. participants
+    paper = os.environ.get("PARTICIPANT_ARROWS", "paper") == "paper"   # Regan et al. participants (default)
     asked, qs = [], {}
     for h, t in pairs:
         kh, kt = kinds.get(h, "event"), kinds.get(t, "event")
