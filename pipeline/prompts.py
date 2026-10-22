@@ -101,6 +101,20 @@ def kev_implied_question(concept: str) -> dict:
             "instructions": render("kev_implied.md", CONCEPT=concept)}
 
 
+# Kev choice options for kev_influence.md (event -> participant); positive is drawn like
+# enables (green), negative like blocks (red).
+KEV_INFLUENCE_OPTIONS = {
+    "positive": "the event helps the participant or makes things better for them",
+    "negative": "the event harms the participant or makes things worse for them",
+    "none": "the text does not say the event influences the participant",
+}
+
+
+def kev_influence_question(head: str, tail: str, node_ids: list[str]) -> dict:
+    return {"type": "choice", "criteria": KEV_INFLUENCE_OPTIONS,
+            "instructions": render("kev_influence.md", HEAD=head, TAIL=tail, NODE_LIST=_listing(node_ids))}
+
+
 def kev_arrow_question(head: str, tail: str, node_ids: list[str]) -> dict:
     return {"type": "choice", "criteria": KEV_ARROW_OPTIONS,
             "instructions": render("kev_arrow.md", HEAD=head, TAIL=tail, NODE_LIST=_listing(node_ids))}

@@ -8,8 +8,8 @@ See method_Oct.tex, Section 1. Who does what:
                           unvisited nodes. Questions by pair type:
                             event -> event              enables / blocks / none
                             participant -> event        enables / blocks / none
-                            event -> participant        enables / blocks / none (only the participant
-                                                        the event acts on, kev_arrow.md)
+                            event -> participant        positive / negative / none influence
+                                                        (kev_influence.md; drawn like enables / blocks)
                             participant -> participant  not asked
                           PARTICIPANT_ARROWS=agent switches back to the yes/no "carries out" question.
   connect    algorithm    the graph must be connected; if not, the story is flagged
@@ -102,18 +102,25 @@ def kev_arrows(kev: KevClient, text: str, ids: list[str], pairs: list[tuple[str,
         if kh == kt == "participant" or (kt == "participant" and not paper):
             continue
         agent = kh == "participant" and not paper
-        q = prompts.kev_agent_question(h, t, ids) if agent else prompts.kev_arrow_question(h, t, ids)
+        influence = kt == "participant" and paper              # event -> participant: positive / negative
+        q = (prompts.kev_agent_question(h, t, ids) if agent else
+             prompts.kev_influence_question(h, t, ids) if influence else
+             prompts.kev_arrow_question(h, t, ids))
         qs[f"q{len(asked)}"] = q
-        asked.append((h, t, agent))
+        asked.append((h, t, "agent" if agent else "influence" if influence else "arrow"))
     if not qs:
         return []
     ans = kev.ask(text, {f"{qid}_{k}": _reordered(q, k) for qid, q in qs.items() for k in range(REPEATS)})
     out = []
-    for i, (h, t, agent) in enumerate(asked):
+    for i, (h, t, how) in enumerate(asked):
         reps = []
         for k in range(REPEATS):
             pr = ans[f"q{i}_{k}"]["probabilities"]
-            reps.append({"enables": pr["yes"], "blocks": 0.0, "none": pr["no"]} if agent else dict(pr))
+            if how == "agent":                       # yes -> enables arrow
+                pr = {"enables": pr["yes"], "blocks": 0.0, "none": pr["no"]}
+            elif how == "influence":                 # positive -> enables (green), negative -> blocks (red)
+                pr = {"enables": pr["positive"], "blocks": pr["negative"], "none": pr["none"]}
+            reps.append(dict(pr))
         mean = {r: sum(x[r] for x in reps) / REPEATS for r in reps[0]}
         out.append((h, t, max(mean, key=mean.get), mean, reps))   # the walk uses the mean
     return out
