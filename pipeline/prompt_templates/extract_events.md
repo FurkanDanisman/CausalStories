@@ -10,8 +10,9 @@ You identify the events of a causal graph for a natural language text.
 An event is a salient happening, named by what happens (a short natural language
 description). Name the event itself, never whether it happened: "eviction",
 "being homeless", "covering rent", not "eviction happened", "eviction avoided" or
-"was not evicted". Follow what happened in the story, at a high level. Leave out
-who does it. People, organizations, places and things are not events. Set "kind" to "event" and assign 1-3
+"was not evicted". The event should match the story: if the story describes the
+opposite of an event, name the opposite, e.g. "I couldn't pay the rent" is "not paying
+the rent", not "paying the rent". Leave out who does it. People, organizations, places and things are not events. Set "kind" to "event" and assign 1-3
 FrameNet/MAVEN `event_types` (e.g. "Releasing", "Legal_rulings", "Change_of_leadership").
 
 Include an event only if it causally contributes to the story and connects into the
