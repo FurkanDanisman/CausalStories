@@ -130,6 +130,32 @@ class OpenAIClient:
         return schema.model_validate_json(resp.choices[0].message.content)
 
 
+class OpenRouterClient(OpenAIClient):
+    """Hosted open models (e.g. google/gemma-4-31b-it) through OpenRouter's OpenAI-compatible
+    API. Key in OPENROUTER_API_KEY. Strips code fences and retries once on bad JSON."""
+
+    def __init__(self, model: str = "google/gemma-4-31b-it", api_key: str | None = None):
+        import os
+        super().__init__(model=model, base_url="https://openrouter.ai/api/v1",
+                         api_key=api_key or os.environ.get("OPENROUTER_API_KEY"))
+
+    def complete(self, *, task: str, prompt: str, schema: Type[T], temperature: float = 0.0) -> T:
+        import re
+        last = None
+        for _ in range(3):
+            resp = self._client.chat.completions.create(
+                model=self.model, temperature=temperature,
+                response_format={"type": "json_object"},
+                messages=[{"role": "user", "content": prompt + "\n\n" + _schema_instructions(schema)}])
+            text = (resp.choices[0].message.content or "").strip()
+            text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text)
+            try:
+                return schema.model_validate_json(text)
+            except Exception as e:                      # one more try on malformed JSON
+                last = e
+        raise last
+
+
 # ------------------------------------------------------------------------- ollama
 
 class OllamaClient(OpenAIClient):

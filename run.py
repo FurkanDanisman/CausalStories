@@ -26,7 +26,7 @@ from pathlib import Path
 
 from pipeline import abstraction, aggregate, chain, combine, dataset, evaluate, extract, merge_kev, prompts, visualize
 from pipeline.kev_client import KevClient
-from pipeline.llm_client import (AnthropicClient, HFClient, MockLLMClient,
+from pipeline.llm_client import (AnthropicClient, HFClient, MockLLMClient, OpenRouterClient,
                                  OllamaClient, OpenAIClient, VLLMClient)
 from pipeline.schema import CausalGraph, RefuteBatch, Variant
 
@@ -38,6 +38,8 @@ def build_client(backend: str, model: str | None, base_url: str | None = None):
         return AnthropicClient(model=model or "REPLACE_WITH_MODEL_ID")
     if backend == "openai":                      # also: any vLLM/TGI/llama.cpp server via base_url
         return OpenAIClient(model=model or "gpt-4o", base_url=base_url)
+    if backend == "openrouter":                  # hosted Gemma etc., key in OPENROUTER_API_KEY
+        return OpenRouterClient(model=model or "google/gemma-4-31b-it")
     if backend == "ollama":
         return OllamaClient(model=model or "qwen2.5:14b")
     if backend == "hf":                          # in-process transformers
@@ -364,8 +366,10 @@ def do_chain_nodes(args, outdir: Path) -> None:
     client = build_client(args.backend, args.model, args.base_url)
     print(f"=== CHAIN-NODES · {_tag(args)} · {len(items)} narrative(s) · K={args.max_nodes} ===")
     out = []
-    for it in items:
-        kinds, raw = chain.llm_nodes(client, it["text"], args.max_nodes)
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=args.workers) as pool:          # stories are independent
+        found = list(pool.map(lambda it: chain.llm_nodes(client, it["text"], args.max_nodes), items))
+    for it, (kinds, raw) in zip(items, found):
         ids = list(kinds)
         print(f"\n[{it['id']}] {it['text']}")
         print("  Gemma, event call:       " + ", ".join(f"{x['id']} ({x['kind']})" for x in raw["events_call"]))
@@ -381,12 +385,21 @@ def do_chain_kev(args, outdir: Path) -> None:
     """Chain walk, Kev part: walk and connectivity for each narrative in --nodes-file
     ({id, text, nodes, kinds}). Needs a running Kev server at --kev-url."""
     items = json.loads(Path(args.nodes_file).read_text())
-    kev = KevClient(args.kev_url)
     tag = args.tag or "kev"
     print(f"=== CHAIN-KEV · {tag} · {len(items)} narrative(s) · {args.kev_url} ===")
-    for it in items:
+
+    def one(it):                                   # own client per story: request counts stay per story
+        buf = []
+        g = chain.run_chain(KevClient(args.kev_url), it["text"], it["nodes"], seed=args.seed,
+                            kinds=it.get("kinds"), log=buf.append)
+        return g, buf
+
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=args.workers) as pool:
+        done = list(pool.map(one, items))
+    for it, (g, buf) in zip(items, done):
         print(f"\n[{it['id']}] {it['text']}")
-        g = chain.run_chain(kev, it["text"], it["nodes"], seed=args.seed, kinds=it.get("kinds"))
+        print("\n".join(buf))
         rel = {(h, t): r for h, t, r, _ in g.edges}
         print("SUBGRAPHS (every chain the walk produced)")
         for k, c in enumerate(g.chains, 1):
@@ -463,7 +476,10 @@ def do_implied(args, outdir: Path) -> None:
     graphs = _graphs(args)
     abst = json.loads((outdir / "abstraction.json").read_text())
     print(f"=== IMPLIED · {len(graphs)} graph(s) · {args.kev_url} ===")
-    res = combine.implied(KevClient(args.kev_url), graphs, abst, seed=args.seed)
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=args.workers) as pool:          # stories are independent
+        parts = list(pool.map(lambda g: combine.implied(KevClient(args.kev_url), [g], abst, seed=args.seed), graphs))
+    res = {k: v for part in parts for k, v in part.items()}
     for j, d in res.items():
         print(f"  {j}: " + "  ".join(f"{c}={'.' if v is None else v}" for c, v in d["values"].items()))
     (outdir / "implied.json").write_text(json.dumps(res, indent=2))
@@ -557,12 +573,12 @@ def main() -> None:
                              "agg-combine", "raw-extract", "world-extract",
                              "chain-nodes", "chain-kev", "abstract", "merge-kev", "name-groups", "implied", "combine"])
     ap.add_argument("--backend", default="mock",
-                    choices=["mock", "anthropic", "openai", "ollama", "hf", "vllm"])
+                    choices=["mock", "anthropic", "openai", "openrouter", "ollama", "hf", "vllm"])
     ap.add_argument("--model", default=None)
     ap.add_argument("--base-url", default=None)
     ap.add_argument("--tag", default=None, help="label for output files (defaults to model name)")
     ap.add_argument("--eval-backend", default=None,
-                    choices=["mock", "anthropic", "openai", "ollama", "hf", "vllm"])
+                    choices=["mock", "anthropic", "openai", "openrouter", "ollama", "hf", "vllm"])
     ap.add_argument("--eval-model", default=None)
     ap.add_argument("--eval-base-url", default=None)
     ap.add_argument("--split", default="train", choices=["train", "dev"])
@@ -578,7 +594,8 @@ def main() -> None:
     ap.add_argument("--max-nodes", type=int, default=5, help="K: most important nodes (chain-nodes)")
     ap.add_argument("--seed", type=int, default=0, help="random start nodes (chain-kev)")
     ap.add_argument("--nodes-file", default="controlled_kev.json", help="input for chain-kev")
-    ap.add_argument("--kev-url", default="http://127.0.0.1:8009", help="Kev server (chain-kev)")
+    ap.add_argument("--kev-url", default="http://127.0.0.1:8009", help="Kev server (chain-kev); Jev: https://api.typesafe.ai")
+    ap.add_argument("--workers", type=int, default=1, help="stories processed in parallel (hosted APIs)")
     ap.add_argument("--graphs-glob", default="out_kev/*__gemma-kev.chain.json", help="graphs to merge (abstract)")
     ap.add_argument("--merge-groups", type=int, default=1, help="M: narrative subgroups per round (abstract)")
     ap.add_argument("--agg-min-count", type=int, default=2,
