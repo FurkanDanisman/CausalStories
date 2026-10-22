@@ -462,6 +462,25 @@ def do_name_groups(args, outdir: Path) -> None:
     print(f"\nsaved {outdir}/abstraction.json")
 
 
+def do_node_happened(args, outdir: Path) -> None:
+    """For each story graph (--graphs-glob): Kev/Jev answers "did this happen in this story?"
+    (kev_happened.md) for every event node. Writes <outdir>/<id>__happened.json."""
+    graphs = _graphs(args)
+    print(f"=== NODE HAPPENED · {len(graphs)} graph(s) · {args.kev_url} ===")
+
+    def one(g):
+        ev = [n for n in g["nodes"] if (g.get("kinds") or {}).get(n, "event") == "event"]
+        ans = KevClient(args.kev_url).ask(g["text"], {f"n{i}": prompts.kev_happened_question(v) for i, v in enumerate(ev)})
+        return {v: {"choice": ans[f"n{i}"]["choice"], "probabilities": ans[f"n{i}"]["probabilities"]} for i, v in enumerate(ev)}
+
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=args.workers) as pool:
+        res = list(pool.map(one, graphs))
+    for g, r in zip(graphs, res):
+        print(f"[{g['id']}] " + "; ".join(f"{v}: {a['choice']} ({a['probabilities'].get(a['choice'], 0):.2f})" for v, a in r.items()))
+        (outdir / f"{g['id']}__happened.json").write_text(json.dumps(r, indent=2))
+
+
 def _graphs(args) -> list[dict]:
     import glob
     files = sorted(glob.glob(args.graphs_glob))
@@ -571,7 +590,7 @@ def main() -> None:
     ap.add_argument("--mode", default="full",
                     choices=["full", "extract", "judge", "generate", "agg-extract",
                              "agg-combine", "raw-extract", "world-extract",
-                             "chain-nodes", "chain-kev", "abstract", "merge-kev", "name-groups", "implied", "combine"])
+                             "chain-nodes", "chain-kev", "abstract", "merge-kev", "name-groups", "implied", "combine", "node-happened"])
     ap.add_argument("--backend", default="mock",
                     choices=["mock", "anthropic", "openai", "openrouter", "ollama", "hf", "vllm"])
     ap.add_argument("--model", default=None)
@@ -628,6 +647,8 @@ def main() -> None:
         do_merge_kev(args, outdir)
     elif args.mode == "name-groups":
         do_name_groups(args, outdir)
+    elif args.mode == "node-happened":
+        do_node_happened(args, outdir)
     elif args.mode == "implied":
         do_implied(args, outdir)
     elif args.mode == "combine":
