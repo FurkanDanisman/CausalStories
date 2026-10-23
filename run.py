@@ -470,6 +470,8 @@ def do_node_happened(args, outdir: Path) -> None:
 
     def one(g):
         ev = [n for n in g["nodes"] if (g.get("kinds") or {}).get(n, "event") == "event"]
+        if not ev:                                  # no event nodes: nothing to ask
+            return {}
         ans = KevClient(args.kev_url).ask(g["text"], {f"n{i}": prompts.kev_happened_question(v) for i, v in enumerate(ev)})
         return {v: {"choice": ans[f"n{i}"]["choice"], "probabilities": ans[f"n{i}"]["probabilities"]} for i, v in enumerate(ev)}
 

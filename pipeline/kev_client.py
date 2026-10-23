@@ -30,6 +30,20 @@ class KevClient:
         self.model = model or os.environ.get("KEV_MODEL", "kev-latest")
 
     def ask(self, state: str, questions: dict[str, dict]) -> dict[str, dict]:
+        """Like _ask; a request too large for the server (max_tokens_exceeded) is split in
+        halves and the answers merged. The questions themselves are unchanged."""
+        try:
+            return self._ask(state, questions)
+        except RuntimeError as e:
+            if "max_tokens_exceeded" not in str(e) or len(questions) < 2:
+                raise
+            keys = list(questions)
+            half = len(keys) // 2
+            out = self.ask(state, {k: questions[k] for k in keys[:half]})
+            out.update(self.ask(state, {k: questions[k] for k in keys[half:]}))
+            return out
+
+    def _ask(self, state: str, questions: dict[str, dict]) -> dict[str, dict]:
         """questions: {qid: {"type": "choice"|"noul"|"score", "instructions": ..., "criteria": ...}}.
         Returns Kev's "answers" dict, keyed by the same qids."""
         body = json.dumps({"state": state, "model": self.model, "questions": questions}).encode()
