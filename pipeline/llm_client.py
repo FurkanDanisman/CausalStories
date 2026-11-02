@@ -111,7 +111,7 @@ class OpenAIClient:
     def __init__(self, model: str, base_url: str | None = None, api_key: str | None = None):
         import openai  # lazy
 
-        kwargs = {}
+        kwargs = {"timeout": 120.0, "max_retries": 3}   # a hung connection retries instead of waiting forever
         if base_url:
             kwargs["base_url"] = base_url
             kwargs["api_key"] = api_key or "EMPTY"
@@ -121,13 +121,22 @@ class OpenAIClient:
         self.model = model
 
     def complete(self, *, task: str, prompt: str, schema: Type[T], temperature: float = 0.0) -> T:
-        resp = self._client.chat.completions.create(
-            model=self.model,
-            temperature=temperature,
-            response_format={"type": "json_object"},
-            messages=[{"role": "user", "content": prompt + "\n\n" + _schema_instructions(schema)}],
-        )
-        return schema.model_validate_json(resp.choices[0].message.content)
+        import re
+        last = None
+        for attempt in range(5):                     # retries above temperature 0 (else the same bad answer)
+            resp = self._client.chat.completions.create(
+                model=self.model,
+                temperature=temperature if attempt == 0 else max(temperature, 0.7),
+                response_format={"type": "json_object"},
+                extra_body={"chat_template_kwargs": {"enable_thinking": False}},   # vLLM: no thinking (Qwen 3.5)
+                messages=[{"role": "user", "content": prompt + "\n\n" + _schema_instructions(schema)}],
+            )
+            text = re.sub(r"^```(?:json)?\s*|\s*```$", "", (resp.choices[0].message.content or "").strip())
+            try:
+                return schema.model_validate_json(text)
+            except Exception as e:
+                last = e
+        raise last
 
 
 class OpenRouterClient(OpenAIClient):
@@ -142,11 +151,18 @@ class OpenRouterClient(OpenAIClient):
     def complete(self, *, task: str, prompt: str, schema: Type[T], temperature: float = 0.0) -> T:
         import re
         last = None
-        for _ in range(3):
+        for attempt in range(5):                     # retries above temperature 0, else the same bad answer repeats
             resp = self._client.chat.completions.create(
-                model=self.model, temperature=temperature,
+                model=self.model, temperature=temperature if attempt == 0 else max(temperature, 0.7),
                 response_format={"type": "json_object"},
+                extra_body={"reasoning": {"enabled": False}},          # no thinking (e.g. Qwen 3.5)
                 messages=[{"role": "user", "content": prompt + "\n\n" + _schema_instructions(schema)}])
+            try:                                        # OpenRouter reports the call's cost in usage
+                from pipeline.kev_client import log_cost
+                u = resp.usage
+                log_cost(getattr(u, "cost", None) or (getattr(u, "model_extra", None) or {}).get("cost"), "generator")
+            except Exception:
+                pass
             text = (resp.choices[0].message.content or "").strip()
             text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text)
             try:

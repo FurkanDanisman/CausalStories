@@ -117,8 +117,14 @@ def impute(table: dict[str, dict[str, int | None]], concepts: list[str], m: int 
         if miss and known_cols:
             from sklearn.experimental import enable_iterative_imputer  # noqa: F401
             from sklearn.impute import IterativeImputer
-            filled = IterativeImputer(max_iter=30, random_state=i, sample_posterior=True, min_value=0,
-                                      max_value=1, keep_empty_features=True).fit_transform(Xi[:, known_cols])
+            sub = Xi[:, known_cols]
+            try:
+                filled = IterativeImputer(max_iter=30, random_state=i, sample_posterior=True, min_value=0,
+                                          max_value=1, keep_empty_features=True).fit_transform(sub)
+            except (np.linalg.LinAlgError, ValueError):     # degenerate table (e.g. many tiny groups):
+                rng = np.random.default_rng(i)              # draw each missing cell from its column's rate
+                rate = np.nan_to_num(np.nanmean(sub, axis=0), nan=0.0)
+                filled = np.where(np.isnan(sub), (rng.random(sub.shape) < rate).astype(float), sub)
             Xi[:, known_cols] = (filled >= 0.5).astype(float)
         tables.append({j: {c: (None if np.isnan(Xi[r, k]) else int(Xi[r, k])) for k, c in enumerate(concepts)}
                        for r, j in enumerate(narr)})
@@ -224,7 +230,9 @@ def combine(graphs: list[dict], abst: dict, imp: dict, log=print) -> dict:
     for b in concepts:
         pa = sorted(parents.get(b, []))
         rows = []
-        for cfg in product((0, 1), repeat=len(pa)):
+        seen = sorted({tuple(t[j][x] for x in pa) for t in tables for j in narr
+                       if None not in tuple(t[j][x] for x in pa)})   # only parent settings that occur:
+        for cfg in seen:                                             # same rows as all 2^k, without the blow-up
             qs, us, ns = [], [], []
             for t in tables:
                 match = [j for j in narr if t[j][b] is not None and all(t[j][x] == v for x, v in zip(pa, cfg))]

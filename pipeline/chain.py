@@ -59,12 +59,17 @@ def llm_nodes(client: LLMClient, text: str, max_nodes: int | None) -> tuple[dict
     the participants. The kind Gemma gives each item is kept: only items labelled "event"
     in the event call are events (and count toward K); items labelled "participant" in
     either call are participants."""
-    ev = client.complete(task="extract_events", schema=NodeExtraction, temperature=0.0,
-                         prompt=prompts.extract_events_prompt(text, max_nodes))
-    pa = client.complete(task="extract_participants", schema=NodeExtraction, temperature=0.0,
-                         prompt=prompts.extract_participants_prompt(text))
+    failed = []
+    def ask(task, prompt):                       # a generator that never returns valid JSON gives no nodes
+        try:                                     # for this story (scored as a miss), not a crashed run
+            return client.complete(task=task, schema=NodeExtraction, temperature=0.0, prompt=prompt)
+        except Exception as e:
+            failed.append(f"{task}: {type(e).__name__}")
+            return NodeExtraction(nodes=[])
+    ev = ask("extract_events", prompts.extract_events_prompt(text, max_nodes))
+    pa = ask("extract_participants", prompts.extract_participants_prompt(text))
     raw = {"events_call": [{"id": n.id, "kind": n.kind.value} for n in ev.nodes],
-           "participants_call": [{"id": n.id, "kind": n.kind.value} for n in pa.nodes]}
+           "participants_call": [{"id": n.id, "kind": n.kind.value} for n in pa.nodes], "failed": failed}
     events = list(dict.fromkeys(n.id for n in ev.nodes if n.kind.value == "event"))
     events = events[:max_nodes] if max_nodes else events
     kinds = {e: "event" for e in events}
