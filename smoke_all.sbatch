@@ -11,6 +11,7 @@
 #   Part A, each generator (gemma qwen llama gptoss): our node extraction, C1-C6, group naming, A4 (LLM merge)
 #   Part B, each decision model (kev27b kev9b): our chain walk, then our aggregation (groups, did it happen,
 #           connect) on our story graphs and on C1's story graphs
+#   Part C, the final job's pieces: A1-A3, A5 (PC / GES), C5 clustering, and the judge (Gemma) on one run
 # A step passes when it exits 0 AND no story failed (a story that fails is otherwise kept as an empty graph).
 # Writes grid_cluster/_smoke/summary.tsv (step, model, pass/FAIL, seconds, stories ok / total).
 #   sbatch smoke_all.sbatch
@@ -77,5 +78,15 @@ for K in kev27b kev9b; do
   done
   stop_kev
 done
+
+echo "############ Part C: final job (aggregations without a model, C5 clustering, judge)"
+for M in A1 A2 A3 pc ges; do                # input: a full 200-story run (PC needs real data; 2 stories are degenerate)
+  t0=$(date +%s); python benchmark/alt_aggregate.py $M grid/homelessness__gemma__jev "$S/agg_$M"; check $M "-" $? $t0 "$S/agg_$M/network.json"
+done
+t0=$(date +%s); python benchmark/alt_aggregate.py C5agg "$S/gemma/C5" "$S/agg_C5agg"; check C5agg "-" $? $t0 "$S/agg_C5agg/network.json"
+start_llm gemma 32768
+t0=$(date +%s); JUDGE_URL=$LLM_URL JUDGE=llm JUDGE_SLUG=gemma-4-31b-it JUDGE_ONLY=1 \
+  python benchmark/evaluate_run.py homelessness "$S/kev27b/ours" 10; check judge gemma $? $t0 "$S/kev27b/ours/judge_cache_gemma-4-31b-it.json"
+stop_llm
 
 echo "############ summary"; column -t -s $'\t' "$S/summary.tsv"

@@ -107,18 +107,21 @@ gptoss (gpt-oss-20b). Decision models: DEC = kev27b (default) | kev9b. The judge
 **1. Smoke test (one job, all pieces on 2 stories):** `sbatch smoke_all.sbatch` -> `grid_cluster/_smoke/summary.tsv`
 (every LLM step x 4 generators; every Kev step x 2 decision models, on our story graphs and C1's). All rows must say pass.
 
-**2. Full runs, after the smoke test passes:**
+**2. Full runs, after the smoke test passes: 9 jobs**, each loading every model once per phase and covering all
+three worlds (resumable: resubmitting a job skips finished steps):
 ```
-git fetch && git checkout benchmark-v3 && git pull
-# our method: 4 GEN x 2 DEC x 3 worlds
-sbatch --export=ALL,GEN=<gen>,DEC=<kev27b|kev9b>,WORLD=<homelessness|career|mental_health> bench_kev27b.sbatch
-# C1-C4: 4 GEN x 3 worlds each (C2-C4 after the <gen> + kev27b run of that world)
-sbatch --export=ALL,METHOD=<C1|C2|C3|C4>,GEN=<gen>,WORLD=<world> bench_baseline.sbatch
-# C5, C6: 4 GEN each (all three worlds in one job)
-sbatch --export=ALL,METHOD=<C5|C6>,GEN=<gen> bench_baseline.sbatch
-sbatch bench_a4.sbatch                 # A4 with the 4 generators, after the Gemma + Kev-27B runs
-sbatch bench_judge.sbatch              # last
+git pull
+sbatch --export=ALL,GEN=gemma,DEC=kev27b  bench_run.sbatch   # ours + C1-C6, all worlds
+sbatch --export=ALL,GEN=qwen,DEC=kev27b   bench_run.sbatch
+sbatch --export=ALL,GEN=llama,DEC=kev27b  bench_run.sbatch
+sbatch --export=ALL,GEN=gptoss,DEC=kev27b bench_run.sbatch
+sbatch --export=ALL,GEN=gemma,DEC=kev9b   bench_run.sbatch   # ours only, all worlds
+sbatch --export=ALL,GEN=qwen,DEC=kev9b    bench_run.sbatch
+sbatch --export=ALL,GEN=llama,DEC=kev9b   bench_run.sbatch
+sbatch --export=ALL,GEN=gptoss,DEC=kev9b  bench_run.sbatch
+# after all 8 have finished:
+sbatch bench_final.sbatch      # A4 x 4 generators, A1-A3, A5 (PC/GES), C5 clustering, judge (Gemma)
 bash bench_pack.sh && git add results_cluster && git commit -m "cluster results" && git push
 ```
-Laptop: `git pull`, unpack results_cluster/, run Steps 5-6 (`run.py --mode matrix --graphs-glob '<run>/*__gemma-kev.chain.json' --outdir <run>`), C5 clustering and
-A1–A3/PC/GES (alt_aggregate.py), then scoring (evaluate_run.py) and grid_summary.py.
+Laptop: `git pull`, unpack results_cluster/, run Steps 5-6 (`run.py --mode matrix --graphs-glob '<run>/*__gemma-kev.chain.json' --outdir <run>`)
+for our runs and C1-C4, then scoring (evaluate_run.py, from the judge caches) and grid_summary.py.

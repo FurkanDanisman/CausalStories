@@ -15,6 +15,7 @@ DEC=${DEC:-kev27b}                        # decision model: kev27b (2 GPUs, spli
 declare -A KEVS=([kev27b]=jaredpalmer/kev-27b [kev9b]=jaredpalmer/kev-9b)
 LLM_PORT=8000
 export LLM_URL=http://127.0.0.1:$LLM_PORT/v1/chat/completions
+export ST_MODEL=/model-weights/all-MiniLM-L6-v2   # C5 clustering (offline compute nodes)
 export LLM_MODEL=llm                      # served model name used by baselines.py / the judge
 declare -A MODELS=(
   [gemma]=$BASE/model-weights/gemma-4-31B-it

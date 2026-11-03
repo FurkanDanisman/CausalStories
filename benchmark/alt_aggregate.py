@@ -133,7 +133,7 @@ def c5agg(run, out):
     from sklearn.cluster import AgglomerativeClustering
     gs = [json.load(open(f)) for f in sorted(run.glob("*__gemma-kev.chain.json"))]
     labels = sorted({n for g in gs for n in g["nodes"]})
-    emb = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2", device="cpu").encode(labels, normalize_embeddings=True)
+    emb = SentenceTransformer(os.environ.get("ST_MODEL", "sentence-transformers/all-MiniLM-L6-v2"), device="cpu").encode(labels, normalize_embeddings=True)
     cl = AgglomerativeClustering(n_clusters=None, distance_threshold=0.5, metric="cosine", linkage="average").fit(emb).labels_
     groups = defaultdict(list)
     for l, k in zip(labels, cl):
