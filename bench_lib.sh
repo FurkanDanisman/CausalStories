@@ -11,6 +11,8 @@ export HF_HUB_OFFLINE=1
 KEV_DIR=$BASE/kev
 PIPE=$PWD
 KEV_PORT=8009
+DEC=${DEC:-kev27b}                        # decision model: kev27b (2 GPUs, split server) | kev9b (1 GPU, Kev's server)
+declare -A KEVS=([kev27b]=jaredpalmer/kev-27b [kev9b]=jaredpalmer/kev-9b)
 LLM_PORT=8000
 export LLM_URL=http://127.0.0.1:$LLM_PORT/v1/chat/completions
 export LLM_MODEL=llm                      # served model name used by baselines.py / the judge
@@ -38,7 +40,11 @@ start_llm() {                             # start_llm <gemma|qwen|llama|gptoss> 
 stop_llm() { kill $LLM_PID 2>/dev/null; wait $LLM_PID 2>/dev/null; sleep 5; }
 
 start_kev() {
-  (cd "$KEV_DIR" && .venv/bin/python "$PIPE/kev_serve_2gpu.py" --run jaredpalmer/kev-27b --port $KEV_PORT) >> "$OUT/kev_server.log" 2>&1 &
+  if [ "$DEC" = kev27b ]; then            # ~55 GB: split over both GPUs
+    (cd "$KEV_DIR" && .venv/bin/python "$PIPE/kev_serve_2gpu.py" --run "${KEVS[$DEC]}" --port $KEV_PORT) >> "$OUT/kev_server.log" 2>&1 &
+  else                                    # fits one L40S: Kev's own server
+    (cd "$KEV_DIR" && CUDA_VISIBLE_DEVICES=0 .venv/bin/python -m kev.serve --run "${KEVS[$DEC]}" --port $KEV_PORT) >> "$OUT/kev_server.log" 2>&1 &
+  fi
   KEV_PID=$!
   for i in $(seq 1 240); do
     curl -sf "http://127.0.0.1:$KEV_PORT/v1/models" >/dev/null && return 0

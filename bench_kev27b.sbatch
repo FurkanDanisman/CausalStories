@@ -7,13 +7,14 @@
 #SBATCH --time=03:00:00
 #SBATCH --output=bench-kev27b-%x-%j.out
 #
-# Our method with Kev-27B as the decision model, one world x one generator (benchmark/workplan.md §1).
-# Generator (nodes, names) on vLLM; Kev-27B for arrows, groups and did-it-happen; one model on the GPUs at a time.
-#   sbatch --export=ALL,GEN=gemma,WORLD=homelessness bench_kev27b.sbatch
+# Our method with a local Kev decision model (DEC), one world x one generator (benchmark/workplan.md §1).
+# Generator (nodes, names) on vLLM; Kev ($DEC) for arrows, groups, did-it-happen and connect; one model on the GPUs at a time.
+#   sbatch --export=ALL,GEN=gemma,WORLD=homelessness[,DEC=kev9b] bench_kev27b.sbatch
+#   DEC: kev27b (default) | kev9b
 #   GEN: gemma | qwen | llama | gptoss     WORLD: homelessness | career | mental_health
 #   SMOKE=1 runs the first 2 stories only (to check the job and measure speed).
 set -uo pipefail
-OUT=grid_cluster/${WORLD}__${GEN}__kev27b${SMOKE:+_smoke}
+OUT=grid_cluster/${WORLD}__${GEN}__${DEC:-kev27b}${SMOKE:+_smoke}
 mkdir -p "$OUT"
 source bench_lib.sh
 TEXTS=${WORLD}_v3.json
@@ -26,14 +27,14 @@ python run.py --mode chain-nodes --backend openai --base-url "http://127.0.0.1:$
   --texts-file "$TEXTS" --max-nodes 8 --outdir "$OUT" --workers 16
 stop_llm
 
-echo "### Kev-27B: chain walk"
+echo "### Kev ($DEC): chain walk"
 start_kev
 python run.py --mode chain-kev --kev-url "http://127.0.0.1:$KEV_PORT" --nodes-file "$OUT/chain_nodes.json" \
   --tag gemma-kev --outdir "$OUT"
 stop_kev
 
-echo "### our aggregation, GPU part (Kev-27B groups, $GEN names, Kev-27B did-it-happen + connect; Steps 5-6 run locally)"
+echo "### our aggregation, GPU part (Kev $DEC groups, $GEN names, Kev $DEC did-it-happen + connect; Steps 5-6 run locally)"
 our_aggregation "$GEN"
 
-run_info "${MODELS[$GEN]}" "jaredpalmer/kev-27b (local)" $(( $(date +%s) - t0 ))
+run_info "${MODELS[$GEN]}" "${KEVS[$DEC]} (local)" $(( $(date +%s) - t0 ))
 cat "$OUT/run_info.json"
