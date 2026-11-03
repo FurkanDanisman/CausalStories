@@ -29,7 +29,7 @@ def load_run(run):
     abst = json.load(open(run / "abstraction.json"))
     concepts = abst["concepts"]
     stories = sorted({m[0] for c in concepts.values() for m in c["members"]} |
-                     {json.load(open(f))["id"] for f in run.glob("*__gemma-kev.chain.json")})
+                     {json.load(open(f))["id"] for f in run.glob("*__gemma-kev.chain.json") if not f.name.startswith("._")})
     table = {s: {c: 0 for c in concepts} for s in stories}
     for c, v in concepts.items():
         for m in v["members"]:
@@ -131,7 +131,7 @@ def c5agg(run, out):
     """Causal Map aggregation: cluster C5's free-text claim labels by meaning, then count links."""
     from sentence_transformers import SentenceTransformer
     from sklearn.cluster import AgglomerativeClustering
-    gs = [json.load(open(f)) for f in sorted(run.glob("*__gemma-kev.chain.json"))]
+    gs = [json.load(open(f)) for f in sorted(run.glob("*__gemma-kev.chain.json")) if not f.name.startswith("._")]
     labels = sorted({n for g in gs for n in g["nodes"]})
     emb = SentenceTransformer(os.environ.get("ST_MODEL", "sentence-transformers/all-MiniLM-L6-v2"), device="cpu").encode(labels, normalize_embeddings=True)
     cl = AgglomerativeClustering(n_clusters=None, distance_threshold=0.5, metric="cosine", linkage="average").fit(emb).labels_

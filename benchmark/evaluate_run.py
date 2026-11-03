@@ -191,6 +191,7 @@ def main(world, run, cut=None):
     # ---------------- Table 1: individual graphs ----------------
     graphs = {}
     for f in run.glob("*__gemma-kev.chain.json"):
+        if f.name.startswith("._"): continue          # macOS metadata files, not graphs
         g = json.load(open(f)); graphs[g["id"]] = g
 
     def one(sid_):

@@ -21,7 +21,8 @@ OUT=$S
 rm -rf "$S"; mkdir -p "$S"
 source bench_lib.sh
 python -c "import json;json.dump(json.load(open('homelessness_v3.json'))[:2],open('$S/texts.json','w'))"
-[ -d grid/homelessness__gemma__jev ] || tar -xzf grid_seed.tar.gz grid/homelessness__gemma__jev   # input for naming + A4
+rm -rf grid/homelessness__gemma__jev && tar -xzf grid_seed.tar.gz grid/homelessness__gemma__jev   # fresh input for naming, A4, A1-A3, PC/GES
+find grid grid_cluster -name "._*" -delete 2>/dev/null   # macOS metadata files from older archives
 printf "step\tmodel\tresult\tseconds\tstories_ok\n" > "$S/summary.tsv"
 
 check() {                    # check <step> <model> <rc> <t0> <dir or file> : count failed stories, write one row
