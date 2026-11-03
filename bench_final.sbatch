@@ -26,7 +26,7 @@ for G in ${GENS:-gemma qwen llama gptoss}; do
     case $(basename "$R") in agg__*) continue;; esac          # our runs only, not aggregation outputs
     [ -f "$R/abstraction.json" ] || continue
     A=grid_cluster/agg__A4-${G}__$(basename "$R")
-    [ -f "$A/network.json" ] || { t0=$(date +%s); python benchmark/alt_aggregate.py A4 "$R" "$A"; echo "$G $(basename "$R") $(( $(date +%s) - t0 )) s"; }
+    [ -f "$A/network.json" ] || { t0=$(date +%s); python benchmark/alt_aggregate.py A4 "$R" "$A" && printf "A4\t%s\n" $(( $(date +%s) - t0 )) >> "$A/timing.tsv"; }
   done
   stop_llm
 done
@@ -37,14 +37,14 @@ for R in grid_cluster/*__gemma__kev27b; do
   [ -f "$R/abstraction.json" ] || continue
   for M in A1 A2 A3 pc ges; do
     A=grid_cluster/agg__${M}__$(basename "$R")
-    [ -f "$A/network.json" ] || python benchmark/alt_aggregate.py $M "$R" "$A"
+    [ -f "$A/network.json" ] || { t0=$(date +%s); python benchmark/alt_aggregate.py $M "$R" "$A" && printf "%s\t%s\n" $M $(( $(date +%s) - t0 )) >> "$A/timing.tsv"; }
   done
 done
 for R in grid_cluster/*__*__C5; do
   case $(basename "$R") in agg__*) continue;; esac
   [ -d "$R" ] || continue
   A=grid_cluster/agg__C5agg__$(basename "$R")
-  [ -f "$A/network.json" ] || python benchmark/alt_aggregate.py C5agg "$R" "$A"
+  [ -f "$A/network.json" ] || { t0=$(date +%s); python benchmark/alt_aggregate.py C5agg "$R" "$A" && printf "C5agg\t%s\n" $(( $(date +%s) - t0 )) >> "$A/timing.tsv"; }
 done
 
 echo "########## judge (Gemma 4 31B): node matching only"

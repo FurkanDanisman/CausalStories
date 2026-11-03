@@ -15,6 +15,7 @@
 #   phase 4  DEC   did it happen (named nodes, missing groups) and connect, for ours and C1-C4
 # C5's clustering, Steps 5-6 (run.py --mode matrix) and scoring run on the laptop.
 # Resumable: a finished step leaves a .done_<step> file and is skipped when the job is submitted again.
+# Times: every step of every run -> <run>/timing.tsv; every model load and the whole job -> grid_cluster/_logs/<GEN>__<DEC>/model_loads.tsv.
 #   sbatch --export=ALL,GEN=gemma,DEC=kev27b bench_run.sbatch
 #   GEN: gemma | qwen | llama | gptoss    DEC: kev27b | kev9b
 #   METHODS: default "ours C1 C2 C3 C4 C5 C6" with kev27b and "ours" with kev9b (the competing approaches use Kev-27B)
@@ -26,7 +27,7 @@ WORLDS=${WORLDS:-"homelessness career mental_health"}
 OUT=grid_cluster/_logs/${GEN}__${DEC}${SMOKE:+_smoke}
 mkdir -p "$OUT"
 source bench_lib.sh
-T0=$(date +%s)
+T0=$(date +%s); LOGS=$OUT                  # LOGS keeps the job folder (OUT is reused per run below)
 
 run_dir() { [ "$2" = ours ] && echo "grid_cluster/${1}__${GEN}__${DEC}${SMOKE:+_smoke}" || echo "grid_cluster/${1}__${GEN}__${2}${SMOKE:+_smoke}"; }
 texts() {                                   # texts file of a world (first 2 stories with SMOKE=1)
@@ -91,4 +92,6 @@ for W in $WORLDS; do for M in $METHODS; do R=$(run_dir $W $M); [ -d "$R" ] || co
   WORLD=$W; OUT=$R; run_info "${MODELS[$GEN]}" "$( [ $M = ours ] && echo "${KEVS[$DEC]}" || echo "$M + ${KEVS[$DEC]}" )" \
     "$(awk -F'\t' '{s+=$2} END {print s+0}' "$R/timing.tsv" 2>/dev/null)"
 done; done
-echo "########## done in $(( $(date +%s) - T0 )) s (failed steps are marked !!! FAILED above; step times in each run's timing.tsv)"
+printf "job\t%s\t%s\n" "${GEN}__${DEC}" $(( $(date +%s) - T0 )) >> "$LOGS/model_loads.tsv"
+echo "########## done in $(( $(date +%s) - T0 )) s (failed steps: !!! FAILED above)"
+echo "times: each run's timing.tsv (its own steps, start to end); model loads + whole job: $LOGS/model_loads.tsv"

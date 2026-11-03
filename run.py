@@ -267,6 +267,8 @@ def do_connect(args, outdir: Path) -> None:
 def do_matrix(args, outdir: Path) -> None:
     """Section 2, Steps 5-6 (no model): usage, the averaged matrix and the graph (pipeline/matrix.py).
     Writes <outdir>/network.json."""
+    import time
+    t0 = time.time()
     graphs = _graphs(args)
     res = matrix.aggregate(outdir, graphs)
     print(f"=== MATRIX · {len(graphs)} graph(s) · {len(res['network']['arrows'])} arrow(s) without influence ===")
@@ -276,6 +278,8 @@ def do_matrix(args, outdir: Path) -> None:
               f"est {a['estimate']:.2f} {ci}  n={a['n']}")
     print("USAGE " + ", ".join(f"{c} {u:.0%}" for c, u in sorted(res["usage"].items(), key=lambda x: -x[1])))
     (outdir / "network.json").write_text(json.dumps(res, indent=2))
+    with open(outdir / "timing.tsv", "a") as f:                  # the method's time: its own steps, start to end
+        f.write(f"matrix\t{time.time() - t0:.0f}\n")
     print(f"saved {outdir}/network.json")
 
 

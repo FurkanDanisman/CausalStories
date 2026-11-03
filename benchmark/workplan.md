@@ -123,5 +123,10 @@ sbatch --export=ALL,GEN=gptoss,DEC=kev9b  bench_run.sbatch
 sbatch bench_final.sbatch      # A4 x 4 generators, A1-A3, A5 (PC/GES), C5 clustering, judge (Gemma)
 bash bench_pack.sh && git add results_cluster && git commit -m "cluster results" && git push
 ```
+**Run time of each method, start to end:** every step writes its seconds to `<run>/timing.tsv` (GPU steps on
+Killarney, `matrix` on the laptop; A1-A5 and C5's clustering in their own `agg__…/timing.tsv`); every model load and
+each whole job go to `grid_cluster/_logs/<job>/model_loads.tsv`. A method's time = the sum of its own steps + one load
+of each model it uses.
+
 Laptop: `git pull`, unpack results_cluster/, run Steps 5-6 (`run.py --mode matrix --graphs-glob '<run>/*__gemma-kev.chain.json' --outdir <run>`)
 for our runs and C1-C4, then scoring (evaluate_run.py, from the judge caches) and grid_summary.py.

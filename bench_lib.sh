@@ -4,6 +4,10 @@
 # kev_serve_2gpu.py. Source this file from a job script.
 
 module load gcc opencv
+module load cuda 2>/dev/null || true      # vLLM compiles its sampling kernel at start-up and needs nvcc / CUDA_HOME
+if command -v nvcc >/dev/null; then export CUDA_HOME=$(dirname "$(dirname "$(command -v nvcc)")")
+else export VLLM_USE_FLASHINFER_SAMPLER=0; fi   # no compiler: use vLLM's built-in sampler (same sampling, no compile)
+echo "CUDA_HOME=${CUDA_HOME:-none}  VLLM_USE_FLASHINFER_SAMPLER=${VLLM_USE_FLASHINFER_SAMPLER:-default}"
 source .venv/bin/activate
 BASE=$HOME/projects/aip-rgrosse/furkanbd
 export HF_HOME=$BASE/hf_cache
@@ -30,9 +34,9 @@ start_llm() {                             # start_llm <gemma|qwen|llama|gptoss> 
   local path=${MODELS[$1]} len=${2:-32768}
   python -m vllm.entrypoints.openai.api_server --model "$path" --served-model-name llm \
     --tensor-parallel-size 2 --max-model-len "$len" --port $LLM_PORT > "$OUT/llm_server_$1.log" 2>&1 &
-  LLM_PID=$!
+  LLM_PID=$!; local t=$(date +%s)
   for i in $(seq 1 180); do
-    curl -sf "http://127.0.0.1:$LLM_PORT/v1/models" >/dev/null && return 0
+    curl -sf "http://127.0.0.1:$LLM_PORT/v1/models" >/dev/null && { printf "load\t%s\t%s\n" "$1" $(( $(date +%s) - t )) >> "$OUT/model_loads.tsv"; return 0; }
     kill -0 $LLM_PID 2>/dev/null || { echo "LLM server died:"; tail -40 "$OUT/llm_server_$1.log"; exit 1; }
     sleep 10
   done
@@ -46,9 +50,9 @@ start_kev() {
   else                                    # fits one L40S: Kev's own server
     (cd "$KEV_DIR" && CUDA_VISIBLE_DEVICES=0 .venv/bin/python -m kev.serve --run "${KEVS[$DEC]}" --port $KEV_PORT) >> "$OUT/kev_server.log" 2>&1 &
   fi
-  KEV_PID=$!
+  KEV_PID=$!; local t=$(date +%s)
   for i in $(seq 1 240); do
-    curl -sf "http://127.0.0.1:$KEV_PORT/v1/models" >/dev/null && return 0
+    curl -sf "http://127.0.0.1:$KEV_PORT/v1/models" >/dev/null && { printf "load\t%s\t%s\n" "$DEC" $(( $(date +%s) - t )) >> "$OUT/model_loads.tsv"; return 0; }
     kill -0 $KEV_PID 2>/dev/null || { echo "Kev server died:"; tail -40 "$OUT/kev_server.log"; exit 1; }
     sleep 10
   done
