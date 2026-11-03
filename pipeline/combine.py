@@ -1,29 +1,17 @@
-"""Section 2, Steps 4-6 and the output (see method_Oct.tex).
+"""Section 2 helpers of the agreed method (method_Oct.tex).
 
-  Step 4  implied   (Kev)  for each narrative, every event node it names and every event
-                           concept it does not mention: Kev reads the text, happened (1) /
-                           not happened (0) / cannot tell (missing). Being named is not
-                           happening (p8: "the eviction never happened"). A named concept is
-                           1 if any of its nodes happened, 0 if all did not, else missing.
-                           Participant concepts are present (1) or absent (0).
-  Step 5  imputed   (MICE) the still-missing cells of the narrative x concept table are
-                           imputed M = 30 times (draws from the predictive distribution);
-                           arrows to or from an imputed concept are unknown.
-  Step 6  combine          random-effects meta-analysis (DerSimonian-Laird) per ordered pair
-                           (a, b) and answer r, on the log-odds scale: each narrative where
-                           a -> b was asked and neither concept is imputed gives y_j = mean
-                           logit over the R repeats and v_j = Var/R (floor 1e-4); tau^2 from
-                           Cochran's Q; weights 1/(v_j + tau^2); estimate and 95% interval
-                           back-transformed. The displayed answer has the highest estimate.
-  Output  causal Bayesian network: arrows = pairs displayed as enables or blocks;
-          P(b | parents of b) counted on each of the M tables, combined with Rubin's rules.
+  implied   Step 3 (decision model): for each story, every event node it names and every event
+            group it does not name: happened (1) / not happened (0) / cannot tell (missing).
+            Being named is not happening ("the eviction never happened"). A named group is 1 if
+            any of its nodes happened, 0 if all did not, else missing. Participant groups are
+            present (1) or absent (0). Cannot tell stays missing: there is no imputation.
+  meta      the 95% interval of an arrow: random-effects meta-analysis (DerSimonian-Laird) on
+            the log-odds scale, one answer per story.
 """
 
 from __future__ import annotations
 
 import math
-from collections import defaultdict
-from itertools import product
 
 from . import prompts
 from .kev_client import KevClient
@@ -51,8 +39,6 @@ def _flip(pr: dict) -> dict:
     out["enables"], out["blocks"] = pr.get("blocks", 0.0), pr.get("enables", 0.0)
     return out
 
-
-# ---------------------------------------------------------------- Step 4
 
 def implied(kev: KevClient, graphs: list[dict], abst: dict, seed: int = 0, log=print) -> dict:
     of, kind = concept_map(abst)
@@ -96,44 +82,6 @@ def implied(kev: KevClient, graphs: list[dict], abst: dict, seed: int = 0, log=p
     return out
 
 
-# ---------------------------------------------------------------- Step 5
-
-M_IMPUTATIONS = 30
-
-
-def impute(table: dict[str, dict[str, int | None]], concepts: list[str], m: int = M_IMPUTATIONS):
-    """MICE on the narrative x concept table, m times with draws from the predictive
-    distribution. Returns the m completed tables and the set of imputed (narrative, concept)
-    cells. Columns with no known value stay missing."""
-    import numpy as np
-    narr = list(table)
-    X = np.array([[np.nan if table[j].get(c) is None else table[j][c] for c in concepts] for j in narr],
-                 dtype=float)
-    miss = {(narr[r], concepts[k]) for r, k in zip(*np.where(np.isnan(X)))}
-    known_cols = [k for k in range(len(concepts)) if not np.all(np.isnan(X[:, k]))]
-    tables = []
-    for i in range(m):
-        Xi = X.copy()
-        if miss and known_cols:
-            from sklearn.experimental import enable_iterative_imputer  # noqa: F401
-            from sklearn.impute import IterativeImputer
-            sub = Xi[:, known_cols]
-            try:
-                filled = IterativeImputer(max_iter=30, random_state=i, sample_posterior=True, min_value=0,
-                                          max_value=1, keep_empty_features=True).fit_transform(sub)
-            except (np.linalg.LinAlgError, ValueError):     # degenerate table (e.g. many tiny groups):
-                rng = np.random.default_rng(i)              # draw each missing cell from its column's rate
-                rate = np.nan_to_num(np.nanmean(sub, axis=0), nan=0.0)
-                filled = np.where(np.isnan(sub), (rng.random(sub.shape) < rate).astype(float), sub)
-            Xi[:, known_cols] = (filled >= 0.5).astype(float)
-        tables.append({j: {c: (None if np.isnan(Xi[r, k]) else int(Xi[r, k])) for k, c in enumerate(concepts)}
-                       for r, j in enumerate(narr)})
-    imputed = {(j, c) for j, c in miss if tables[0][j][c] is not None}
-    return tables, imputed
-
-
-# ---------------------------------------------------------------- Step 6
-
 EPS, V_MIN = 1e-3, 1e-4
 
 
@@ -167,89 +115,3 @@ def meta(reps_per_narrative: list[list[float]]) -> dict:
     se = 1 / math.sqrt(sum(ws))
     return {"estimate": round(_expit(mu), 4), "ci95": [round(_expit(mu - 1.96 * se), 4), round(_expit(mu + 1.96 * se), 4)],
             "tau2": round(tau2, 4), "v_mean": round(sum(vs) / n, 4), "n": n}
-
-
-def rubin_cpd(qs: list[float], us: list[float]) -> dict:
-    """Rubin's rules over the m completed tables for one conditional probability."""
-    m = len(qs)
-    qbar = sum(qs) / m
-    ubar = sum(us) / m
-    B = sum((q - qbar) ** 2 for q in qs) / (m - 1) if m > 1 else 0.0
-    T = ubar + (1 + 1 / m) * B
-    h = 1.96 * math.sqrt(T)
-    return {"p_1": round(qbar, 4), "U": round(ubar, 4), "B": round(B, 4), "T": round(T, 4),
-            "ci95": [round(max(0.0, qbar - h), 4), round(min(1.0, qbar + h), 4)]}
-
-
-def combine(graphs: list[dict], abst: dict, imp: dict, log=print) -> dict:
-    of, kind = concept_map(abst)
-    sign = sign_map(abst)
-    concepts = list(kind)
-    narr = [g["id"] for g in graphs]
-
-    # Step 5: completed table
-    table = {j: {c: imp[j]["values"].get(c) for c in concepts} for j in narr}
-    tables, imputed = impute(table, concepts)
-    done = tables[0]
-    log(f"STEP 5  imputed {len(imputed)} cell(s) x {len(tables)} imputations: {sorted(imputed)}")
-
-    # Step 6: per narrative, the probabilities of each concept-level pair
-    per_pair: dict[tuple[str, str], list[dict]] = defaultdict(list)
-    for g in graphs:
-        j = g["id"]
-        local = {(j, v): of[(j, v)] for v in g["nodes"] if (j, v) in of}
-        best: dict[tuple[str, str], dict] = {}
-        for a in g.get("asked", []):
-            ca, cb = local.get((j, a["head"])), local.get((j, a["tail"]))
-            if ca is None or cb is None or ca == cb:
-                continue
-            if (j, ca) in imputed or (j, cb) in imputed:
-                continue                                     # arrows of imputed concepts are unknown
-            pr = {r: a["probs"].get(r, 0.0) for r in ANSWERS}
-            reps = a.get("reps") or [a["probs"]]
-            if sign.get((j, a["head"]), 1) * sign.get((j, a["tail"]), 1) < 0:   # one opposite end: enables <-> blocks
-                pr, reps = _flip(pr), [_flip(r) for r in reps]
-            if (ca, cb) not in best or 1 - pr["none"] > 1 - best[(ca, cb)][0]["none"]:
-                best[(ca, cb)] = (pr, reps)
-        for pair, pr in best.items():
-            per_pair[pair].append(pr)
-
-    pairs = []
-    for (a, b), prs in per_pair.items():
-        stats = {r: meta([[x.get(r, 0.0) for x in reps] for _, reps in prs]) for r in ANSWERS}
-        shown = max(ANSWERS, key=lambda r: stats[r]["estimate"])
-        pairs.append({"head": a, "tail": b, "n": len(prs), "answers": stats, "displayed": shown})
-    log(f"STEP 6  {len(pairs)} concept pair(s) combined")
-
-    # Output: causal Bayesian network
-    arrows = [p for p in pairs if p["displayed"] != "none"]
-    parents: dict[str, list[str]] = defaultdict(list)
-    for p in arrows:
-        parents[p["tail"]].append(p["head"])
-    cpds = {}
-    for b in concepts:
-        pa = sorted(parents.get(b, []))
-        rows = []
-        seen = sorted({tuple(t[j][x] for x in pa) for t in tables for j in narr
-                       if None not in tuple(t[j][x] for x in pa)})   # only parent settings that occur:
-        for cfg in seen:                                             # same rows as all 2^k, without the blow-up
-            qs, us, ns = [], [], []
-            for t in tables:
-                match = [j for j in narr if t[j][b] is not None and all(t[j][x] == v for x, v in zip(pa, cfg))]
-                if match:
-                    q = sum(t[j][b] for j in match) / len(match)
-                    qs.append(q)
-                    us.append(q * (1 - q) / len(match))
-                    ns.append(len(match))
-            if qs:
-                rows.append({"parents": dict(zip(pa, cfg)), **rubin_cpd(qs, us),
-                             "n": round(sum(ns) / len(ns), 2), "tables": len(qs)})
-        cpds[b] = {"parents": pa, "rows": rows}
-
-    return {"table": done, "tables": tables, "imputed": sorted(imputed), "pairs": pairs,
-            "network": {"nodes": [{"id": c, "kind": kind[c]} for c in concepts],
-                        "arrows": [{"head": p["head"], "tail": p["tail"], "rel": p["displayed"],
-                                    "estimate": p["answers"][p["displayed"]]["estimate"],
-                                    "ci95": p["answers"][p["displayed"]]["ci95"], "n": p["n"]}
-                                   for p in arrows],
-                        "cpds": cpds}}

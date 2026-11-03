@@ -18,6 +18,7 @@ echo "### Gemma: events + participants (K=$K)"; $PY run.py --mode chain-nodes --
 echo "### Jev: chain walk";                 $PY run.py --mode chain-kev --kev-url $JEV --nodes-file "$OUT/chain_nodes.json" --tag gemma-kev --outdir "$OUT" --workers $W
 echo "### Jev: groups (Steps 1-2)";         $PY run.py --mode merge-kev --kev-url $JEV --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT"
 echo "### Gemma: high-level names";         $PY run.py --mode name-groups --backend openrouter --model "$GEN" --outdir "$OUT"
-echo "### Jev: did it happen? (Step 3)";    $PY run.py --mode implied --kev-url $JEV --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT" --workers $W
-echo "### Steps 4-5: combine";              $PY run.py --mode combine --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT"
+echo "### Jev: named nodes happened? (Step 3)"; $PY run.py --mode node-happened --kev-url $JEV --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT" --workers $W
+echo "### Jev: missing groups happened? (Step 3)"; $PY run.py --mode implied --kev-url $JEV --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT" --workers $W
+echo "### Jev: connect inferred groups (Step 4)"; $PY run.py --mode connect --kev-url $JEV --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT" --workers $W
 echo "Done in $(( $(date +%s) - start )) s. Results in $OUT/"

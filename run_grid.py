@@ -66,7 +66,7 @@ def main():
                 if bad > 0.2 * 200 or "nodename nor servname" in logtxt or "URLError" in logtxt:
                     print(f"=== FAILED {out.name}: {bad} stories without nodes / network error; not recorded", flush=True)
                     continue
-                if rc != 0 or not (out / "network.json").exists():
+                if rc != 0 or not any(out.glob("*__connect.json")):
                     print(f"=== FAILED {out.name} (rc {rc}) after {secs}s; see grid/{out.name}.log", flush=True)
                     continue
                 usd = {}

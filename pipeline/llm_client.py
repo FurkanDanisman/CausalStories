@@ -6,8 +6,6 @@ via tool/JSON-mode forcing). Swap the backend by passing a different client;
 nothing else in the pipeline changes.
 
 Backends:
-  * MockLLMClient   -- no network, canned answers keyed by `task`. Lets the whole
-                       pipeline run + be tested with zero API keys.
   * AnthropicClient -- Claude (lazy-imports `anthropic`).
   * OpenAIClient    -- GPT / any OpenAI-compatible endpoint (lazy-imports `openai`).
   * OllamaClient    -- local open-source models via Ollama's OpenAI-compatible API.
@@ -24,8 +22,6 @@ from typing import Protocol, Type, TypeVar
 
 from pydantic import BaseModel
 
-from . import mock_data
-
 T = TypeVar("T", bound=BaseModel)
 
 
@@ -33,8 +29,7 @@ class LLMClient(Protocol):
     def complete(self, *, task: str, prompt: str, schema: Type[T], temperature: float = 0.0) -> T:
         """Return an instance of `schema` produced by the model for `prompt`.
 
-        `task` is a short label (e.g. "extract_nodes") used for logging and by the
-        mock to route to canned data; real backends may ignore it.
+        `task` is a short label (e.g. "extract_nodes") used for logging; backends may ignore it.
         """
         ...
 
@@ -46,28 +41,6 @@ def _schema_instructions(schema: Type[BaseModel]) -> str:
         "Output JSON only, no prose, no code fences.\n"
         + json.dumps(schema.model_json_schema())
     )
-
-
-# --------------------------------------------------------------------------- mock
-
-class MockLLMClient:
-    """Deterministic, offline. Returns hand-authored answers for the demo example
-    so the end-to-end pipeline (including eval) produces meaningful numbers."""
-
-    # marker string that must appear in the prompt for the fixture to apply
-    _MARKERS = {"keating": "Keating"}
-
-    def __init__(self, fixture: str = "keating"):
-        self.fixture = fixture
-
-    def complete(self, *, task: str, prompt: str, schema: Type[T], temperature: float = 0.0) -> T:
-        marker = self._MARKERS.get(self.fixture, "")
-        applies = marker in prompt
-        payload = mock_data.answer(self.fixture, task) if applies else None
-        if payload is None:
-            # Unknown task: return an empty-but-valid instance so plumbing survives.
-            return schema.model_validate(mock_data.empty_for(schema))
-        return schema.model_validate(payload)
 
 
 # ---------------------------------------------------------------------- anthropic

@@ -48,9 +48,10 @@ start_kev() {
 }
 stop_kev() { kill $KEV_PID 2>/dev/null; wait $KEV_PID 2>/dev/null; sleep 5; }
 
-# GPU part of our aggregation on the story graphs in $OUT: Kev groups, the LLM names the groups, Kev decides
-# what happened. The CPU part (combine: imputation + meta-analysis) runs on the laptop after the results
-# are pushed back (Killarney is GPU-only). The generator for naming is $1.
+# GPU part of our aggregation on the story graphs in $OUT (method_Oct.tex, Section 2): Kev groups, the LLM
+# names the groups, Kev decides what happened (named nodes, then missing groups) and connects the inferred
+# groups on top of each story graph. Usage and the averaged matrix (Steps 5-6) are computed on the laptop
+# (Killarney is GPU-only). The generator for naming is $1.
 our_aggregation() {
   start_kev
   python run.py --mode merge-kev --kev-url "http://127.0.0.1:$KEV_PORT" --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT"
@@ -59,7 +60,9 @@ our_aggregation() {
   python run.py --mode name-groups --backend openai --base-url "http://127.0.0.1:$LLM_PORT/v1" --model llm --outdir "$OUT"
   stop_llm
   start_kev
+  python run.py --mode node-happened --kev-url "http://127.0.0.1:$KEV_PORT" --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT"
   python run.py --mode implied --kev-url "http://127.0.0.1:$KEV_PORT" --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT"
+  python run.py --mode connect --kev-url "http://127.0.0.1:$KEV_PORT" --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT"
   stop_kev
 }
 
@@ -68,7 +71,7 @@ run_info() {                              # run_info <generator> <decision/metho
 import json, sys, time
 g, d, s = sys.argv[1], sys.argv[2], float(sys.argv[3])
 json.dump({"world": "$WORLD", "generator": g, "decision_model": d, "seconds": s, "seconds_gpu": s, "usd_total": 0,
-           "note": "seconds = GPU stages on Killarney; the local combine time is added when it runs",
+           "note": "seconds = GPU stages on Killarney; the local Steps 5-6 time is added when they run",
            "hardware": "Killarney $GPU_COUNT x $GPU_NAME", "finished": time.strftime("%Y-%m-%d %H:%M:%S")},
           open("$OUT/run_info.json", "w"), indent=1)
 PY

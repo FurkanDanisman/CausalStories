@@ -32,7 +32,7 @@ python run.py --mode chain-kev --kev-url "http://127.0.0.1:$KEV_PORT" --nodes-fi
   --tag gemma-kev --outdir "$OUT"
 stop_kev
 
-echo "### our aggregation, GPU part (Kev-27B groups, $GEN names, Kev-27B did-it-happen; combine runs locally)"
+echo "### our aggregation, GPU part (Kev-27B groups, $GEN names, Kev-27B did-it-happen + connect; Steps 5-6 run locally)"
 our_aggregation "$GEN"
 
 run_info "${MODELS[$GEN]}" "jaredpalmer/kev-27b (local)" $(( $(date +%s) - t0 ))

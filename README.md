@@ -1,117 +1,25 @@
-# Single-example causal-graph extraction
+# Causal Stories pipeline
 
-Validation step for the larger methodology: prove that an LLM can extract a
-causal graph — **participants, events, and directed causal arrows between them**
-— from ONE TORQUESTRA narrative, and score it against the gold human graph.
+The agreed method is `working_latex/method_Oct.tex`; the reference run is `out_api_world100/` with its
+results page `results/api_world100_matrix/`. No imputation anywhere: "cannot tell" stays missing.
 
-We intentionally **do not** emit ENABLES/BLOCKS labels or fine-grained
-sub-relations. An arrow is enough. Node typing (event vs participant, plus
-FrameNet/MAVEN event types on events) is kept so output aligns with gold nodes.
+## Stages (`run.py --mode ...`)
 
-## Run it (offline, no API key)
+| Mode | Model | Step | Output |
+|---|---|---|---|
+| `chain-nodes` | generator (e.g. Gemma 4 31B) | S1 Step 1: the K most important events + participants | `chain_nodes.json` |
+| `chain-kev` | decision model (Jev / Kev) | S1 Steps 2-3: chain walk + separate influence walk | `<id>__<tag>.chain.json` |
+| `merge-kev` | decision model | S2 Step 1: groups, one story at a time (same / opposite / different) | `abstraction.json` |
+| `name-groups` | generator | S2 Step 1: high-level group names (and opposite names) | `abstraction.json` |
+| `node-happened` | decision model | S2 Step 3: did each named event node happen? | `<id>__happened.json` |
+| `implied` | decision model | S2 Step 3: did each group a story does not name happen? (1 / 0 / cannot tell) | `implied.json` |
+| `connect` | decision model | S2 Step 4: inferred groups connected on top of each story graph (walk rules) | `<id>__connect.json` |
 
-```bash
-pip install -r requirements.txt
-python run.py                     # mock backend, Keating train example
-```
+S2 Steps 5-6 (usage = node has an arrow in the connected graph; matrix of averaged enables / blocks /
+none; DerSimonian-Laird interval from `combine.meta`) are computed from these files.
 
-This runs the whole pipeline with a canned model, prints the extracted graph +
-eval report, and writes `out/graph.json` and `out/graph.dot`.
+## Run
 
-## Swap in a real model
-
-The pipeline is model-agnostic — one `LLMClient.complete(task, prompt, schema)`
-call per stage. Pick a backend and pass a model id:
-
-```bash
-python run.py --backend anthropic --model <model-id> --k 5   # needs ANTHROPIC_API_KEY
-python run.py --backend openai    --model gpt-4o
-python run.py --backend ollama    --model qwen2.5:14b        # local, offline
-```
-
-## Running on a cluster (e.g. Killarney)
-
-Two ways to run open-source models on a GPU node:
-
-**A) Serve with vLLM (OpenAI-compatible), then point the pipeline at it:**
-```bash
-# on the GPU node:
-python -m vllm.entrypoints.openai.api_server --model Qwen/Qwen2.5-7B-Instruct --port 8000
-# run the pipeline (any host that can reach the node):
-python run.py --backend openai --base-url http://<node>:8000/v1 \
-              --model Qwen/Qwen2.5-7B-Instruct
-```
-
-**B) In-process via transformers (no server), inside a batch job:**
-```bash
-python run.py --backend hf --model Qwen/Qwen2.5-7B-Instruct
-```
-
-## Compare several local models on one example (cluster)
-
-`compare_models.sh` runs each model in its **own process** (so vLLM releases GPU
-memory between models), then judges all of them once with a fixed model:
-
-```bash
-pip install vllm                 # + the pipeline's requirements
-bash compare_models.sh           # edit TAGS/PATHS/JUDGE at the top first
-# -> out_compare/summary.json (P/R/F1 + judge per model) and *.comparison.html
-```
-
-Set `VLLM_TP=2` (etc.) if a model needs tensor-parallel across GPUs. Under the
-hood it uses the three run.py modes:
-
-```bash
-# extract with ONE model (one process each -> clean GPU teardown)
-python run.py --mode extract --backend vllm --model /model-weights/Qwen3.5-27B \
-              --tag qwen3.5-27b --torque-id <id> --outdir out_compare
-# judge every saved graph once with the fixed judge
-python run.py --mode judge   --backend vllm --model $JUDGE \
-              --torque-id <id> --outdir out_compare
-```
-
-`--backend vllm` decodes with schema-guided JSON (reliable structured output).
-
-### Held-out eval example + a separate evaluator
-
-The current eval target (fully held out; the prompt's few-shot example is
-disjoint from it) is `docid_CNN19980227.2130.0067_sentid_10`. Keep the
-**evaluator** model (node alignment + judge) fixed and strong so a model is not
-scored by itself:
-
-```bash
-python run.py \
-  --backend hf --model Qwen/Qwen2.5-7B-Instruct \        # model UNDER TEST
-  --eval-backend hf --eval-model Qwen/Qwen2.5-72B-Instruct \  # fixed strong judge
-  --torque-id docid_CNN19980227.2130.0067_sentid_10 --split train \
-  --outdir out_bomb
-```
-Omit the `--eval-*` flags and the test model grades itself (a warning is printed).
-
-`--k` is self-consistency: extract nodes once, extract edges K times against the
-fixed node set, arrow probability = fraction of runs that drew it. (This is the
-single-text preview of the cross-narrative edge-probability aggregation in the
-methodology.)
-
-## Pipeline stages
-
-| stage | file | what it does |
-|-------|------|--------------|
-| load | `pipeline/dataset.py` | pick example by `torque_id`/`split`; strip gold edge labels |
-| nodes | `pipeline/extract.py` | LLM → typed nodes (event/participant + event_types) |
-| edges | `pipeline/extract.py` | LLM → directed arrows over the fixed node set, K-sample |
-| eval | `pipeline/evaluate.py` | LLM node alignment → unlabeled-edge P/R/F1 + LLM-judge |
-| viz | `pipeline/visualize.py` | Graphviz DOT (`dot -Tpng out/graph.dot -o g.png`) |
-
-Structured output is enforced per stage via pydantic schemas (`pipeline/schema.py`).
-
-## Known limitations (v1, by design)
-
-- **Eval reuses the LLM** to align extracted↔gold node names, so scores are
-  bounded by the aligner — the same canonicalization problem the full pipeline
-  targets, here as a single controlled pair.
-- **Cross-run edge aggregation is exact-string** over a fixed node vocabulary
-  (safe because nodes are extracted once); it does not merge paraphrased edges.
-- **Cross-narrative concepts** (canonicalization, intervenability, contradiction,
-  imputation) are out of scope here — this validates extraction only. Their
-  definitions still need to be sourced before the aggregation stage is built.
+- Hosted (OpenRouter, one key in `.env`): `./run_api_or.sh texts.json out_folder`
+- Killarney (GPU stages only): `bench_kev27b.sbatch`, `bench_baseline.sbatch`, `bench_judge.sbatch` (helpers in `bench_lib.sh`)
+- Benchmark (worlds, stories, scorer, competing approaches): `benchmark/`

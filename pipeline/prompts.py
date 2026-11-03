@@ -7,8 +7,7 @@ annotate the files freely.
 
 Template syntax:
   {{VAR}}            runtime value passed by the pipeline (e.g. {{TEXT}})
-  {{GUIDANCE}}       auto-injected partial  <- guidance.md
-  {{WORKED_EXAMPLE}} auto-injected partial  <- worked_example.md
+  {{GUIDANCE_EVENTS}} auto-injected partial  <- guidance_events.md
 """
 
 from __future__ import annotations
@@ -18,8 +17,7 @@ import re
 from pathlib import Path
 
 TEMPLATE_DIR = Path(__file__).parent / "prompt_templates"
-_PARTIALS = {"GUIDANCE": "guidance.md", "GUIDANCE_EVENTS": "guidance_events.md",
-             "WORKED_EXAMPLE": "worked_example.md"}
+_PARTIALS = {"GUIDANCE_EVENTS": "guidance_events.md"}
 _COMMENT = re.compile(r"<!--.*?-->\s*", re.DOTALL)
 
 
@@ -43,12 +41,6 @@ def render(template_file: str, **vars: str) -> str:
     return text
 
 
-def extract_nodes_prompt(text: str, max_nodes: int | None = None) -> str:
-    limit = (f"Return at most {max_nodes} nodes: the {max_nodes} most important for "
-             f"the causal chain." if max_nodes else "")
-    return render("extract_nodes.md", TEXT=text, NODE_LIMIT=limit)
-
-
 def _listing(node_ids: list[str]) -> str:
     return "\n".join(f"  - {nid}" for nid in node_ids)
 
@@ -69,18 +61,6 @@ def extract_events_prompt(text: str, max_nodes: int | None = None) -> str:
 
 def extract_participants_prompt(text: str) -> str:
     return render("extract_participants.md", TEXT=text)
-
-
-# Kev choice options for kev_agent.md (participant -> event); "yes" is drawn as an arrow.
-KEV_AGENT_OPTIONS = {
-    "yes": "the participant carries out or initiates the event in the text",
-    "no": "the text does not say the participant carries out or initiates the event",
-}
-
-
-def kev_agent_question(head: str, tail: str, node_ids: list[str]) -> dict:
-    return {"type": "choice", "criteria": KEV_AGENT_OPTIONS,
-            "instructions": render("kev_agent.md", HEAD=head, TAIL=tail, NODE_LIST=_listing(node_ids))}
 
 
 # Kev choice options for kev_implied.md (Section 2, Step 4).
@@ -120,57 +100,6 @@ def kev_arrow_question(head: str, tail: str, node_ids: list[str]) -> dict:
             "instructions": render("kev_arrow.md", HEAD=head, TAIL=tail, NODE_LIST=_listing(node_ids))}
 
 
-def extract_edges_prompt(text: str, node_ids: list[str]) -> str:
-    listing = "\n".join(f"  - {nid}" for nid in node_ids)
-    return render("extract_edges.md", TEXT=text, NODE_LIST=listing)
-
-
-def align_nodes_prompt(extracted_ids: list[str], gold_ids: list[str]) -> str:
-    ex = "\n".join(f"  - {i}" for i in extracted_ids)
-    go = "\n".join(f"  - {i}" for i in gold_ids)
-    return render("align_nodes.md", EXTRACTED=ex, GOLD=go)
-
-
-def judge_prompt(text: str, extracted_edges: list[dict], gold_edges: list[dict]) -> str:
-    return render("judge.md", TEXT=text,
-                  EXTRACTED_EDGES=str(extracted_edges), GOLD_EDGES=str(gold_edges))
-
-
-def judge_edge_prompt(text: str, edges: list[tuple[str, str]]) -> str:
-    listing = "\n".join(f"  [{i}] {h} -> {t}" for i, (h, t) in enumerate(edges))
-    return render("judge_edge.md", TEXT=text, EDGES=listing)
-
-
-# Angles for synthetic retellings — each induces a different aggregation challenge
-# (omission, granularity, added detail, re-wording, reordering).
-PERSPECTIVES = [
-    "a brief summary that keeps only the two or three most central events",
-    "a detailed eyewitness account that foregrounds one participant and describes "
-    "their actions step by step, breaking events into finer sub-steps",
-    "a secondhand retelling by someone unsure of some details, using vaguer, more "
-    "general wording and omitting at least one event",
-    "a fuller account that adds one plausible related event (a cause or a "
-    "consequence) that fits the story but was not stated in the original",
-    "a version told from a different participant's point of view, mentioning only "
-    "what that person would plausibly know and omitting the rest",
-    "a neutral rephrasing that uses different words for the same events and reorders "
-    "the sentences",
-]
-
-
-def generate_variant_prompt(base_text: str, perspective: str) -> str:
-    return render("generate_variant.md", TEXT=base_text, PERSPECTIVE=perspective)
-
-
-def canonicalize_prompt(base_text: str, nodes_listing: str) -> str:
-    return render("canonicalize.md", TEXT=base_text, NODES=nodes_listing)
-
-
-def refute_prompt(text: str, events: list[str]) -> str:
-    listing = "\n".join(f"  [{i}] {e}" for i, e in enumerate(events))
-    return render("refute.md", TEXT=text, EVENTS=listing)
-
-
 # Kev choice options for kev_group.md / kev_group_participant.md (Section 2, Step 1).
 KEV_GROUP_OPTIONS = {
     "same": "the event is the same kind of event as the group",
@@ -207,7 +136,4 @@ def name_groups_prompt(kind: str, groups: str) -> str:
     return render("name_groups.md", KIND="events" if kind == "event" else "participants",
                   NAMING=MERGE_NAMING[kind], GROUPS=groups)
 
-
-def merge_concepts_prompt(kind: str, items: str) -> str:
-    return render("merge_concepts.md", KIND=kind, NAMING=MERGE_NAMING[kind], ITEMS=items)
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Competing approaches (benchmark/workplan.md §2). Each writes one graph per story in the pipeline's
 format (<out>/<id>__<tag>.chain.json: nodes, kinds, edges, asked), so OUR aggregation (run.py merge-kev,
-name-groups, implied, combine) and the scorer apply to it unchanged. C6 writes the world graph directly.
+name-groups, node-happened, implied, connect, then Steps 5-6) and the scorer apply to it unchanged. C6 writes the world graph directly.
 
 All LLM calls go to one OpenAI-compatible endpoint (a vLLM server on Killarney):
   LLM_URL   default http://127.0.0.1:8000/v1/chat/completions
@@ -113,7 +113,7 @@ def ask_json(system, user, tries=3):
 
 def graph(sid, text, nodes, kinds, edges, tag, extra=None):
     """Pipeline graph format. 'asked' holds the probability of each ordered pair's relation, which OUR
-    aggregation (combine.py) meta-analyses: an arrow the method gives = 1 for its relation; no arrow = none."""
+    aggregation averages: an arrow the method gives = 1 for its relation; no arrow = none."""
     have = {(h, t): (r, p) for h, t, r, p in edges}
     asked = []
     for a in nodes:

@@ -1,39 +1,34 @@
 #!/usr/bin/env python3
-"""Causal-graph extraction + evaluation over one example or a held-out set.
+"""Causal Stories pipeline: the agreed method (method_Oct.tex; results/api_world100_matrix).
 
-Modes (--mode):
-  full     one process: extract with the test model, then judge (single example).
-  extract  load ONE model, extract graph(s), save them. No judging. One process
-           per model => clean GPU teardown on exit. With --examples-file the model
-           is loaded once and every example is extracted.
-  judge    load the judge model once, score every saved graph in --outdir against
-           its gold (each saved graph records its own torque_id), and report mean
-           P/R/F1 per model over all examples.
-
-Examples selection: --torque-id (single) OR --examples-file FILE (one
-"torque_id [split]" per line; blank/#-comment lines ignored).
-
-Backends: mock | anthropic | openai (also vLLM/TGI via --base-url) | ollama |
-          hf (transformers) | vllm (in-process, schema-guided JSON).
+Section 1 (one story -> one graph):
+  chain-nodes    generator LLM: the K most important events + the participants   -> chain_nodes.json
+  chain-kev      decision model: chain walk (event->event, participant->event) and the
+                 separate influence walk (event->participant)                     -> <id>__<tag>.chain.json
+Section 2 (story graphs -> one graph):
+  merge-kev      Step 1: decision model groups nodes, one story at a time         -> abstraction.json
+  name-groups    Step 1: generator names the groups (and their opposites)         -> abstraction.json
+  node-happened  Step 3: did each named event node happen?                         -> <id>__happened.json
+  implied        Step 3: did each group a story does not name happen? (1/0/cannot tell; no imputation)
+                                                                                    -> implied.json
+  connect        Step 4: inferred groups connected on top of each story graph      -> <id>__connect.json
+Steps 5-6 (usage, matrix of averaged answers, intervals) are computed from these files
+(combine.meta gives the interval).
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-from collections import defaultdict
 from pathlib import Path
 
-from pipeline import abstraction, aggregate, chain, combine, dataset, evaluate, extract, merge_kev, prompts, visualize
+from pipeline import chain, combine, merge_kev, prompts
 from pipeline.kev_client import KevClient
-from pipeline.llm_client import (AnthropicClient, HFClient, MockLLMClient, OpenRouterClient,
+from pipeline.llm_client import (AnthropicClient, HFClient, OpenRouterClient,
                                  OllamaClient, OpenAIClient, VLLMClient)
-from pipeline.schema import CausalGraph, RefuteBatch, Variant
 
 
 def build_client(backend: str, model: str | None, base_url: str | None = None):
-    if backend == "mock":
-        return MockLLMClient(fixture="keating")
     if backend == "anthropic":
         return AnthropicClient(model=model or "REPLACE_WITH_MODEL_ID")
     if backend == "openai":                      # also: any vLLM/TGI/llama.cpp server via base_url
@@ -51,311 +46,6 @@ def build_client(backend: str, model: str | None, base_url: str | None = None):
 
 def _tag(args) -> str:
     return args.tag or (args.model or args.backend).replace("/", "_")
-
-
-def _examples(args) -> list[tuple[str, str]]:
-    if args.examples_file:
-        out = []
-        for line in Path(args.examples_file).read_text().splitlines():
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            parts = line.split()
-            out.append((parts[0], parts[1] if len(parts) > 1 else args.split))
-        return out
-    return [(args.torque_id, args.split)]
-
-
-def _save_graph(path: Path, tag: str, ex, graph: CausalGraph) -> None:
-    data = {"tag": tag, "torque_id": ex.torque_id, "split": ex.split}
-    data.update(graph.model_dump(mode="json"))
-    path.write_text(json.dumps(data, indent=2))
-
-
-def _load_graph(path: Path):
-    d = json.loads(path.read_text())
-    graph = CausalGraph.model_validate({"nodes": d["nodes"], "edges": d["edges"]})
-    return d["tag"], d["torque_id"], d["split"], graph
-
-
-def _render(graph, report, ex, outdir: Path, name: str, backend: str) -> None:
-    pred_svg = visualize.render_svg(visualize.predicted_dot(graph, report))
-    gold_svg = visualize.render_svg(visualize.gold_dot(ex, report))
-    meta = {"torque_id": ex.torque_id, "split": ex.split, "backend": backend,
-            "text": ex.text, "is_mock": backend == "mock"}
-    (outdir / f"{name}.comparison.html").write_text(
-        visualize.comparison_html(gold_svg, pred_svg, report, meta))
-
-
-def do_extract(args, outdir: Path) -> None:
-    tag = _tag(args)
-    examples = _examples(args)
-    print(f"=== EXTRACT · {tag} · backend={args.backend} · {len(examples)} example(s) ===")
-    for old in outdir.glob(f"{tag}##*.graph.json"):
-        old.unlink()
-    client = build_client(args.backend, args.model, args.base_url)
-    for idx, (tid, split) in enumerate(examples):
-        ex = dataset.get_example(tid, split)
-        try:
-            graph = extract.extract_graph(client, ex.text, k=args.k)
-        except Exception as e:  # bad/truncated output must not kill the batch
-            print(f"  !! [{idx:03d}] {tid}: FAILED {type(e).__name__}: {e}")
-            graph = CausalGraph(nodes=[], edges=[])
-        print(f"  [{idx:03d}] {tid}: {len(graph.nodes)} nodes, {len(graph.edges)} edges")
-        _save_graph(outdir / f"{tag}##{idx:03d}.graph.json", tag, ex, graph)
-    print(f"saved {len(examples)} graph(s) for {tag}")
-
-
-def do_judge(args, outdir: Path) -> None:
-    files = sorted(outdir.glob("*.graph.json"))
-    if not files:
-        raise SystemExit(f"no *.graph.json in {outdir}; run --mode extract first")
-    print(f"=== JUDGE · {args.model} · scoring {len(files)} graph(s) ===")
-    judge = build_client(args.backend, args.model, args.base_url)
-    per_tag = defaultdict(list)
-    detail = []
-    for gf in files:
-        tag, tid, split, graph = _load_graph(gf)
-        ex = dataset.get_example(tid, split)
-        report = evaluate.evaluate(judge, graph, ex)
-        per_tag[tag].append(report)
-        detail.append({"model": tag, "torque_id": tid, "precision": round(report.precision, 3),
-                       "recall": round(report.recall, 3), "f1": round(report.f1, 3),
-                       "paper_precision": round(report.paper_precision, 3),
-                       "judge": report.judge_score, "n_pred": report.n_pred,
-                       "n_valid": report.n_valid, "n_gold": report.n_gold})
-        if len(files) <= 6:  # only render for small single-example-style runs
-            _render(graph, report, ex, outdir, gf.name[:-len(".graph.json")], backend=tag)
-        print(f"  {tag} · {tid}: goldP={report.precision:.3f} R={report.recall:.3f} "
-              f"F1={report.f1:.3f} | paperP={report.paper_precision:.3f} judge={report.judge_score}")
-
-    summary = []
-    for tag, reports in per_tag.items():
-        n = len(reports)
-        summary.append({"model": tag, "n_examples": n,
-                        "gold_precision": round(sum(r.precision for r in reports) / n, 3),
-                        "recall": round(sum(r.recall for r in reports) / n, 3),
-                        "gold_f1": round(sum(r.f1 for r in reports) / n, 3),
-                        "paper_precision": round(sum(r.paper_precision for r in reports) / n, 3),
-                        "judge": round(sum(r.judge_score for r in reports) / n, 2)})
-    summary.sort(key=lambda s: -s["gold_f1"])
-    (outdir / "summary.json").write_text(json.dumps(summary, indent=2))
-    (outdir / "summary_detail.json").write_text(json.dumps(detail, indent=2))
-    print("=" * 78)
-    print(f"{'model':<16}{'n':>4}{'goldP':>8}{'R':>8}{'goldF1':>8}{'paperP':>8}{'judge':>8}")
-    for r in summary:
-        print(f"{r['model']:<16}{r['n_examples']:>4}{r['gold_precision']:>8.3f}"
-              f"{r['recall']:>8.3f}{r['gold_f1']:>8.3f}{r['paper_precision']:>8.3f}{r['judge']:>8.2f}")
-    print(f"\ngoldP/R/F1 = vs gold graph;  paperP = predicted edges judged causally valid")
-    print(f"wrote {outdir}/summary.json (means) + summary_detail.json")
-
-
-def do_generate(args, outdir: Path) -> None:
-    """For each base example, generate N synthetic retellings (different narrators)
-    and save a story-set JSON that downstream extraction + aggregation consumes."""
-    bases = _examples(args)
-    n = args.n_variants
-    print(f"=== GENERATE · {args.backend}:{args.model} · {len(bases)} base(s) x {n} variants ===")
-    client = build_client(args.backend, args.model, args.base_url)
-    for tid, split in bases:
-        ex = dataset.get_example(tid, split)
-        print(f"\n[{tid}] base: {ex.text}")
-        variants = []
-        for idx in range(n):
-            persp = prompts.PERSPECTIVES[idx % len(prompts.PERSPECTIVES)]
-            try:
-                v = client.complete(task="generate", schema=Variant, temperature=0.8,
-                                    prompt=prompts.generate_variant_prompt(ex.text, persp))
-                text = v.text.strip()
-            except Exception as e:
-                print(f"  v{idx}: FAILED {type(e).__name__}: {e}")
-                continue
-            variants.append({"perspective": persp, "text": text})
-            print(f"  v{idx}: {text}")
-        data = {"base_torque_id": tid, "base_split": split, "base_text": ex.text,
-                "gold_edges": ex.gold_edges, "variants": variants}
-        (outdir / f"{tid.replace('/', '_')}.variants.json").write_text(json.dumps(data, indent=2))
-    print(f"\nwrote {len(bases)} story-set(s) to {outdir}/*.variants.json")
-
-
-def _write_graph(path: Path, pid: str, tag: str, text: str, g: CausalGraph) -> None:
-    data = {"tag": tag, "id": pid, "text": text}
-    data.update(g.model_dump(mode="json"))
-    path.write_text(json.dumps(data, indent=2))
-
-
-def do_world_extract(args, outdir: Path) -> None:
-    """Qwen-only steps of the world experiment: extract a graph per narrative (raw),
-    canonicalize node names across them (standardized), and build the event x person
-    table with a refutation pass (1 = present, 0 = refuted, null = missing -> MICE).
-    No judge, no scoring. MICE + plotting happen locally afterwards."""
-    d = json.loads(Path(args.world_file).read_text())
-    (outdir / "raw").mkdir(parents=True, exist_ok=True)
-    (outdir / "std").mkdir(parents=True, exist_ok=True)
-    client = build_client(args.backend, args.model, args.base_url)
-
-    print(f"=== WORLD-EXTRACT · {args.model} · {len(d['variants'])} narratives ===")
-    raw = []
-    for i, v in enumerate(d["variants"]):
-        pid = f"p{i}"
-        try:
-            g = extract.extract_graph(client, v["text"], k=args.k)
-        except Exception as e:
-            print(f"  {pid}: FAILED {type(e).__name__}: {e}")
-            g = CausalGraph(nodes=[], edges=[])
-        raw.append((pid, v["text"], g))
-        _write_graph(outdir / "raw" / f"{pid}.graph.json", pid, "0_raw", v["text"], g)
-        print(f"  {pid}: {len(g.nodes)} nodes, {len(g.edges)} edges")
-
-    print("  canonicalizing node names across all narratives ...")
-    node2canon = aggregate.canonicalize(client, d["base_text"], [g for _, _, g in raw])
-    (outdir / "mapping.json").write_text(json.dumps(node2canon, indent=2))
-
-    std = []
-    for pid, text, g in raw:
-        sg = aggregate.relabel_graph(g, node2canon)
-        std.append((pid, text, sg))
-        _write_graph(outdir / "std" / f"{pid}.graph.json", pid, "1_standardized", text, sg)
-
-    events = []
-    for _, _, sg in std:
-        for n in sg.nodes:
-            if n.kind.value == "event" and n.id not in events:
-                events.append(n.id)
-
-    print(f"  refutation pass over {len(events)} canonical events ...")
-    rows = []
-    for pid, text, sg in std:
-        present = {n.id for n in sg.nodes if n.kind.value == "event"}
-        absent = [e for e in events if e not in present]
-        refuted = set()
-        if absent:
-            try:
-                rb = client.complete(task="refute", schema=RefuteBatch, temperature=0.0,
-                                     prompt=prompts.refute_prompt(text, absent))
-                refuted = {absent[v.index] for v in rb.verdicts
-                           if 0 <= v.index < len(absent) and v.refuted}
-            except Exception as e:
-                print(f"  {pid}: refute failed ({e}); leaving as missing")
-        row = [1 if e in present else (0 if e in refuted else None) for e in events]
-        rows.append({"id": pid, "row": row})
-    (outdir / "table.json").write_text(json.dumps({"events": events, "rows": rows}, indent=2))
-    print(f"saved raw/, std/, mapping.json, table.json in {outdir}")
-
-
-def do_raw_extract(args, outdir: Path) -> None:
-    """Extract a causal graph from arbitrary texts (a JSON list of {id, text}) with
-    ONE model. No gold, no judging — just the graph, for rendering."""
-    tag = _tag(args)
-    items = json.loads(Path(args.texts_file).read_text())
-    print(f"=== RAW-EXTRACT · {tag} · {len(items)} text(s) ===")
-    client = build_client(args.backend, args.model, args.base_url)
-    for it in items:
-        try:
-            g = extract.extract_graph(client, it["text"], k=args.k)
-        except Exception as e:
-            print(f"  {it['id']}: FAILED {type(e).__name__}: {e}")
-            g = CausalGraph(nodes=[], edges=[])
-        data = {"tag": tag, "id": it["id"], "text": it["text"]}
-        data.update(g.model_dump(mode="json"))
-        (outdir / f"{tag}##{it['id']}.graph.json").write_text(json.dumps(data, indent=2))
-        print(f"  {it['id']}: {len(g.nodes)} nodes, {len(g.edges)} edges")
-        for e in g.edges:
-            print(f"      {e.head} -> {e.tail}")
-    print(f"saved graphs for {tag} in {outdir}")
-
-
-def do_agg_extract(args, outdir: Path) -> None:
-    """Extract a causal graph from each synthetic variant with ONE model."""
-    tag = _tag(args)
-    synth = Path(args.synth_dir)
-    files = sorted(synth.glob("*.variants.json"))
-    if not files:
-        raise SystemExit(f"no *.variants.json in {synth}; run --mode generate first")
-    print(f"=== AGG-EXTRACT · {tag} · {len(files)} base(s) ===")
-    client = build_client(args.backend, args.model, args.base_url)
-    for sf in files:
-        d = json.loads(sf.read_text())
-        vgs = []
-        for idx, v in enumerate(d["variants"]):
-            try:
-                g = extract.extract_graph(client, v["text"], k=args.k)
-            except Exception as e:
-                print(f"  {d['base_torque_id']} v{idx}: FAILED {type(e).__name__}: {e}")
-                g = CausalGraph(nodes=[], edges=[])
-            vgs.append({"idx": idx, **g.model_dump(mode="json")})
-            print(f"  {d['base_torque_id']} v{idx}: {len(g.nodes)} nodes, {len(g.edges)} edges")
-        out = {"base_torque_id": d["base_torque_id"], "base_split": d["base_split"], "tag": tag,
-               "base_text": d.get("base_text"), "gold_edges": d.get("gold_edges", []),
-               "variant_graphs": vgs}
-        (outdir / f"{d['base_torque_id']}__{tag}.varsgraphs.json").write_text(json.dumps(out, indent=2))
-    print(f"saved variant graphs for {tag}")
-
-
-def do_agg_combine(args, outdir: Path) -> None:
-    """Canonicalize + aggregate each base/model's variant graphs into one
-    probability graph, score it vs the base's gold graph, render true vs estimated."""
-    files = sorted(outdir.glob("*.varsgraphs.json"))
-    if not files:
-        raise SystemExit(f"no *.varsgraphs.json in {outdir}; run --mode agg-extract first")
-    print(f"=== AGG-COMBINE · judge={args.model} · {len(files)} base/model set(s) ===")
-    judge = build_client(args.backend, args.model, args.base_url)
-    per_model = defaultdict(list)
-    detail = []
-    for f in files:
-        d = json.loads(f.read_text())
-        gold_edges = d.get("gold_edges", [])
-        if d.get("base_text") is not None:   # synthetic / carried set (may have no gold)
-            gold_nodes = sorted({n for e in gold_edges for n in (e["head"], e["tail"])})
-            base_ex = dataset.Example(torque_id=d["base_torque_id"], split=d.get("base_split", "train"),
-                                      text=d["base_text"], gold_edges=gold_edges, gold_node_ids=gold_nodes)
-        else:                                 # older dataset-backed set
-            base_ex = dataset.get_example(d["base_torque_id"], d["base_split"])
-        graphs = [CausalGraph.model_validate({"nodes": vg["nodes"], "edges": vg["edges"]})
-                  for vg in d["variant_graphs"]]
-        n = len(graphs)
-        node2canon = aggregate.canonicalize(judge, base_ex.text, graphs)
-        agg = aggregate.aggregate(graphs, node2canon, n_variants=n, min_count=args.agg_min_count)
-        name = f"{d['base_torque_id']}__{d['tag']}"
-
-        # always save the aggregated (estimated) graph in a PNG-renderable form
-        aggfile = {"tag": f"AGG-{d['tag']}", "id": d["base_torque_id"], "text": base_ex.text}
-        aggfile.update(agg.model_dump(mode="json"))
-        (outdir / f"{name}.aggregated.graph.json").write_text(json.dumps(aggfile, indent=2))
-
-        if base_ex.gold_edges:               # score + true-vs-estimated only if a gold graph exists
-            report = evaluate.evaluate(judge, agg, base_ex)
-            _render(agg, report, base_ex, outdir, name, backend=f"AGG({d['tag']}, min>={args.agg_min_count}/{n})")
-            per_model[d["tag"]].append(report)
-            detail.append({"model": d["tag"], "base": d["base_torque_id"],
-                           "gold_precision": round(report.precision, 3), "recall": round(report.recall, 3),
-                           "gold_f1": round(report.f1, 3), "paper_precision": round(report.paper_precision, 3),
-                           "judge": report.judge_score, "n_agg_edges": report.n_pred, "n_gold": report.n_gold})
-            print(f"  {d['tag']} · {d['base_torque_id']}: goldP={report.precision:.3f} "
-                  f"R={report.recall:.3f} F1={report.f1:.3f} | paperP={report.paper_precision:.3f} "
-                  f"({report.n_pred} agg edges) -> {name}.comparison.html")
-        else:
-            print(f"  {d['tag']} · {d['base_torque_id']}: {len(agg.edges)} aggregated edges "
-                  f"(no gold; saved {name}.aggregated.graph.json)")
-
-    summary = []
-    for tag, reps in per_model.items():
-        m = len(reps)
-        summary.append({"model": tag, "n_bases": m,
-                        "gold_precision": round(sum(r.precision for r in reps) / m, 3),
-                        "recall": round(sum(r.recall for r in reps) / m, 3),
-                        "gold_f1": round(sum(r.f1 for r in reps) / m, 3),
-                        "paper_precision": round(sum(r.paper_precision for r in reps) / m, 3),
-                        "judge": round(sum(r.judge_score for r in reps) / m, 2)})
-    summary.sort(key=lambda s: -s["gold_f1"])
-    (outdir / "summary_agg.json").write_text(json.dumps(summary, indent=2))
-    (outdir / "summary_agg_detail.json").write_text(json.dumps(detail, indent=2))
-    print("=" * 78)
-    print(f"{'model':<16}{'bases':>6}{'goldP':>8}{'R':>8}{'goldF1':>8}{'paperP':>8}{'judge':>8}")
-    for r in summary:
-        print(f"{r['model']:<16}{r['n_bases']:>6}{r['gold_precision']:>8.3f}{r['recall']:>8.3f}"
-              f"{r['gold_f1']:>8.3f}{r['paper_precision']:>8.3f}{r['judge']:>8.2f}")
-    print(f"\nwrote {outdir}/summary_agg.json + per (base,model) *.comparison.html (true vs estimated)")
 
 
 def do_chain_nodes(args, outdir: Path) -> None:
@@ -414,29 +104,6 @@ def do_chain_kev(args, outdir: Path) -> None:
     print(f"\nsaved *__{tag}.chain.json in {outdir}")
 
 
-def do_abstract(args, outdir: Path) -> None:
-    """Section 2, Steps 2-3: merge the nodes of all narrative graphs (--graphs-glob,
-    *.chain.json) into shared concepts with the LLM. Writes <outdir>/abstraction.json."""
-    graphs = _graphs(args)
-    client = build_client(args.backend, args.model, args.base_url)
-    print(f"=== ABSTRACT · {_tag(args)} · {len(graphs)} graph(s) · M={args.merge_groups} ===")
-    res = abstraction.abstract(client, graphs, M=args.merge_groups)
-    print("CONCEPTS")
-    for c, d in res["concepts"].items():
-        print(f"  [{d['kind']}] {c}: " + "; ".join(f"{j}: {v}" for j, v in d["members"]))
-    print("DROPPED: " + ("; ".join(f"{j}: {v}" for j, v in res["dropped"]) or "-"))
-    print("TABLE (1 = in the narrative, . = missing)")
-    names = list(res["concepts"])
-    for j, row in res["table"].items():
-        print(f"  {j}: " + "  ".join(f"{c}={'1' if row[c] else '.'}" for c in names))
-    print("CONCEPT-LEVEL ARROWS")
-    for j, es in res["concept_edges"].items():
-        for e in es:
-            print(f"  {j}: {e['head']} -> {e['tail']}   p={e['prob']:.2f}")
-    (outdir / "abstraction.json").write_text(json.dumps(res, indent=2))
-    print(f"\nsaved {outdir}/abstraction.json")
-
-
 def do_merge_kev(args, outdir: Path) -> None:
     """Section 2, Steps 1-2 (Kev): group the nodes of all narrative graphs (--graphs-glob)
     one narrative at a time, with opposite members flagged. Writes <outdir>/abstraction.json."""
@@ -481,6 +148,30 @@ def do_node_happened(args, outdir: Path) -> None:
     for g, r in zip(graphs, res):
         print(f"[{g['id']}] " + "; ".join(f"{v}: {a['choice']} ({a['probabilities'].get(a['choice'], 0):.2f})" for v, a in r.items()))
         (outdir / f"{g['id']}__happened.json").write_text(json.dumps(r, indent=2))
+
+
+def _graphs(args) -> list[dict]:
+    import glob
+    files = sorted(glob.glob(args.graphs_glob))
+    if not files:
+        raise SystemExit(f"no graphs match {args.graphs_glob}")
+    return [json.loads(Path(f).read_text()) for f in files]
+
+
+def do_implied(args, outdir: Path) -> None:
+    """Section 2, Step 4 (Kev): missing event concepts -> happened / not happened /
+    cannot tell. Writes <outdir>/implied.json."""
+    graphs = _graphs(args)
+    abst = json.loads((outdir / "abstraction.json").read_text())
+    print(f"=== IMPLIED · {len(graphs)} graph(s) · {args.kev_url} ===")
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=args.workers) as pool:          # stories are independent
+        parts = list(pool.map(lambda g: combine.implied(KevClient(args.kev_url), [g], abst, seed=args.seed), graphs))
+    res = {k: v for part in parts for k, v in part.items()}
+    for j, d in res.items():
+        print(f"  {j}: " + "  ".join(f"{c}={'.' if v is None else v}" for c, v in d["values"].items()))
+    (outdir / "implied.json").write_text(json.dumps(res, indent=2))
+    print(f"saved {outdir}/implied.json")
 
 
 def do_connect(args, outdir: Path) -> None:
@@ -572,184 +263,32 @@ def do_connect(args, outdir: Path) -> None:
             print(f"    + {e['head']} {'-|' if e['rel'] == 'blocks' else '->'} {e['tail']}   p={e['prob']:.2f}")
         (outdir / f"{g['id']}__connect.json").write_text(json.dumps(r, indent=2))
 
-def _graphs(args) -> list[dict]:
-    import glob
-    files = sorted(glob.glob(args.graphs_glob))
-    if not files:
-        raise SystemExit(f"no graphs match {args.graphs_glob}")
-    return [json.loads(Path(f).read_text()) for f in files]
-
-
-def do_implied(args, outdir: Path) -> None:
-    """Section 2, Step 4 (Kev): missing event concepts -> happened / not happened /
-    cannot tell. Writes <outdir>/implied.json."""
-    graphs = _graphs(args)
-    abst = json.loads((outdir / "abstraction.json").read_text())
-    print(f"=== IMPLIED · {len(graphs)} graph(s) · {args.kev_url} ===")
-    from concurrent.futures import ThreadPoolExecutor
-    with ThreadPoolExecutor(max_workers=args.workers) as pool:          # stories are independent
-        parts = list(pool.map(lambda g: combine.implied(KevClient(args.kev_url), [g], abst, seed=args.seed), graphs))
-    res = {k: v for part in parts for k, v in part.items()}
-    for j, d in res.items():
-        print(f"  {j}: " + "  ".join(f"{c}={'.' if v is None else v}" for c, v in d["values"].items()))
-    (outdir / "implied.json").write_text(json.dumps(res, indent=2))
-    print(f"saved {outdir}/implied.json")
-
-
-def do_combine(args, outdir: Path) -> None:
-    """Section 2, Steps 4-5 and the output (no model): MICE x30, random-effects
-    meta-analysis, causal Bayesian network (Rubin's rules over the imputations).
-    Writes <outdir>/network.json."""
-    graphs = _graphs(args)
-    abst = json.loads((outdir / "abstraction.json").read_text())
-    imp = json.loads((outdir / "implied.json").read_text())
-    print(f"=== COMBINE · {len(graphs)} graph(s) ===")
-    res = combine.combine(graphs, abst, imp)
-    print("COMPLETED TABLE (* = imputed, . = missing)")
-    imputed = {tuple(x) for x in res["imputed"]}
-    for j, row in res["table"].items():
-        print(f"  {j}: " + "  ".join(f"{c}={'.' if v is None else v}{'*' if (j, c) in imputed else ''}"
-                                     for c, v in row.items()))
-    print("PAIRS (estimate [95% interval] per answer; displayed answer in caps)")
-    for p in res["pairs"]:
-        cells = "  ".join(f"{(r.upper() if r == p['displayed'] else r)} {a['estimate']:.2f} "
-                          f"[{a['ci95'][0]:.2f}, {a['ci95'][1]:.2f}]" for r, a in p["answers"].items())
-        tau = p["answers"][p["displayed"]]["tau2"]
-        print(f"  {p['head']} -> {p['tail']} (n={p['n']}, tau2={tau:.2f}): {cells}")
-    print("CAUSAL BAYESIAN NETWORK")
-    for a in res["network"]["arrows"]:
-        print(f"  {a['head']} {'-|' if a['rel'] == 'blocks' else '->'} {a['tail']}   "
-              f"{a['estimate']:.2f} [{a['ci95'][0]:.2f}, {a['ci95'][1]:.2f}]  n={a['n']}")
-    for b, cpd in res["network"]["cpds"].items():
-        for r in cpd["rows"]:
-            cond = ", ".join(f"{k}={v}" for k, v in r["parents"].items()) or "-"
-            print(f"  P({b}=1 | {cond}) = {r['p_1']:.2f} [{r['ci95'][0]:.2f}, {r['ci95'][1]:.2f}]  (n={r['n']})")
-    (outdir / "network.json").write_text(json.dumps(res, indent=2))
-    print(f"saved {outdir}/network.json")
-
-
-def do_full(args, outdir: Path) -> None:
-    ex = dataset.get_example(args.torque_id, args.split)
-    client = build_client(args.backend, args.model, args.base_url)
-    if args.eval_backend:
-        eval_client = build_client(args.eval_backend, args.eval_model, args.eval_base_url)
-        eval_desc = f"{args.eval_backend}:{args.eval_model}"
-    else:
-        eval_client = client
-        eval_desc = "SAME as test model — scores may be self-graded"
-    tag = _tag(args)
-
-    print(f"=== example {ex.torque_id} [{ex.split}] · backend={args.backend} ===")
-    print(f"    evaluator (align+judge): {eval_desc}")
-    if args.backend == "mock":
-        print("!!! MOCK backend: the PREDICTED graph is canned, NOT a real model. !!!")
-    print(f"\nTEXT:\n{ex.text}\n")
-
-    graph = extract.extract_graph(client, ex.text, k=args.k)
-    _print_graph(graph, args.k)
-    print("\nSTAGE 3  align_nodes.md + judge.md  ->  score vs gold")
-    report = evaluate.evaluate(eval_client, graph, ex)
-    _print_report(report)
-    _save_graph(outdir / f"{tag}.graph.json", tag, ex, graph)
-    _render(graph, report, ex, outdir, tag, args.backend)
-    print(f"\nSTAGE 4  wrote {outdir}/{tag}.comparison.html  (two graphs side by side)")
-
-
-def _print_graph(graph: CausalGraph, k: int) -> None:
-    print("STAGE 1  extract_nodes.md  ->  typed nodes")
-    for n in graph.nodes:
-        types = f"  types={n.event_types}" if n.event_types else ""
-        print(f"    [{n.kind.value:11}] {n.id}{types}")
-    print(f"\nSTAGE 2  extract_edges.md  ->  arrows (k={k} self-consistency samples)")
-    for e in graph.edges:
-        print(f"    {e.head}  ->  {e.tail}   (p={e.prob:.2f})")
-
-
-def _print_report(report) -> None:
-    print("\n    node alignment (predicted -> gold):")
-    for k_, v_ in report.alignment.items():
-        print(f"        {k_!r}  ->  {v_!r}")
-    print(f"\n    gold  precision : {report.precision:.3f}   recall : {report.recall:.3f}   "
-          f"F1 : {report.f1:.3f}")
-    print(f"    paper precision : {report.paper_precision:.3f}  "
-          f"({report.n_valid}/{report.n_pred} predicted edges judged causally valid)")
-    print(f"    LLM-judge (holistic) : {report.judge_score}/5 -- {report.judge_rationale}")
-
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", default="full",
-                    choices=["full", "extract", "judge", "generate", "agg-extract",
-                             "agg-combine", "raw-extract", "world-extract",
-                             "chain-nodes", "chain-kev", "abstract", "merge-kev", "name-groups", "implied", "combine", "node-happened", "connect"])
-    ap.add_argument("--backend", default="mock",
-                    choices=["mock", "anthropic", "openai", "openrouter", "ollama", "hf", "vllm"])
+    ap.add_argument("--mode", required=True, choices=['chain-nodes', 'chain-kev', 'merge-kev', 'name-groups', 'node-happened', 'implied', 'connect'])
+    ap.add_argument("--backend", default="openrouter",
+                    choices=["anthropic", "openai", "openrouter", "ollama", "hf", "vllm"])
     ap.add_argument("--model", default=None)
     ap.add_argument("--base-url", default=None)
     ap.add_argument("--tag", default=None, help="label for output files (defaults to model name)")
-    ap.add_argument("--eval-backend", default=None,
-                    choices=["mock", "anthropic", "openai", "openrouter", "ollama", "hf", "vllm"])
-    ap.add_argument("--eval-model", default=None)
-    ap.add_argument("--eval-base-url", default=None)
-    ap.add_argument("--split", default="train", choices=["train", "dev"])
-    ap.add_argument("--torque-id", default=dataset.DEMO_TORQUE_ID)
-    ap.add_argument("--examples-file", default=None,
-                    help="file of 'torque_id [split]' lines; overrides --torque-id")
-    ap.add_argument("--k", type=int, default=1, help="self-consistency samples")
-    ap.add_argument("--n-variants", type=int, default=6, help="synthetic retellings per base (generate mode)")
-    ap.add_argument("--synth-dir", default="out_synth", help="dir of *.variants.json (agg-extract)")
-    ap.add_argument("--texts-file", default="narratives.json", help="JSON [{id,text}] (raw-extract)")
-    ap.add_argument("--world-file", default="world_homelessness.variants.json",
-                    help="story-set for the world experiment (world-extract)")
-    ap.add_argument("--max-nodes", type=int, default=5, help="K: most important nodes (chain-nodes)")
-    ap.add_argument("--seed", type=int, default=0, help="random start nodes (chain-kev)")
-    ap.add_argument("--nodes-file", default="controlled_kev.json", help="input for chain-kev")
-    ap.add_argument("--kev-url", default="http://127.0.0.1:8009", help="Kev server (chain-kev); Jev: https://api.typesafe.ai")
-    ap.add_argument("--workers", type=int, default=1, help="stories processed in parallel (hosted APIs)")
-    ap.add_argument("--graphs-glob", default="out_kev/*__gemma-kev.chain.json", help="graphs to merge (abstract)")
-    ap.add_argument("--merge-groups", type=int, default=1, help="M: narrative subgroups per round (abstract)")
-    ap.add_argument("--agg-min-count", type=int, default=2,
-                    help="keep aggregated edges seen in >= this many variants")
+    ap.add_argument("--texts-file", default=None, help="JSON [{id, text}] (chain-nodes)")
+    ap.add_argument("--max-nodes", type=int, default=5, help="K: most important events (chain-nodes)")
+    ap.add_argument("--seed", type=int, default=0, help="random start nodes of the walks")
+    ap.add_argument("--nodes-file", default=None, help="chain_nodes.json (chain-kev)")
+    ap.add_argument("--kev-url", default="http://127.0.0.1:8009", help="decision model server; Jev: https://api.typesafe.ai")
+    ap.add_argument("--workers", type=int, default=1, help="stories processed in parallel")
+    ap.add_argument("--graphs-glob", default=None, help="story graphs, e.g. out/*__gemma-kev.chain.json")
     ap.add_argument("--outdir", default="out")
     args = ap.parse_args()
 
     outdir = Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
-
-    if args.mode == "extract":
-        do_extract(args, outdir)
-    elif args.mode == "judge":
-        do_judge(args, outdir)
-    elif args.mode == "generate":
-        do_generate(args, outdir)
-    elif args.mode == "agg-extract":
-        do_agg_extract(args, outdir)
-    elif args.mode == "agg-combine":
-        do_agg_combine(args, outdir)
-    elif args.mode == "raw-extract":
-        do_raw_extract(args, outdir)
-    elif args.mode == "chain-nodes":
-        do_chain_nodes(args, outdir)
-    elif args.mode == "chain-kev":
-        do_chain_kev(args, outdir)
-    elif args.mode == "abstract":
-        do_abstract(args, outdir)
-    elif args.mode == "merge-kev":
-        do_merge_kev(args, outdir)
-    elif args.mode == "name-groups":
-        do_name_groups(args, outdir)
-    elif args.mode == "node-happened":
-        do_node_happened(args, outdir)
-    elif args.mode == "connect":
-        do_connect(args, outdir)
-    elif args.mode == "implied":
-        do_implied(args, outdir)
-    elif args.mode == "combine":
-        do_combine(args, outdir)
-    elif args.mode == "world-extract":
-        do_world_extract(args, outdir)
-    else:
-        do_full(args, outdir)
+    {
+        "chain-nodes": do_chain_nodes, "chain-kev": do_chain_kev, "merge-kev": do_merge_kev,
+        "name-groups": do_name_groups, "node-happened": do_node_happened, "implied": do_implied,
+        "connect": do_connect,
+    }[args.mode](args, outdir)
 
 
 if __name__ == "__main__":

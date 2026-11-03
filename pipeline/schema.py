@@ -1,23 +1,16 @@
-"""Data model for the extracted causal graph.
-
-Per the current design decision, edges are UNLABELED directed causal arrows
-(A -> B means "A causally leads to / influences B"). We deliberately drop the
-ENABLES/BLOCKS labels and fine-grained sub-relations from the paper: an arrow is
-enough. Node typing (event vs participant) and FrameNet/MAVEN event types are
-kept so the output still aligns with the gold TORQUESTRA node structure.
-"""
+"""Schemas for the structured LLM outputs: node extraction (Step 1) and group naming."""
 
 from __future__ import annotations
 
 from enum import Enum
-from typing import List, Optional
+from typing import List
 
 from pydantic import BaseModel, Field
 
 
 class NodeKind(str, Enum):
     EVENT = "event"
-    PARTICIPANT = "participant"  # gold graphs prefix these "Entity::"
+    PARTICIPANT = "participant"
 
 
 class Node(BaseModel):
@@ -29,84 +22,8 @@ class Node(BaseModel):
     )
 
 
-class Edge(BaseModel):
-    head: str = Field(..., description="Source node id (the cause).")
-    tail: str = Field(..., description="Target node id (the effect).")
-    rel: str = Field("enables", description="'enables' (makes tail happen/more likely) or 'blocks' (prevents it/less likely)")
-    prob: float = Field(
-        1.0,
-        ge=0.0,
-        le=1.0,
-        description="Confidence / self-consistency frequency of this arrow across K samples.",
-    )
-
-
-class CausalGraph(BaseModel):
-    nodes: List[Node] = Field(default_factory=list)
-    edges: List[Edge] = Field(default_factory=list)
-
-    def node_ids(self) -> List[str]:
-        return [n.id for n in self.nodes]
-
-    def to_gold_like(self) -> list[dict]:
-        """Serialize to the TORQUESTRA edge-list shape (minus the rel labels)."""
-        return [{"head": e.head, "tail": e.tail, "prob": round(e.prob, 3)} for e in self.edges]
-
-
-# ---- schemas handed to the LLM for tool-forced structured output ----
-
 class NodeExtraction(BaseModel):
     nodes: List[Node]
-
-
-class EdgeSpec(BaseModel):
-    head: str
-    tail: str
-    rel: str = Field("enables", description="'enables' or 'blocks'")
-
-
-class EdgeExtraction(BaseModel):
-    edges: List[EdgeSpec]
-
-
-class NodeAlignment(BaseModel):
-    """Maps each extracted node id to a gold node id (or null if unmatched)."""
-
-    mapping: dict[str, Optional[str]]
-
-
-class JudgeScore(BaseModel):
-    score: int = Field(..., ge=1, le=5)
-    rationale: str
-
-
-class EdgeVerdict(BaseModel):
-    index: int = Field(..., description="0-based index of the edge being judged")
-    valid: bool = Field(..., description="True if this is a valid causal edge for the text")
-
-
-class EdgeValidityBatch(BaseModel):
-    """Per-edge causal-validity verdicts (precision-by-paper, independent of gold)."""
-
-    verdicts: List[EdgeVerdict]
-
-
-class Variant(BaseModel):
-    """One synthetic retelling of a base text (simulating a different narrator)."""
-
-    text: str
-
-
-class RefuteVerdict(BaseModel):
-    index: int = Field(..., description="0-based index of the candidate event")
-    refuted: bool = Field(..., description="True if the narrative implies this event did NOT happen")
-
-
-class RefuteBatch(BaseModel):
-    """Per-event refutation verdicts, to turn 'not mentioned' into a hard 0 vs a
-    genuine missing value (NA) before MICE imputation."""
-
-    verdicts: List[RefuteVerdict]
 
 
 class NodeClustering(BaseModel):
