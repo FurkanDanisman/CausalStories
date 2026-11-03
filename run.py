@@ -12,8 +12,8 @@ Section 2 (story graphs -> one graph):
   implied        Step 3: did each group a story does not name happen? (1/0/cannot tell; no imputation)
                                                                                     -> implied.json
   connect        Step 4: inferred groups connected on top of each story graph      -> <id>__connect.json
-Steps 5-6 (usage, matrix of averaged answers, intervals) are computed from these files
-(combine.meta gives the interval).
+  matrix         Steps 5-6 (no model): usage, matrix of averaged answers, graph with intervals
+                                                                                    -> network.json
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ import argparse
 import json
 from pathlib import Path
 
-from pipeline import chain, combine, merge_kev, prompts
+from pipeline import chain, combine, matrix, merge_kev, prompts
 from pipeline.kev_client import KevClient
 from pipeline.llm_client import (AnthropicClient, HFClient, OpenRouterClient,
                                  OllamaClient, OpenAIClient, VLLMClient)
@@ -264,9 +264,24 @@ def do_connect(args, outdir: Path) -> None:
         (outdir / f"{g['id']}__connect.json").write_text(json.dumps(r, indent=2))
 
 
+def do_matrix(args, outdir: Path) -> None:
+    """Section 2, Steps 5-6 (no model): usage, the averaged matrix and the graph (pipeline/matrix.py).
+    Writes <outdir>/network.json."""
+    graphs = _graphs(args)
+    res = matrix.aggregate(outdir, graphs)
+    print(f"=== MATRIX · {len(graphs)} graph(s) · {len(res['network']['arrows'])} arrow(s) without influence ===")
+    for a in res["network"]["arrows"]:
+        ci = f"[{a['ci95'][0]:.2f}, {a['ci95'][1]:.2f}]" if a["ci95"] else "(n=1, no CI)"
+        print(f"  {a['head']} {'-|' if a['rel'] == 'blocks' else '->'} {a['tail']}   avg {a['average']:.2f}  "
+              f"est {a['estimate']:.2f} {ci}  n={a['n']}")
+    print("USAGE " + ", ".join(f"{c} {u:.0%}" for c, u in sorted(res["usage"].items(), key=lambda x: -x[1])))
+    (outdir / "network.json").write_text(json.dumps(res, indent=2))
+    print(f"saved {outdir}/network.json")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", required=True, choices=['chain-nodes', 'chain-kev', 'merge-kev', 'name-groups', 'node-happened', 'implied', 'connect'])
+    ap.add_argument("--mode", required=True, choices=['chain-nodes', 'chain-kev', 'merge-kev', 'name-groups', 'node-happened', 'implied', 'connect', 'matrix'])
     ap.add_argument("--backend", default="openrouter",
                     choices=["anthropic", "openai", "openrouter", "ollama", "hf", "vllm"])
     ap.add_argument("--model", default=None)
@@ -287,7 +302,7 @@ def main() -> None:
     {
         "chain-nodes": do_chain_nodes, "chain-kev": do_chain_kev, "merge-kev": do_merge_kev,
         "name-groups": do_name_groups, "node-happened": do_node_happened, "implied": do_implied,
-        "connect": do_connect,
+        "connect": do_connect, "matrix": do_matrix,
     }[args.mode](args, outdir)
 
 

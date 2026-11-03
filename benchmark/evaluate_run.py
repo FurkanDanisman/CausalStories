@@ -226,7 +226,11 @@ def main(world, run, cut=None):
     # ---------------- Table 2: aggregated graph ----------------
     abst = json.load(open(run / "abstraction.json"))
     n_st = len(graphs) or len(stories)                   # aggregated-only methods have no story graphs
-    usage = {c: len({m[0] for m in v["members"]}) / n_st for c, v in abst["concepts"].items()}
+    if graphs and all((run / f"{j}__connect.json").exists() for j in graphs):   # our method: agreed usage rule
+        sys.path.insert(0, str(PIPE)); from pipeline import matrix   # (node has an arrow in the connected graph)
+        usage = matrix.usage(run, abst, list(graphs.values()))
+    else:                                               # other aggregations: share of stories naming the group
+        usage = {c: len({m[0] for m in v["members"]}) / n_st for c, v in abst["concepts"].items()}
     kept = sorted(c for c, u in usage.items() if u >= cut)
     TN = sorted(set(W.ROOT) - set(W.DISTRACT) | set(W.MECH))
     ck = "agg:" + "|".join(kept)
@@ -266,12 +270,12 @@ def main(world, run, cut=None):
     sid_norm = 1 - len(bad) / (len(TN) * (len(TN) - 1))
     # KL of conditionals (option 1); strengths counted from the run's story table
     tab = net["table"]
-    def val(row, n):                                          # merged node = any of its groups happened
-        gs = [c for c in kept if (gm[c] or f"x:{c}") == n]
-        return int(any(row.get(c, 0) for c in gs))
+    def val(row, n):                                          # merged node = any of its groups happened;
+        vs = [row.get(c) for c in kept if (gm[c] or f"x:{c}") == n]   # None = cannot tell (no imputation)
+        return 1 if 1 in vs else (0 if vs and all(v == 0 for v in vs) else None)
     rows = [{n: val(r, n) for n in est_nodes} for r in tab.values()]
-    def p1(n, cond=None):
-        rs = [r for r in rows if cond is None or all(r[k] == v for k, v in cond.items())]
+    def p1(n, cond=None):                                     # counted only over stories where all are known
+        rs = [r for r in rows if r[n] is not None and (cond is None or all(r[k] == v for k, v in cond.items()))]
         return (sum(r[n] for r in rs) / len(rs)) if rs else 0.0
     Edag = break_cycles(set(E), Ew)
     est_order = topo(est_nodes, Edag)

@@ -21,4 +21,5 @@ echo "### Gemma: high-level names";         $PY run.py --mode name-groups --back
 echo "### Jev: named nodes happened? (Step 3)"; $PY run.py --mode node-happened --kev-url $JEV --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT" --workers $W
 echo "### Jev: missing groups happened? (Step 3)"; $PY run.py --mode implied --kev-url $JEV --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT" --workers $W
 echo "### Jev: connect inferred groups (Step 4)"; $PY run.py --mode connect --kev-url $JEV --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT" --workers $W
+echo "### Steps 5-6: usage + matrix";       $PY run.py --mode matrix --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT"
 echo "Done in $(( $(date +%s) - start )) s. Results in $OUT/"

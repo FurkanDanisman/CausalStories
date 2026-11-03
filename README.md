@@ -14,9 +14,7 @@ results page `results/api_world100_matrix/`. No imputation anywhere: "cannot tel
 | `node-happened` | decision model | S2 Step 3: did each named event node happen? | `<id>__happened.json` |
 | `implied` | decision model | S2 Step 3: did each group a story does not name happen? (1 / 0 / cannot tell) | `implied.json` |
 | `connect` | decision model | S2 Step 4: inferred groups connected on top of each story graph (walk rules) | `<id>__connect.json` |
-
-S2 Steps 5-6 (usage = node has an arrow in the connected graph; matrix of averaged enables / blocks /
-none; DerSimonian-Laird interval from `combine.meta`) are computed from these files.
+| `matrix` | none | S2 Steps 5-6: usage (node has an arrow in the connected graph), matrix of averaged enables / blocks / none, graph with DerSimonian-Laird intervals | `network.json` |
 
 ## Run
 
