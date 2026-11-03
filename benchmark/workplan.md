@@ -104,8 +104,14 @@ Code tested against a mock LLM server only; the first real runs may need prompt/
 Generators (every method that needs an LLM): GEN = gemma (Gemma 4 31B) | qwen (Qwen3.5-27B) | llama (Llama-3.1-8B) |
 gptoss (gpt-oss-20b). Decision models: DEC = kev27b (default) | kev9b. The judge stays Gemma 4 31B.
 
-**1. Smoke test (one job, all pieces on 2 stories):** `sbatch smoke_all.sbatch` -> `grid_cluster/_smoke/summary.tsv`
-(every LLM step x 4 generators; every Kev step x 2 decision models, on our story graphs and C1's). All rows must say pass.
+**1. Smoke test, one job per model in parallel (2 stories each, ≤1 h):**
+```
+for g in gemma qwen llama gptoss; do sbatch --export=ALL,GEN=$g smoke_all.sbatch; done
+for k in kev27b kev9b; do sbatch --export=ALL,DEC=$k smoke_all.sbatch; done
+column -t -s $'\t' grid_cluster/_smoke/*/summary.tsv
+```
+Generator jobs: our nodes, C1-C6, names, A4 (Gemma's also A1-A3, PC/GES, C5 clustering, judge). Kev jobs: chain walk and
+our aggregation on our graphs and C1-format graphs. All rows must say pass.
 
 **2. Full runs, after the smoke test passes: 9 jobs**, each loading every model once per phase and covering all
 three worlds (resumable: resubmitting a job skips finished steps):
