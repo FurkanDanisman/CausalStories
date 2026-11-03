@@ -27,6 +27,7 @@ WORLDS=${WORLDS:-"homelessness career mental_health"}
 OUT=grid_cluster/_logs/${GEN}__${DEC}${SMOKE:+_smoke}
 mkdir -p "$OUT"
 source bench_lib.sh
+K=${K:-8}; export MAX_EVENTS=$K              # event budget K: our Prompt 1a and C1, C5, C6 (same for every method)
 T0=$(date +%s); LOGS=$OUT                  # LOGS keeps the job folder (OUT is reused per run below)
 
 run_dir() { [ "$2" = ours ] && echo "grid_cluster/${1}__${GEN}__${DEC}${SMOKE:+_smoke}" || echo "grid_cluster/${1}__${GEN}__${2}${SMOKE:+_smoke}"; }
@@ -51,7 +52,7 @@ start_llm "$GEN" 65536
 for W in $WORLDS; do
   TX=$(texts $W); R=$(run_dir $W ours); mkdir -p "$R"
   step "$R" nodes python run.py --mode chain-nodes --backend openai --base-url "http://127.0.0.1:$LLM_PORT/v1" --model llm \
-    --texts-file "$TX" --max-nodes 8 --outdir "$R" --workers 16
+    --texts-file "$TX" --max-nodes $K --outdir "$R" --workers 16
   for M in $METHODS; do
     [ "$M" = ours ] && continue
     C=$(run_dir $W $M); mkdir -p "$C"

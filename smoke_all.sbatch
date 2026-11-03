@@ -22,6 +22,7 @@ S=grid_cluster/_smoke/$M
 OUT=$S
 rm -rf "$S"; mkdir -p "$S"
 source bench_lib.sh
+K=${K:-8}; export MAX_EVENTS=$K              # event budget K: our Prompt 1a and C1, C5, C6 (same for every method)
 SEED=$S/seed                                            # fresh copy of the seed run (200 homelessness stories)
 mkdir -p "$SEED" && tar -xzf grid_seed.tar.gz -C "$SEED" grid/homelessness__gemma__jev && SEED=$SEED/grid/homelessness__gemma__jev
 find "$S" -name "._*" -delete
@@ -55,7 +56,7 @@ if [ -n "${GEN:-}" ]; then
   echo "############ generator $GEN"
   start_llm "$GEN" 65536
   t0=$(date +%s); python run.py --mode chain-nodes --backend openai --base-url "http://127.0.0.1:$LLM_PORT/v1" --model llm \
-    --texts-file "$S/texts.json" --max-nodes 8 --outdir "$S/ours" --workers 16; check nodes "$GEN" $? $t0 "$S/ours"
+    --texts-file "$S/texts.json" --max-nodes $K --outdir "$S/ours" --workers 16; check nodes "$GEN" $? $t0 "$S/ours"
   for C in C1 C2 C3 C4 C5 C6; do
     t0=$(date +%s); python benchmark/baselines.py $C "$S/texts.json" "$S/$C" --nodes "$S/ours/chain_nodes.json" --workers 16
     rc=$?; if [ $C = C6 ]; then check $C "$GEN" $rc $t0 "$S/$C/network.json"; else check $C "$GEN" $rc $t0 "$S/$C"; fi

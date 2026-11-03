@@ -22,10 +22,16 @@ from pathlib import Path
 URL = os.environ.get("LLM_URL", "http://127.0.0.1:8000/v1/chat/completions")
 MODEL = os.environ.get("LLM_MODEL", "gemma")
 RELS = ("enables", "blocks")
+K = int(os.environ.get("MAX_EVENTS", "8"))   # the same event budget as our node extraction (Prompt 1a, K = 8)
+# Our Prompt 1a sentence, added to every competing approach whose LLM picks its own nodes (C1, C5, C6);
+# participants are not counted, as in our method (they come from a separate call there).
+TOP_K = ("Use at most {k} events: the {k} most important for the causal chain. People and organisations "
+         "who act are not counted in this limit.")
 
 # ReCITE's generation prompts (src/recite/prompts/causal_graph_generation*.md), verbatim except:
-# a "relation" field (enables / blocks) is added because the benchmark scores the sign, and C1 does not
-# get "Your graph will contain exactly NUM_NODES nodes" (that would give away the true node count).
+# a "relation" field (enables / blocks) is added because the benchmark scores the sign, C1 does not get
+# "Your graph will contain exactly NUM_NODES nodes" (that would give away the true node count), and C1 gets
+# our event budget (TOP_K, at most K = 8 events, the same for every method).
 RECITE = """You are an expert causal reasoner and economist. Your task is to generate a causal graph for the provided markdown text. First, use extremely long chain-of-thought reasoning in <think> tags. Then, provide your final answer in a JSON code block, strictly following the following format:
 ```json
 {
@@ -140,7 +146,7 @@ def rel_of(x):
 
 # ------------------------------------------------------------------ C1 naive
 def c1(it, _nodes):
-    obj = ask_json(RECITE, it["text"])
+    obj = ask_json(RECITE + "\n\n" + TOP_K.format(k=K), it["text"])
     edges, nodes = [], []
     for r in obj.get("relationships", []):
         s, t = str(r.get("source", "")).strip(), str(r.get("sink", "")).strip()
@@ -252,7 +258,7 @@ Answer only with JSON: {"claims": [{"cause": "<label>", "effect": "<label>", "di
 
 
 def c5(it, _nodes):
-    obj = ask_json(CMAP, it["text"])
+    obj = ask_json(CMAP + "\n" + TOP_K.format(k=K), it["text"])
     edges, nodes = [], []
     for c in obj.get("claims", []):
         s, t = str(c.get("cause", "")).strip(), str(c.get("effect", "")).strip()
@@ -265,6 +271,7 @@ def c5(it, _nodes):
 
 # ------------------------------------------------------------------ C6 whole corpus
 CORPUS = """You are an expert causal reasoner. Below are {n} first-person stories from different people about the same topic. Build ONE causal graph of the world these stories come from: the events, conditions and actors (people or organisations who act) that recur across the stories, and the direct causal arrows between them. An arrow "enables" if the source brings about the target, and "blocks" if the source prevents it.
+{top_k}
 Answer only with JSON: {{"nodes": [{{"name": "<short label>", "kind": "event" or "participant"}}, ...], "edges": [{{"source": "<name>", "target": "<name>", "relation": "enables" or "blocks"}}, ...]}}
 
 STORIES:
@@ -278,7 +285,7 @@ Answer only with JSON: {{"present": ["<name>", ...]}}"""
 
 def c6(items, out, workers):
     stories = "\n\n".join(f"[{it['id']}] {it['text']}" for it in items)
-    obj = ask_json("You are an expert causal reasoner.", CORPUS.format(n=len(items), stories=stories))
+    obj = ask_json("You are an expert causal reasoner.", CORPUS.format(n=len(items), stories=stories, top_k=TOP_K.format(k=K)))
     names = [str(n.get("name", "")).strip() for n in obj.get("nodes", []) if str(n.get("name", "")).strip()]
     kind = {str(n.get("name", "")).strip(): ("participant" if str(n.get("kind", "")).startswith("p") else "event")
             for n in obj.get("nodes", [])}
