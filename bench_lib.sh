@@ -18,11 +18,12 @@ declare -A MODELS=(
   [gemma]=$BASE/model-weights/gemma-4-31B-it
   [qwen]=/model-weights/Qwen3.5-27B
   [llama]=/model-weights/Meta-Llama-3.1-8B-Instruct
+  [gptoss]=/model-weights/gpt-oss-20b
 )
 GPU_NAME=$(nvidia-smi --query-gpu=name --format=csv,noheader | head -1)
 GPU_COUNT=$(nvidia-smi -L | wc -l)
 
-start_llm() {                             # start_llm <gemma|qwen|llama> [max_len]
+start_llm() {                             # start_llm <gemma|qwen|llama|gptoss> [max_len]
   local path=${MODELS[$1]} len=${2:-32768}
   python -m vllm.entrypoints.openai.api_server --model "$path" --served-model-name llm \
     --tensor-parallel-size 2 --max-model-len "$len" --port $LLM_PORT > "$OUT/llm_server_$1.log" 2>&1 &

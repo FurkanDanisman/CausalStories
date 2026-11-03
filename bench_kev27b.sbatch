@@ -10,7 +10,7 @@
 # Our method with Kev-27B as the decision model, one world x one generator (benchmark/workplan.md §1).
 # Generator (nodes, names) on vLLM; Kev-27B for arrows, groups and did-it-happen; one model on the GPUs at a time.
 #   sbatch --export=ALL,GEN=gemma,WORLD=homelessness bench_kev27b.sbatch
-#   GEN: gemma | qwen | llama     WORLD: homelessness | career | mental_health
+#   GEN: gemma | qwen | llama | gptoss     WORLD: homelessness | career | mental_health
 #   SMOKE=1 runs the first 2 stories only (to check the job and measure speed).
 set -uo pipefail
 OUT=grid_cluster/${WORLD}__${GEN}__kev27b${SMOKE:+_smoke}
