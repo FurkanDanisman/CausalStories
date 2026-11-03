@@ -11,6 +11,11 @@ defined it (results/api_world100_matrix/build_report.py). No model calls, no imp
   graph   an arrow a -> b wherever the highest average is enables or blocks; its estimate and 95%
           interval come from the random-effects meta-analysis of that answer (combine.meta).
   table   did it happen, per story and group (implied.json: 1 / 0 / None = cannot tell).
+  model   the causal model, the output (ported from results/calc_model.py): every node gets
+          P(node = 1 | its parents in the graph), counted from the table; a story where the node or a
+          parent is None is skipped for that count; only parent combinations that occur are stored. Arrows
+          are added strongest first and an arrow that would close a cycle is left out of the model. Each
+          arrow also carries P(tail = 1 | head = 1) in the stories (both known).
 """
 
 from __future__ import annotations
@@ -93,6 +98,52 @@ def arrows(cell: dict[tuple[str, str], list[dict]]) -> list[dict]:
     return res
 
 
+def cond_prob(table: dict, x: str, y: str) -> tuple[int, int]:
+    """P(y = 1 | x = 1) in the stories: stories where x and y happened / stories where x happened (y known)."""
+    rows = [v for v in table.values() if v.get(x) == 1 and v.get(y) is not None]
+    return sum(r[y] == 1 for r in rows), len(rows)
+
+
+def model(arrows_: list[dict], table: dict, keep: set | None = None) -> dict:
+    """The causal model over the graph (calc_model.build): parents, P(node = 1 | parents) per parent setting
+    that occurs, its count, the node's marginal, and the arrows left out because they would close a cycle."""
+    arr = [a for a in arrows_ if keep is None or (a["head"] in keep and a["tail"] in keep)]
+    nodes = sorted({x for a in arr for x in (a["head"], a["tail"])})
+    parents = {c: [] for c in nodes}
+    removed = []
+
+    def reaches(u, v):
+        stack, seen = [u], set()
+        while stack:
+            w = stack.pop()
+            if w == v:
+                return True
+            if w in seen:
+                continue
+            seen.add(w)
+            stack += [c for c in nodes if w in parents[c]]
+        return False
+    for a in sorted(arr, key=lambda a: -a["estimate"]):
+        if reaches(a["tail"], a["head"]):
+            removed.append([a["head"], a["tail"]])
+        else:
+            parents[a["tail"]].append(a["head"])
+    rows = list(table.values())
+    p, cnt, marg = {}, {}, {}
+    for c in nodes:
+        known = [r for r in rows if r.get(c) is not None]
+        marg[c] = sum(r[c] == 1 for r in known) / len(known) if known else 0.0
+        tally = {}
+        for r in known:
+            if all(r.get(q) in (0, 1) for q in parents[c]):
+                key = "".join(str(r[q]) for q in parents[c])
+                k, n = tally.get(key, (0, 0))
+                tally[key] = (k + (r[c] == 1), n + 1)
+        p[c] = {key: k / n for key, (k, n) in tally.items()}
+        cnt[c] = {key: n for key, (k, n) in tally.items()}
+    return {"parents": parents, "p": p, "n": cnt, "marginal": marg, "removed": removed}
+
+
 def aggregate(outdir: Path, graphs: list[dict]) -> dict:
     abst = json.loads((outdir / "abstraction.json").read_text())
     imp = json.loads((outdir / "implied.json").read_text())
@@ -100,8 +151,15 @@ def aggregate(outdir: Path, graphs: list[dict]) -> dict:
     matrix = {v: [{"head": x, "tail": y, "n": len(prs),
                    "average": {r: round(sum(p[r] for p in prs) / len(prs), 4) for r in ANSWERS}}
                   for (x, y), prs in c.items()] for v, c in cl.items()}
+    table = {j: d["values"] for j, d in imp.items()}
+    arr = arrows(cl["chain"])
+    for a in arr:
+        k, n = cond_prob(table, a["head"], a["tail"])
+        a["p_tail_given_head"] = round(k / n, 4) if n else None
+        a["n_head"] = n
     return {"usage": usage(outdir, abst, graphs),
-            "table": {j: d["values"] for j, d in imp.items()},
+            "table": table,
             "matrix": matrix,
             "network": {"nodes": [{"id": c, "kind": d["kind"]} for c, d in abst["concepts"].items()],
-                        "arrows": arrows(cl["chain"]), "arrows_with_influence": arrows(cl["all"])}}
+                        "arrows": arr, "arrows_with_influence": arrows(cl["all"])},
+            "model": model(arr, table)}
