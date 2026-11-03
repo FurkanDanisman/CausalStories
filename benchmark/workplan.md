@@ -34,8 +34,8 @@ with MICE and no connect step, not from the agreed method. Everything aggregated
 
 | Item | % | Notes |
 |---|---|---|
-| Table 1 (individual graphs), 12 of 27 runs | 44 | **valid**: Steps 1-2 are the agreed method; 15 runs failed (budget, network) |
-| Table 2 (aggregated), 12 runs | **0** | old combine (MICE, no connect); rerun needs node-happened + implied + connect (decision-model calls) + matrix |
+| Table 1 (individual graphs) scored | 37 | 10 of the 27 planned runs (homelessness 5, career 2, mental health 3); career + Qwen + Jev ran but is not judged; homelessness + Gemma + Kev 4B was deleted by mistake on 2026-11-02; the other 15 never finished (budget, network) |
+| Table 2 (aggregated) | **0** | no valid result: all runs used the old combine (MICE, no connect) |
 | "Same LLM" decision runs | – | dropped |
 
 ## 3. Our method with Kev-27B on Killarney — 5%
