@@ -89,7 +89,8 @@ def chat(messages, max_tokens=16384, temperature=0.0, logprobs=False):
                                                                   "authorization": "Bearer EMPTY"})
             with urllib.request.urlopen(req, timeout=600) as r:
                 return json.loads(r.read())["choices"][0]
-        except (urllib.error.URLError, TimeoutError, ConnectionError, KeyError):
+        except (urllib.error.URLError, TimeoutError, ConnectionError, KeyError) as e:
+            print(f"[retry] request failed ({type(e).__name__}), attempt {attempt + 1}/6", file=sys.stderr, flush=True)
             if attempt == 5:
                 raise
             time.sleep(2 ** attempt)
@@ -107,14 +108,22 @@ def parse_json(text):
     return {}
 
 
-def ask_json(system, user, tries=3):
+class NoAnswer(RuntimeError):
+    """Every try returned no usable JSON: the story (or step) is marked failed, never kept as an empty graph."""
+
+
+def ask_json(system, user, tries=3, what=""):
     for t in range(tries):
+        t0 = time.time()
         ch = chat([{"role": "system", "content": system}, {"role": "user", "content": user}],
                   temperature=0.0 if t == 0 else 0.7)
         obj = parse_json(ch["message"].get("content"))
         if obj:
             return obj
-    return {}
+        why = "cut at the token limit" if ch.get("finish_reason") == "length" else "no valid JSON"
+        print(f"[retry] {what or 'answer'}: {why} after {time.time() - t0:.0f} s, try {t + 1}/{tries}",
+              file=sys.stderr, flush=True)
+    raise NoAnswer(f"{what or 'answer'}: no valid JSON after {tries} tries")
 
 
 def graph(sid, text, nodes, kinds, edges, tag, extra=None):
@@ -146,7 +155,7 @@ def rel_of(x):
 
 # ------------------------------------------------------------------ C1 naive
 def c1(it, _nodes):
-    obj = ask_json(RECITE + "\n\n" + TOP_K.format(k=K), it["text"])
+    obj = ask_json(RECITE + "\n\n" + TOP_K.format(k=K), it["text"], what=f"C1 {it['id']}")
     edges, nodes = [], []
     for r in obj.get("relationships", []):
         s, t = str(r.get("source", "")).strip(), str(r.get("sink", "")).strip()
@@ -162,7 +171,7 @@ def c2(it, nodes_of):
     nodes, kinds = nodes_of[it["id"]]
     ids = {i + 1: n for i, n in enumerate(nodes)}
     prompt = RECITE_NODES.replace("NODE_JSON", json.dumps({"nodes": [{"name": n, "id": i} for i, n in ids.items()]}, indent=1))
-    obj = ask_json(prompt, it["text"])
+    obj = ask_json(prompt, it["text"], what=f"C2 {it['id']}")
     edges = []
     for r in obj.get("relationships", []):
         try:
@@ -237,12 +246,12 @@ Answer only with JSON: {{"enables": ["<variable>", ...], "blocks": ["<variable>"
 def c4(it, nodes_of):
     nodes, kinds = nodes_of[it["id"]]
     vs = json.dumps(nodes)
-    roots = [r for r in ask_json("You are an expert causal reasoner.", BFS_ROOTS.format(text=it["text"], vars=vs)).get("roots", [])
+    roots = [r for r in ask_json("You are an expert causal reasoner.", BFS_ROOTS.format(text=it["text"], vars=vs), what=f"C4 roots {it['id']}").get("roots", [])
              if r in nodes] or nodes[:1]
     queue, seen, edges = list(roots), set(roots), []
     while queue:
         x = queue.pop(0)
-        obj = ask_json("You are an expert causal reasoner.", BFS_EXPAND.format(text=it["text"], vars=vs, x=x))
+        obj = ask_json("You are an expert causal reasoner.", BFS_EXPAND.format(text=it["text"], vars=vs, x=x), what=f"C4 expand {it['id']}")
         for rel in RELS:
             for y in obj.get(rel, []) or []:
                 if y in nodes and y != x:
@@ -258,7 +267,7 @@ Answer only with JSON: {"claims": [{"cause": "<label>", "effect": "<label>", "di
 
 
 def c5(it, _nodes):
-    obj = ask_json(CMAP + "\n" + TOP_K.format(k=K), it["text"])
+    obj = ask_json(CMAP + "\n" + TOP_K.format(k=K), it["text"], what=f"C5 {it['id']}")
     edges, nodes = [], []
     for c in obj.get("claims", []):
         s, t = str(c.get("cause", "")).strip(), str(c.get("effect", "")).strip()
@@ -285,7 +294,7 @@ Answer only with JSON: {{"present": ["<name>", ...]}}"""
 
 def c6(items, out, workers):
     stories = "\n\n".join(f"[{it['id']}] {it['text']}" for it in items)
-    obj = ask_json("You are an expert causal reasoner.", CORPUS.format(n=len(items), stories=stories, top_k=TOP_K.format(k=K)))
+    obj = ask_json("You are an expert causal reasoner.", CORPUS.format(n=len(items), stories=stories, top_k=TOP_K.format(k=K)), what="C6 world graph")
     names = [str(n.get("name", "")).strip() for n in obj.get("nodes", []) if str(n.get("name", "")).strip()]
     kind = {str(n.get("name", "")).strip(): ("participant" if str(n.get("kind", "")).startswith("p") else "event")
             for n in obj.get("nodes", [])}
@@ -293,13 +302,20 @@ def c6(items, out, workers):
               for e in obj.get("edges", []) if e.get("source") in names and e.get("target") in names]
 
     def pres(it):                                          # which world nodes each story contains (same LLM)
-        got = ask_json("You are a careful reader.", PRESENT.format(text=it["text"], names=json.dumps(names))).get("present", [])
+        try:
+            got = ask_json("You are a careful reader.", PRESENT.format(text=it["text"], names=json.dumps(names)),
+                           what=f"C6 present {it['id']}").get("present", [])
+        except NoAnswer:
+            failed.append(it["id"]); got = []                 # marked failed below, not silently "absent"
         return it["id"], {n: int(n in got) for n in names}
+    failed = []
     with ThreadPoolExecutor(workers) as ex:
         table = dict(ex.map(pres, items))
     concepts = {n: {"kind": kind.get(n, "event"), "members": [[sid, n, 1] for sid, row in table.items() if row[n]]}
                 for n in names}
-    json.dump({"concepts": concepts, "source": "C6"}, open(out / "abstraction.json", "w"), indent=1)
+    json.dump({"concepts": concepts, "source": "C6", "failed_stories": sorted(failed)}, open(out / "abstraction.json", "w"), indent=1)
+    if failed:
+        print(f"[failed] C6 present: {len(failed)} stories without an answer: {sorted(failed)}", file=sys.stderr, flush=True)
     json.dump({"table": table, "network": {"nodes": [{"id": n, "kind": kind.get(n, "event")} for n in names],
                                            "arrows": arrows}}, open(out / "network.json", "w"), indent=1)
 

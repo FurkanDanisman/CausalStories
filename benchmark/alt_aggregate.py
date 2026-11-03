@@ -122,7 +122,7 @@ def llm_merge(concepts, edges):
               "world they come from: keep the factors and arrows that the graphs support, drop noise.\n"
               'Answer only with JSON: {"edges": [{"source": "<factor>", "target": "<factor>", "relation": "enables" or "blocks"}, ...]}\n\n'
               + "\n".join(lines))
-    obj = ask_json("You are an expert causal reasoner.", prompt)
+    obj = ask_json("You are an expert causal reasoner.", prompt, what="A4 merge")
     return [{"head": e.get("source"), "tail": e.get("target"), "rel": rel_of(e.get("relation")), "estimate": 1.0}
             for e in obj.get("edges", []) if e.get("source") in concepts and e.get("target") in concepts]
 

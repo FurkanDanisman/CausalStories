@@ -19,22 +19,26 @@
 #   sbatch --export=ALL,GEN=gemma,DEC=kev27b bench_run.sbatch
 #   GEN: gemma | qwen | llama | gptoss    DEC: kev27b | kev9b
 #   METHODS: default "ours C1 C2 C3 C4 C5 C6" with kev27b and "ours" with kev9b (the competing approaches use Kev-27B)
-#   WORLDS:  default "homelessness career mental_health"     SMOKE=1: first 2 stories of each world
+#   WORLDS:  default "homelessness career mental_health"     SMOKE=1: first 2 stories; N=20: first 20 (timing test)
+#   KEV_WORKERS: stories sent to the Kev server at once (default 1) for the chain walk, did it happen and connect
 set -uo pipefail
 GEN=${GEN:?GEN}; DEC=${DEC:-kev27b}
 WORLDS=${WORLDS:-"homelessness career mental_health"}
 [ "$DEC" = kev27b ] && METHODS=${METHODS:-"ours C1 C2 C3 C4 C5 C6"} || METHODS=${METHODS:-"ours"}
-OUT=grid_cluster/_logs/${GEN}__${DEC}${SMOKE:+_smoke}
+METHODS=${METHODS//+/ }                    # METHODS=ours+C1 on the sbatch line (no spaces inside --export)
+N=${N:-}; [ -n "${SMOKE:-}" ] && N=2
+TAG=${N:+_n$N}; KW=${KEV_WORKERS:-1}
+OUT=grid_cluster/_logs/${GEN}__${DEC}${TAG}
 mkdir -p "$OUT"
 source bench_lib.sh
 K=${K:-8}; export MAX_EVENTS=$K              # event budget K: our Prompt 1a and C1, C5, C6 (same for every method)
 T0=$(date +%s); LOGS=$OUT                  # LOGS keeps the job folder (OUT is reused per run below)
 
-run_dir() { [ "$2" = ours ] && echo "grid_cluster/${1}__${GEN}__${DEC}${SMOKE:+_smoke}" || echo "grid_cluster/${1}__${GEN}__${2}${SMOKE:+_smoke}"; }
+run_dir() { [ "$2" = ours ] && echo "grid_cluster/${1}__${GEN}__${DEC}${TAG}" || echo "grid_cluster/${1}__${GEN}__${2}${TAG}"; }
 texts() {                                   # texts file of a world (first 2 stories with SMOKE=1)
   local f=${1}_v3.json
-  if [ -n "${SMOKE:-}" ]; then f=$OUT/${1}_texts.json
-    python -c "import json;json.dump(json.load(open('${1}_v3.json'))[:2],open('$f','w'))"; fi
+  if [ -n "$N" ]; then f=$OUT/${1}_texts.json
+    python -c "import json;json.dump(json.load(open('${1}_v3.json'))[:$N],open('$f','w'))"; fi
   echo "$f"
 }
 step() {                                    # step <run dir> <name> <command...>: skip if done; time it
@@ -66,7 +70,7 @@ start_kev
 for W in $WORLDS; do
   R=$(run_dir $W ours)
   [[ " $METHODS " == *" ours "* ]] && step "$R" chain_walk python run.py --mode chain-kev --kev-url "http://127.0.0.1:$KEV_PORT" \
-    --nodes-file "$R/chain_nodes.json" --tag gemma-kev --outdir "$R"
+    --nodes-file "$R/chain_nodes.json" --tag gemma-kev --outdir "$R" --workers $KW
 done
 for R in $(agg_runs); do
   step "$R" groups python run.py --mode merge-kev --kev-url "http://127.0.0.1:$KEV_PORT" --graphs-glob "$(graphs $R)" --outdir "$R"
@@ -84,7 +88,7 @@ echo "########## phase 4: $DEC (did it happen, connect)"
 start_kev
 for R in $(agg_runs); do
   for M in node-happened implied connect; do
-    step "$R" $M python run.py --mode $M --kev-url "http://127.0.0.1:$KEV_PORT" --graphs-glob "$(graphs $R)" --outdir "$R"
+    step "$R" $M python run.py --mode $M --kev-url "http://127.0.0.1:$KEV_PORT" --graphs-glob "$(graphs $R)" --outdir "$R" --workers $KW
   done
 done
 stop_kev
