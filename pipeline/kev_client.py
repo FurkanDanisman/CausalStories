@@ -44,13 +44,15 @@ class KevClient:
             self.model = model or os.environ.get("KEV_MODEL", "kev-latest")
 
     def ask(self, state: str, questions: dict[str, dict]) -> dict[str, dict]:
-        """Like _ask; a request too large for the server (max_tokens_exceeded) is split in
-        halves and the answers merged. The questions themselves are unchanged."""
+        """Like _ask; a request too large for the server (max_tokens_exceeded, or a server error such as
+        running out of GPU memory on a long request) is split in halves and the answers merged. The
+        questions themselves are unchanged."""
         try:
             return self._ask(state, questions)
         except RuntimeError as e:
-            if "max_tokens_exceeded" not in str(e) or len(questions) < 2:
+            if not ("max_tokens_exceeded" in str(e) or "HTTP 500" in str(e)) or len(questions) < 2:
                 raise
+            print(f"[split] request of {len(questions)} questions failed ({str(e)[:60]}); asking in two halves", flush=True)
             keys = list(questions)
             half = len(keys) // 2
             out = self.ask(state, {k: questions[k] for k in keys[:half]})

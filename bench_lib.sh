@@ -46,9 +46,11 @@ stop_llm() { kill $LLM_PID 2>/dev/null; wait $LLM_PID 2>/dev/null; sleep 5; }
 
 start_kev() {
   if [ "$DEC" = kev27b ]; then            # ~55 GB: split over both GPUs
-    (cd "$KEV_DIR" && .venv/bin/python "$PIPE/kev_serve_2gpu.py" --run "${KEVS[$DEC]}" --port $KEV_PORT) >> "$OUT/kev_server.log" 2>&1 &
+    # at most 24 GiB of weights on GPU 0: it also holds the head and the caches (36 GiB ran out of memory on long requests)
+    (cd "$KEV_DIR" && PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True .venv/bin/python "$PIPE/kev_serve_2gpu.py" \
+      --run "${KEVS[$DEC]}" --port $KEV_PORT --gpu0 24GiB --gpu1 40GiB) >> "$OUT/kev_server.log" 2>&1 &
   else                                    # fits one L40S: Kev's own server
-    (cd "$KEV_DIR" && CUDA_VISIBLE_DEVICES=0 .venv/bin/python -m kev.serve --run "${KEVS[$DEC]}" --port $KEV_PORT) >> "$OUT/kev_server.log" 2>&1 &
+    (cd "$KEV_DIR" && CUDA_VISIBLE_DEVICES=0 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True .venv/bin/python -m kev.serve --run "${KEVS[$DEC]}" --port $KEV_PORT) >> "$OUT/kev_server.log" 2>&1 &
   fi
   KEV_PID=$!; local t=$(date +%s)
   for i in $(seq 1 240); do
