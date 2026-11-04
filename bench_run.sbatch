@@ -15,7 +15,7 @@
 #   phase 4  DEC   did it happen (named nodes, missing groups) and connect, for ours and C1-C4
 # C5's clustering, Steps 5-6 (run.py --mode matrix) and scoring run on the laptop.
 # Resumable: a finished step leaves a .done_<step> file and is skipped when the job is submitted again.
-# Times: every step of every run -> <run>/timing.tsv; every model load and the whole job -> grid_cluster/_logs/<GEN>__<DEC>/model_loads.tsv.
+# Times: every step of every run -> <run>/timing.tsv; every model load and the whole job -> grid_cluster/_logs/<GEN>__<DEC>__<worlds>/model_loads.tsv.
 #   sbatch --export=ALL,GEN=gemma,KEV_WORKERS=32 bench_run.sbatch       (DEC=kev9b by default)
 #   GEN: gemma | qwen | llama | gptoss    DEC: kev9b (default) | kev27b
 #   METHODS: default "ours C1 C2 C3 C4 C5 C6" (the competing approaches use the same decision model as ours)
@@ -28,7 +28,7 @@ METHODS=${METHODS:-"ours C1 C2 C3 C4 C5 C6"}
 METHODS=${METHODS//+/ }                    # METHODS=ours+C1 on the sbatch line (no spaces inside --export)
 N=${N:-}; [ -n "${SMOKE:-}" ] && N=2
 TAG=${N:+_n$N}; KW=${KEV_WORKERS:-32}
-OUT=grid_cluster/_logs/${GEN}__${DEC}${TAG}
+OUT=grid_cluster/_logs/${GEN}__${DEC}__${WORLDS// /+}${TAG}     # one log folder per job (jobs for different worlds run side by side)
 mkdir -p "$OUT"
 source bench_lib.sh
 K=${K:-8}; export MAX_EVENTS=$K              # event budget K: our Prompt 1a and C1, C5, C6 (same for every method)
