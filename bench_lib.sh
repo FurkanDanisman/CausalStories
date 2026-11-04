@@ -14,10 +14,11 @@ export HF_HOME=$BASE/hf_cache
 export HF_HUB_OFFLINE=1
 KEV_DIR=$BASE/kev
 PIPE=$PWD
-KEV_PORT=8009
 DEC=${DEC:-kev9b}                         # decision model: kev9b (default; 1 GPU, Kev's server, batched) | kev27b (2 GPUs, split server, one request at a time)
 declare -A KEVS=([kev27b]=jaredpalmer/kev-27b [kev9b]=jaredpalmer/kev-9b)
-LLM_PORT=8000
+P0=$(( 20000 + ${SLURM_JOB_ID:-0} % 4000 * 4 ))   # ports from the job id: two jobs on one node never talk to each other's servers
+LLM_PORT=$P0; KEV_PORT=$((P0 + 1)); KEV_PORT2=$((P0 + 2))
+KEV_URL=http://127.0.0.1:$KEV_PORT
 export LLM_URL=http://127.0.0.1:$LLM_PORT/v1/chat/completions
 export ST_MODEL=/model-weights/all-MiniLM-L6-v2   # C5 clustering (offline compute nodes)
 export LLM_MODEL=llm                      # served model name used by baselines.py / the judge
@@ -49,18 +50,26 @@ start_kev() {
     # at most 24 GiB of weights on GPU 0: it also holds the head and the caches (36 GiB ran out of memory on long requests)
     (cd "$KEV_DIR" && PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True .venv/bin/python "$PIPE/kev_serve_2gpu.py" \
       --run "${KEVS[$DEC]}" --port $KEV_PORT --gpu0 24GiB --gpu1 40GiB) >> "$OUT/kev_server.log" 2>&1 &
-  else                                    # fits one L40S: Kev's own server
+    KEV_PIDS=$!; KEV_URL=http://127.0.0.1:$KEV_PORT
+  else                                    # fits one L40S: Kev's own server, one copy per GPU (each story always goes to the same copy)
     (cd "$KEV_DIR" && CUDA_VISIBLE_DEVICES=0 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True .venv/bin/python -m kev.serve --run "${KEVS[$DEC]}" --port $KEV_PORT) >> "$OUT/kev_server.log" 2>&1 &
+    KEV_PIDS=$!; KEV_URL=http://127.0.0.1:$KEV_PORT
+    if [ "$GPU_COUNT" -ge 2 ]; then
+      (cd "$KEV_DIR" && CUDA_VISIBLE_DEVICES=1 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True .venv/bin/python -m kev.serve --run "${KEVS[$DEC]}" --port $KEV_PORT2) >> "$OUT/kev_server2.log" 2>&1 &
+      KEV_PIDS="$KEV_PIDS $!"; KEV_URL=$KEV_URL,http://127.0.0.1:$KEV_PORT2
+    fi
   fi
-  KEV_PID=$!; local t=$(date +%s)
+  local t=$(date +%s)
   for i in $(seq 1 240); do
-    curl -sf "http://127.0.0.1:$KEV_PORT/v1/models" >/dev/null && { printf "load\t%s\t%s\n" "$DEC" $(( $(date +%s) - t )) >> "$OUT/model_loads.tsv"; return 0; }
-    kill -0 $KEV_PID 2>/dev/null || { echo "Kev server died:"; tail -40 "$OUT/kev_server.log"; exit 1; }
+    local up=1
+    for u in ${KEV_URL//,/ }; do curl -sf "$u/v1/models" >/dev/null || up=0; done
+    [ $up = 1 ] && { printf "load\t%s\t%s\n" "$DEC" $(( $(date +%s) - t )) >> "$OUT/model_loads.tsv"; return 0; }
+    for p in $KEV_PIDS; do kill -0 $p 2>/dev/null || { echo "Kev server died:"; tail -40 "$OUT"/kev_server*.log; exit 1; }; done
     sleep 10
   done
   echo "Kev server did not start"; exit 1
 }
-stop_kev() { kill $KEV_PID 2>/dev/null; wait $KEV_PID 2>/dev/null; sleep 5; }
+stop_kev() { kill $KEV_PIDS 2>/dev/null; wait $KEV_PIDS 2>/dev/null; sleep 5; }
 
 # GPU part of our aggregation on the story graphs in $OUT (method_Oct.tex, Section 2): Kev groups, the LLM
 # names the groups, Kev decides what happened (named nodes, then missing groups) and connects the inferred
@@ -68,15 +77,15 @@ stop_kev() { kill $KEV_PID 2>/dev/null; wait $KEV_PID 2>/dev/null; sleep 5; }
 # (Killarney is GPU-only). The generator for naming is $1.
 our_aggregation() {
   start_kev
-  python run.py --mode merge-kev --kev-url "http://127.0.0.1:$KEV_PORT" --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT"
+  python run.py --mode merge-kev --kev-url "$KEV_URL" --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT"
   stop_kev
   start_llm "$1"
   python run.py --mode name-groups --backend openai --base-url "http://127.0.0.1:$LLM_PORT/v1" --model llm --outdir "$OUT"
   stop_llm
   start_kev
-  python run.py --mode node-happened --kev-url "http://127.0.0.1:$KEV_PORT" --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT"
-  python run.py --mode implied --kev-url "http://127.0.0.1:$KEV_PORT" --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT"
-  python run.py --mode connect --kev-url "http://127.0.0.1:$KEV_PORT" --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT"
+  python run.py --mode node-happened --kev-url "$KEV_URL" --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT"
+  python run.py --mode implied --kev-url "$KEV_URL" --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT"
+  python run.py --mode connect --kev-url "$KEV_URL" --graphs-glob "$OUT/*__gemma-kev.chain.json" --outdir "$OUT"
   stop_kev
 }
 

@@ -20,14 +20,14 @@
 #   GEN: gemma | qwen | llama | gptoss    DEC: kev9b (default) | kev27b
 #   METHODS: default "ours C1 C2 C3 C4 C5 C6" (the competing approaches use the same decision model as ours)
 #   WORLDS:  default "homelessness career mental_health"     SMOKE=1: first 2 stories; N=20: first 20 (timing test)
-#   KEV_WORKERS: stories sent to the Kev server at once (default 1) for the chain walk, did it happen and connect
+#   KEV_WORKERS: stories sent to the Kev servers at once (default 32) for the chain walk, did it happen and connect
 set -uo pipefail
 GEN=${GEN:?GEN}; DEC=${DEC:-kev9b}
 WORLDS=${WORLDS:-"homelessness career mental_health"}
 METHODS=${METHODS:-"ours C1 C2 C3 C4 C5 C6"}
 METHODS=${METHODS//+/ }                    # METHODS=ours+C1 on the sbatch line (no spaces inside --export)
 N=${N:-}; [ -n "${SMOKE:-}" ] && N=2
-TAG=${N:+_n$N}; KW=${KEV_WORKERS:-1}
+TAG=${N:+_n$N}; KW=${KEV_WORKERS:-32}
 OUT=grid_cluster/_logs/${GEN}__${DEC}${TAG}
 mkdir -p "$OUT"
 source bench_lib.sh
@@ -69,11 +69,11 @@ echo "########## phase 2: $DEC (chain walk, groups)"
 start_kev
 for W in $WORLDS; do
   R=$(run_dir $W ours)
-  [[ " $METHODS " == *" ours "* ]] && step "$R" chain_walk python run.py --mode chain-kev --kev-url "http://127.0.0.1:$KEV_PORT" \
+  [[ " $METHODS " == *" ours "* ]] && step "$R" chain_walk python run.py --mode chain-kev --kev-url "$KEV_URL" \
     --nodes-file "$R/chain_nodes.json" --tag gemma-kev --outdir "$R" --workers $KW
 done
 for R in $(agg_runs); do
-  step "$R" groups python run.py --mode merge-kev --kev-url "http://127.0.0.1:$KEV_PORT" --graphs-glob "$(graphs $R)" --outdir "$R"
+  step "$R" groups python run.py --mode merge-kev --kev-url "$KEV_URL" --graphs-glob "$(graphs $R)" --outdir "$R"
 done
 stop_kev
 
@@ -88,7 +88,7 @@ echo "########## phase 4: $DEC (did it happen, connect)"
 start_kev
 for R in $(agg_runs); do
   for M in node-happened implied connect; do
-    step "$R" $M python run.py --mode $M --kev-url "http://127.0.0.1:$KEV_PORT" --graphs-glob "$(graphs $R)" --outdir "$R" --workers $KW
+    step "$R" $M python run.py --mode $M --kev-url "$KEV_URL" --graphs-glob "$(graphs $R)" --outdir "$R" --workers $KW
   done
 done
 stop_kev

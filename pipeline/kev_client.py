@@ -13,6 +13,7 @@ import os
 import time
 import urllib.error
 import urllib.request
+import zlib
 
 JEV_URL = "https://api.typesafe.ai"
 def log_cost(usd, kind):
@@ -36,10 +37,15 @@ class KevClient:
         self.requests = 0
         if "openrouter.ai" in base_url:     # same request/answer format; OpenRouter key; newest Jev
             self.url = base_url
+            self.urls = [base_url]
             self.api_key = api_key or os.environ.get("OPENROUTER_API_KEY")
             self.model = model or os.environ.get("KEV_MODEL", "~typesafe/jev-latest")
         else:
             self.url = base_url.rstrip("/") + "/v1/systemone"
+            # several local servers (comma-separated, e.g. one per GPU): each story always goes to the same server,
+            # so the server's cache of that story's text keeps working
+            self.urls = [u.strip().rstrip("/") + "/v1/systemone" for u in base_url.split(",")]
+            self.url = self.urls[0]
             self.api_key = api_key or os.environ.get("TYPESAFE_API_KEY")
             self.model = model or os.environ.get("KEV_MODEL", "kev-latest")
 
@@ -127,7 +133,8 @@ class KevClient:
         if self.api_key:
             headers["authorization"] = f"Bearer {self.api_key}"
         for attempt in range(5):                       # hosted API: retry rate limits / server errors
-            req = urllib.request.Request(self.url, data=body, headers=headers)
+            url = self.urls[zlib.crc32(state.encode()) % len(self.urls)] if len(self.urls) > 1 else self.url
+            req = urllib.request.Request(url, data=body, headers=headers)
             try:
                 with urllib.request.urlopen(req, timeout=self.timeout) as r:
                     self.requests += 1

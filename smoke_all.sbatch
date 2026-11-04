@@ -92,16 +92,16 @@ for it in items:                                     # C1-format story graphs (e
     json.dump(graph(it["id"], it["text"], g["nodes"], g["kinds"], edges, "C1"), open(f"{s}/C1/{it['id']}__gemma-kev.chain.json", "w"))
 PY
   start_kev
-  t0=$(date +%s); python run.py --mode chain-kev --kev-url "http://127.0.0.1:$KEV_PORT" --nodes-file "$S/ours/chain_nodes.json" \
+  t0=$(date +%s); python run.py --mode chain-kev --kev-url "$KEV_URL" --nodes-file "$S/ours/chain_nodes.json" \
     --tag gemma-kev --outdir "$S/ours"; check chain-walk "$DEC" $? $t0 "$S/ours"
   for R in ours C1; do                     # group names are not needed to test these steps (tested in the generator jobs)
-    t0=$(date +%s); python run.py --mode merge-kev --kev-url "http://127.0.0.1:$KEV_PORT" --graphs-glob "$S/$R/*__gemma-kev.chain.json" --outdir "$S/$R"
+    t0=$(date +%s); python run.py --mode merge-kev --kev-url "$KEV_URL" --graphs-glob "$S/$R/*__gemma-kev.chain.json" --outdir "$S/$R"
     check "groups ($R)" "$DEC" $? $t0 "$S/$R/abstraction.json"
-    t0=$(date +%s); python run.py --mode node-happened --kev-url "http://127.0.0.1:$KEV_PORT" --graphs-glob "$S/$R/*__gemma-kev.chain.json" --outdir "$S/$R"
+    t0=$(date +%s); python run.py --mode node-happened --kev-url "$KEV_URL" --graphs-glob "$S/$R/*__gemma-kev.chain.json" --outdir "$S/$R"
     count "node-happened ($R)" "$DEC" $? $t0 "$S/$R/*__happened.json"
-    t0=$(date +%s); python run.py --mode implied --kev-url "http://127.0.0.1:$KEV_PORT" --graphs-glob "$S/$R/*__gemma-kev.chain.json" --outdir "$S/$R"
+    t0=$(date +%s); python run.py --mode implied --kev-url "$KEV_URL" --graphs-glob "$S/$R/*__gemma-kev.chain.json" --outdir "$S/$R"
     check "implied ($R)" "$DEC" $? $t0 "$S/$R/implied.json"
-    t0=$(date +%s); python run.py --mode connect --kev-url "http://127.0.0.1:$KEV_PORT" --graphs-glob "$S/$R/*__gemma-kev.chain.json" --outdir "$S/$R"
+    t0=$(date +%s); python run.py --mode connect --kev-url "$KEV_URL" --graphs-glob "$S/$R/*__gemma-kev.chain.json" --outdir "$S/$R"
     count "connect ($R)" "$DEC" $? $t0 "$S/$R/*__connect.json"
   done
   stop_kev
