@@ -87,7 +87,7 @@ def chat(messages, max_tokens=16384, temperature=0.0, logprobs=False):
         try:
             req = urllib.request.Request(URL, data=data, headers={"content-type": "application/json",
                                                                   "authorization": "Bearer EMPTY"})
-            with urllib.request.urlopen(req, timeout=600) as r:
+            with urllib.request.urlopen(req, timeout=1800) as r:   # ReCITE's long reasoning (up to 16,384 tokens) can pass 10 min when many stories run at once
                 return json.loads(r.read())["choices"][0]
         except (urllib.error.URLError, TimeoutError, ConnectionError, KeyError) as e:
             print(f"[retry] request failed ({type(e).__name__}), attempt {attempt + 1}/6", file=sys.stderr, flush=True)
