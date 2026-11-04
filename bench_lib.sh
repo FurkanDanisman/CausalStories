@@ -15,7 +15,7 @@ export HF_HUB_OFFLINE=1
 KEV_DIR=$BASE/kev
 PIPE=$PWD
 KEV_PORT=8009
-DEC=${DEC:-kev27b}                        # decision model: kev27b (2 GPUs, split server) | kev9b (1 GPU, Kev's server)
+DEC=${DEC:-kev9b}                         # decision model: kev9b (default; 1 GPU, Kev's server, batched) | kev27b (2 GPUs, split server, one request at a time)
 declare -A KEVS=([kev27b]=jaredpalmer/kev-27b [kev9b]=jaredpalmer/kev-9b)
 LLM_PORT=8000
 export LLM_URL=http://127.0.0.1:$LLM_PORT/v1/chat/completions

@@ -9,7 +9,7 @@
 #
 # Last job, after every bench_run job has finished:
 #   1. A4 (LLM merge, aggregation comparison) with each of the 4 generators, on OUR story graphs and groups of the
-#      Gemma + Kev-27B run of each world (the same input as A1-A3 and A5, which run on the laptop);
+#      Gemma + decision-model run of each world (DEC, Kev-9B by default) (the same input as A1-A3 and A5, which run on the laptop);
 #   2. A1-A3, A5 (PC / GES) and C5's clustering (no model; quick CPU steps run here so the judge can see them);
 #   3. the judge (Gemma 4 31B) matches the nodes of every finished run and stores its answers in each run's judge cache.
 # Scores are computed on the laptop from those caches. Resumable: finished A4 runs and judged runs are skipped.
@@ -22,7 +22,7 @@ source bench_lib.sh
 echo "########## A4 with each generator"
 for G in ${GENS:-gemma qwen llama gptoss}; do
   start_llm "$G" 65536
-  for R in grid_cluster/*__gemma__kev27b; do
+  for R in grid_cluster/*__gemma__${DEC}; do
     case $(basename "$R") in agg__*) continue;; esac          # our runs only, not aggregation outputs
     [ -f "$R/abstraction.json" ] || continue
     A=grid_cluster/agg__A4-${G}__$(basename "$R")
@@ -32,7 +32,7 @@ for G in ${GENS:-gemma qwen llama gptoss}; do
 done
 
 echo "########## aggregations without a model (A1-A3, A5 PC/GES, C5 clustering): quick CPU steps, run here so the judge sees them"
-for R in grid_cluster/*__gemma__kev27b; do
+for R in grid_cluster/*__gemma__${DEC}; do
   case $(basename "$R") in agg__*) continue;; esac
   [ -f "$R/abstraction.json" ] || continue
   for M in A1 A2 A3 pc ges; do

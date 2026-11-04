@@ -16,15 +16,15 @@
 # C5's clustering, Steps 5-6 (run.py --mode matrix) and scoring run on the laptop.
 # Resumable: a finished step leaves a .done_<step> file and is skipped when the job is submitted again.
 # Times: every step of every run -> <run>/timing.tsv; every model load and the whole job -> grid_cluster/_logs/<GEN>__<DEC>/model_loads.tsv.
-#   sbatch --export=ALL,GEN=gemma,DEC=kev27b bench_run.sbatch
-#   GEN: gemma | qwen | llama | gptoss    DEC: kev27b | kev9b
-#   METHODS: default "ours C1 C2 C3 C4 C5 C6" with kev27b and "ours" with kev9b (the competing approaches use Kev-27B)
+#   sbatch --export=ALL,GEN=gemma,KEV_WORKERS=32 bench_run.sbatch       (DEC=kev9b by default)
+#   GEN: gemma | qwen | llama | gptoss    DEC: kev9b (default) | kev27b
+#   METHODS: default "ours C1 C2 C3 C4 C5 C6" (the competing approaches use the same decision model as ours)
 #   WORLDS:  default "homelessness career mental_health"     SMOKE=1: first 2 stories; N=20: first 20 (timing test)
 #   KEV_WORKERS: stories sent to the Kev server at once (default 1) for the chain walk, did it happen and connect
 set -uo pipefail
-GEN=${GEN:?GEN}; DEC=${DEC:-kev27b}
+GEN=${GEN:?GEN}; DEC=${DEC:-kev9b}
 WORLDS=${WORLDS:-"homelessness career mental_health"}
-[ "$DEC" = kev27b ] && METHODS=${METHODS:-"ours C1 C2 C3 C4 C5 C6"} || METHODS=${METHODS:-"ours"}
+METHODS=${METHODS:-"ours C1 C2 C3 C4 C5 C6"}
 METHODS=${METHODS//+/ }                    # METHODS=ours+C1 on the sbatch line (no spaces inside --export)
 N=${N:-}; [ -n "${SMOKE:-}" ] && N=2
 TAG=${N:+_n$N}; KW=${KEV_WORKERS:-1}
