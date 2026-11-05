@@ -274,14 +274,24 @@ def do_connect(args, outdir: Path) -> None:
         return {"new_nodes": new, "edges": added, "asked": asked, "chains": chains, "log": log}
 
     from concurrent.futures import ThreadPoolExecutor
+    import threading
+    lock = threading.Lock()
+    todo = [g for g in graphs if not (outdir / f"{g['id']}__connect.json").exists()]
+    if len(todo) < len(graphs):                   # resumed after a time limit: finished stories are kept
+        print(f"resuming: {len(graphs) - len(todo)} of {len(graphs)} stories already connected")
+
+    def run_one(g):                               # each story is saved as soon as it is done
+        r = one(g)
+        tmp = outdir / f"{g['id']}__connect.json.tmp"
+        tmp.write_text(json.dumps(r, indent=2)); tmp.replace(outdir / f"{g['id']}__connect.json")
+        with lock:
+            print(f"[{g['id']}] new: " + ", ".join(f"{n}={d['value']}" for n, d in r["new_nodes"].items()))
+            print("\n".join(r.get("log", [])))
+            for e in r["edges"]:
+                print(f"    + {e['head']} {'-|' if e['rel'] == 'blocks' else '->'} {e['tail']}   p={e['prob']:.2f}")
+
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
-        res = list(pool.map(one, graphs))
-    for g, r in zip(graphs, res):
-        print(f"[{g['id']}] new: " + ", ".join(f"{n}={d['value']}" for n, d in r["new_nodes"].items()))
-        print("\n".join(r.get("log", [])))
-        for e in r["edges"]:
-            print(f"    + {e['head']} {'-|' if e['rel'] == 'blocks' else '->'} {e['tail']}   p={e['prob']:.2f}")
-        (outdir / f"{g['id']}__connect.json").write_text(json.dumps(r, indent=2))
+        list(pool.map(run_one, todo))
 
 
 def do_matrix(args, outdir: Path) -> None:

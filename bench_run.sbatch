@@ -38,7 +38,7 @@ source bench_lib.sh
 K=${K:-8}; export MAX_EVENTS=$K              # event budget K: our Prompt 1a and C1, C5, C6 (same for every method)
 T0=$(date +%s); LOGS=$OUT                  # LOGS keeps the job folder (OUT is reused per run below)
 ROUND=${ROUND:-1}; MAX_ROUNDS=${MAX_ROUNDS:-6}
-n_done() { ls -a grid_cluster/*__${GEN}__* 2>/dev/null | grep -c '^\.done_'; }
+n_done() { ls -a grid_cluster/*__${GEN}__* 2>/dev/null | grep -c '^\.done_\|__connect\.json$'; }   # finished steps + connected stories
 DONE0=$(n_done)
 FAILS=0
 resubmit() {                                # resubmit <reason>: the same job again (next round skips finished steps)
