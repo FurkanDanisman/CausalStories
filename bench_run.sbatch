@@ -6,6 +6,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --time=03:00:00
 #SBATCH --output=bench-run-%x-%j.out
+#SBATCH --signal=B:USR1@600
 #
 # Every GPU stage for ONE generator (GEN) and ONE decision model (DEC), over all worlds and methods, with each model
 # loaded once per phase (method_Oct.tex; benchmark/workplan.md):
@@ -20,10 +21,13 @@
 #   GEN: gemma | qwen | llama | gptoss    DEC: kev9b (default) | kev27b
 #   METHODS: default "ours C1 C2 C3 C4 C5 C6" (the competing approaches use the same decision model as ours)
 #   WORLDS:  default "homelessness career mental_health"     SMOKE=1: first 2 stories; N=20: first 20 (timing test)
+# Requeue: 10 min before the time limit the job submits itself again (same settings) and stops; the next job skips
+#   finished steps. It stops requeueing after MAX_ROUNDS (default 6) rounds, or when a round finished no step.
 #   KEV_WORKERS: stories sent to the Kev servers at once (default 32) for the chain walk, did it happen and connect
 set -uo pipefail
 GEN=${GEN:?GEN}; DEC=${DEC:-kev9b}
 WORLDS=${WORLDS:-"homelessness career mental_health"}
+WORLDS=${WORLDS//+/ }
 METHODS=${METHODS:-"ours C1 C2 C3 C4 C5 C6"}
 METHODS=${METHODS//+/ }                    # METHODS=ours+C1 on the sbatch line (no spaces inside --export)
 N=${N:-}; [ -n "${SMOKE:-}" ] && N=2
@@ -33,6 +37,23 @@ mkdir -p "$OUT"
 source bench_lib.sh
 K=${K:-8}; export MAX_EVENTS=$K              # event budget K: our Prompt 1a and C1, C5, C6 (same for every method)
 T0=$(date +%s); LOGS=$OUT                  # LOGS keeps the job folder (OUT is reused per run below)
+ROUND=${ROUND:-1}; MAX_ROUNDS=${MAX_ROUNDS:-6}
+n_done() { ls -a grid_cluster/*__${GEN}__* 2>/dev/null | grep -c '^\.done_'; }
+DONE0=$(n_done)
+requeue() {                                 # USR1, 10 min before the limit: submit the same job again, then stop
+  trap - USR1
+  local now=$(n_done)
+  if [ "$ROUND" -ge "$MAX_ROUNDS" ]; then echo "########## time limit: round $ROUND of $MAX_ROUNDS, not requeueing"
+  elif [ "$now" -le "$DONE0" ]; then echo "########## time limit: no step finished this round, not requeueing (a step longer than the limit?)"
+  else
+    echo "########## time limit: requeueing as round $(( ROUND + 1 )) ($(( now - DONE0 )) steps finished this round)"
+    (cd "$SLURM_SUBMIT_DIR" && env $(env | grep -o '^SLURM_[A-Z_]*' | sed 's/^/-u /') sbatch \
+      --export=ALL,GEN=$GEN,DEC=$DEC,WORLDS=${WORLDS// /+},METHODS=${METHODS// /+},ROUND=$(( ROUND + 1 )),MAX_ROUNDS=$MAX_ROUNDS,KEV_WORKERS=$KW,K=$K${N:+,N=$N} \
+      bench_run.sbatch)
+  fi
+  kill $LLM_PID $KEV_PIDS 2>/dev/null; exit 0
+}
+trap requeue USR1
 
 run_dir() { [ "$2" = ours ] && echo "grid_cluster/${1}__${GEN}__${DEC}${TAG}" || echo "grid_cluster/${1}__${GEN}__${2}${TAG}"; }
 texts() {                                   # texts file of a world (first 2 stories with SMOKE=1)
@@ -45,7 +66,7 @@ step() {                                    # step <run dir> <name> <command...>
   local d=$1 s=$2; shift 2
   [ -f "$d/.done_$s" ] && { echo "--- skip $d $s (done)"; return 0; }
   echo "--- $d $s"; local t=$(date +%s)
-  "$@" && { touch "$d/.done_$s"; printf "%s\t%s\n" "$s" $(( $(date +%s) - t )) >> "$d/timing.tsv"; } \
+  "$@" & wait $! && { touch "$d/.done_$s"; printf "%s\t%s\n" "$s" $(( $(date +%s) - t )) >> "$d/timing.tsv"; } \
        || echo "!!! FAILED $d $s"
 }
 graphs() { echo "$1/*__gemma-kev.chain.json"; }
