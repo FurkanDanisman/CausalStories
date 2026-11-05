@@ -17,7 +17,11 @@ printf "overall           %3d%%  (%d/396 steps)\n\n" $(( 100 * tot / 396 )) "$to
 echo "running now (last step started in each job's log):"
 for j in $(squeue --me -h -n bench-run -t R -o %i); do
   f=bench-run-bench-run-$j.out
-  [ -f "$f" ] && echo "  $j  $(grep '^--- ' "$f" | tail -1 | sed 's/^--- //')"
+  [ -f "$f" ] || continue
+  last=$(grep '^--- ' "$f" | tail -1 | sed 's/^--- //'); d=${last% *}; s=${last##* }
+  extra=""; if [ "$s" = connect ] && [ -d "$d" ]; then   # inside a long step: stories connected so far
+    extra="  ($(ls "$d" | grep -c '__connect\.json$') of $(ls "$d" | grep -c '__gemma-kev\.chain\.json$') stories connected)"; fi
+  echo "  $j  $last$extra"
 done
 echo "waiting in the queue: $(squeue --me -h -n bench-run -t PD | wc -l)"
 
