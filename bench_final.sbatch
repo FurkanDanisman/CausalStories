@@ -12,7 +12,8 @@
 #      Gemma + decision-model run of each world (DEC, Kev-9B by default) (the same input as A1-A3 and A5, which run on the laptop);
 #   2. A1-A3, A5 (PC / GES) and C5's clustering (no model; quick CPU steps run here so the judge can see them);
 #   3. the judge (Gemma 4 31B) matches the nodes of every finished run and stores its answers in each run's judge cache.
-# Scores are computed on the laptop from those caches. Resumable: finished A4 runs and judged runs are skipped.
+# Scores are computed on the laptop from those caches. Resumable: finished A4 runs and judged runs are skipped, and
+# runs whose bench_run job is unfinished are left for the next submission, so it can run before every job is done.
 #   sbatch bench_final.sbatch      (GENS="gemma qwen" to run a subset)
 set -uo pipefail
 OUT=grid_cluster/_logs/final
@@ -54,6 +55,7 @@ for R in grid_cluster/*; do                                   # every run and ag
   case $(basename "$R") in _*) continue;; esac
   [ -d "$R" ] && [ -f "$R/abstraction.json" ] || continue
   [ -f "$R/.judged" ] && continue
+  if ls -a "$R" | grep -q '^\.done_' && [ ! -f "$R/.done_connect" ]; then echo "--- skip $R (its bench_run job has not finished)"; continue; fi
   name=$(basename "$R" | sed 's/^agg__[^_]*__//')
   world=$(echo "$name" | sed 's/__.*//')
   echo "--- $R ($world)"
