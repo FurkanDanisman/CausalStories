@@ -225,14 +225,35 @@ def do_connect(args, outdir: Path) -> None:
                            (", ".join(f"{t} {c} {pr:.2f}" for t, c, pr in got) or "no new arrows"))
             return children[x]
 
-        chains = []
+        chains, reached, closed = [], set(), set()
+
+        def is_closed(t):
+            # every node t can reach (through answers already given) has been asked: following t
+            # cannot ask anything new, it would only list more paths (their number grows exponentially)
+            if t in closed:
+                return True
+            seen, stack = set(), [t]
+            while stack:
+                u = stack.pop()
+                if u in seen:
+                    continue
+                if u not in children:
+                    return False
+                seen.add(u)
+                stack += [w for w, _, _ in children[u]]
+            closed.update(seen)
+            return True
 
         def expand(path):
+            reached.update(path)
             kids = [t for t, _, _ in ask(path) if t not in path]
             if not kids:
                 chains.append(path)
                 return
             for t in kids:
+                if is_closed(t):                  # same questions and answers as following it; path not listed
+                    reached.add(t)
+                    continue
                 expand(path + [t])
 
         rng = random.Random(args.seed)
@@ -241,8 +262,7 @@ def do_connect(args, outdir: Path) -> None:
             start = rng.choice(unvisited)
             log.append(f"  start at {start!r}")
             expand([start])
-            on = {n for c in chains for n in c}
-            unvisited = [n for n in new if n not in on] or [n for n in ids if n not in on]
+            unvisited = [n for n in new if n not in reached] or [n for n in ids if n not in reached]
         # new event -> participant: the influence question, as in the influence walk
         parts = [n for n in g["nodes"] if kinds.get(n) == "participant"]
         pairs = [(e, p) for e in new for p in parts]

@@ -40,19 +40,19 @@ T0=$(date +%s); LOGS=$OUT                  # LOGS keeps the job folder (OUT is r
 ROUND=${ROUND:-1}; MAX_ROUNDS=${MAX_ROUNDS:-6}
 n_done() { ls -a grid_cluster/*__${GEN}__* 2>/dev/null | grep -c '^\.done_'; }
 DONE0=$(n_done)
-requeue() {                                 # USR1, 10 min before the limit: submit the same job again, then stop
-  trap - USR1
+FAILS=0
+resubmit() {                                # resubmit <reason>: the same job again (next round skips finished steps)
   local now=$(n_done)
-  if [ "$ROUND" -ge "$MAX_ROUNDS" ]; then echo "########## time limit: round $ROUND of $MAX_ROUNDS, not requeueing"
-  elif [ "$now" -le "$DONE0" ]; then echo "########## time limit: no step finished this round, not requeueing (a step longer than the limit?)"
+  if [ "$ROUND" -ge "$MAX_ROUNDS" ]; then echo "########## $1: round $ROUND of $MAX_ROUNDS, not requeueing"
+  elif [ "$now" -le "$DONE0" ]; then echo "########## $1: no step finished this round, not requeueing (a step that always fails or takes longer than the limit?)"
   else
-    echo "########## time limit: requeueing as round $(( ROUND + 1 )) ($(( now - DONE0 )) steps finished this round)"
+    echo "########## $1: requeueing as round $(( ROUND + 1 )) ($(( now - DONE0 )) steps finished this round)"
     (cd "$SLURM_SUBMIT_DIR" && env $(env | grep -o '^SLURM_[A-Z_]*' | sed 's/^/-u /') sbatch \
       --export=ALL,GEN=$GEN,DEC=$DEC,WORLDS=${WORLDS// /+},METHODS=${METHODS// /+},ROUND=$(( ROUND + 1 )),MAX_ROUNDS=$MAX_ROUNDS,KEV_WORKERS=$KW,K=$K${N:+,N=$N} \
       bench_run.sbatch)
   fi
-  kill $LLM_PID $KEV_PIDS 2>/dev/null; exit 0
 }
+requeue() { trap - USR1; resubmit "time limit"; kill $LLM_PID $KEV_PIDS 2>/dev/null; exit 0; }   # USR1, 10 min before the limit
 trap requeue USR1
 
 run_dir() { [ "$2" = ours ] && echo "grid_cluster/${1}__${GEN}__${DEC}${TAG}" || echo "grid_cluster/${1}__${GEN}__${2}${TAG}"; }
@@ -67,7 +67,7 @@ step() {                                    # step <run dir> <name> <command...>
   [ -f "$d/.done_$s" ] && { echo "--- skip $d $s (done)"; return 0; }
   echo "--- $d $s"; local t=$(date +%s)
   "$@" & wait $! && { touch "$d/.done_$s"; printf "%s\t%s\n" "$s" $(( $(date +%s) - t )) >> "$d/timing.tsv"; } \
-       || echo "!!! FAILED $d $s"
+       || { echo "!!! FAILED $d $s"; FAILS=$(( FAILS + 1 )); }
 }
 graphs() { echo "$1/*__gemma-kev.chain.json"; }
 agg_runs() { for W in $WORLDS; do for M in $METHODS; do [[ "$M" =~ ^(ours|C1|C2|C3|C4)$ ]] && run_dir $W $M; done; done; }
@@ -119,5 +119,6 @@ for W in $WORLDS; do for M in $METHODS; do R=$(run_dir $W $M); [ -d "$R" ] || co
     "$(awk -F'\t' '{s+=$2} END {print s+0}' "$R/timing.tsv" 2>/dev/null)"
 done; done
 printf "job\t%s\t%s\n" "${GEN}__${DEC}" $(( $(date +%s) - T0 )) >> "$LOGS/model_loads.tsv"
-echo "########## done in $(( $(date +%s) - T0 )) s (failed steps: !!! FAILED above)"
+echo "########## done in $(( $(date +%s) - T0 )) s ($FAILS failed steps: !!! FAILED above)"
+[ "$FAILS" -gt 0 ] && resubmit "$FAILS failed steps"
 echo "times: each run's timing.tsv (its own steps, start to end); model loads + whole job: $LOGS/model_loads.tsv"
