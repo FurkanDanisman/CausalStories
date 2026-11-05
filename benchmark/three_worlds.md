@@ -192,7 +192,7 @@ compared with the true world graph:
 | **Node precision / recall** | share of estimated nodes that are real / share of real nodes found | 1 / 1 |
 | **SHD** (Tsamardinos, Brown & Aliferis, 2006), with sign errors | arrow edits to turn the estimate into the truth: missing, extra, reversed, wrong sign | 0 |
 | **SID** (Peters & Bühlmann, 2015) | node pairs (A, B) whose P(B \| do(A)) would be inferred wrongly from the estimated graph | 0 |
-| **KL of conditionals** (true ‖ estimated) | how far the method's P(node \| its causes) is from the world's, for every node that has causes | 0 |
+| **KL of conditionals** (true ‖ estimated) | how far the method's P(child \| parent) is from the stories' true one, for every true arrow | 0 |
 
 - **Node matching first**, by a separate LLM judge (not by hand): it checks whether an extracted
   node means the same as a true event; if so it is renamed to the true name, otherwise it stays an
@@ -201,14 +201,16 @@ compared with the true world graph:
 - **SHD:** one error per node pair; arrows touching extra nodes count as extra arrows.
 - **SID** (common node set): extra nodes are contracted (parents joined to children); cycles are
   broken by dropping the weakest arrow.
-- **KL of conditionals:** for every true node with causes, the average over real-world people of
-  KL( P_true(node | its true causes) ‖ P_est(node | its estimated causes) ), summed over nodes.
-  How often the starting events happen is left out: the stories are selected on the outcome (half
-  reach it), so starting rates counted from them cannot match the population, while the true world
-  model scores exactly 0. The method's arrows are combined as independent causes with blockers
-  (noisy-OR, as in the worlds): enabler strength = P(child | parent) from the stories, blocker
-  strength = 1 − P(child | blocker) / P(child); leak 0.01; an extra node in the estimate takes its own
-  estimated probability; a missing true node gets 0.5.
+- **KL of conditionals (per arrow):** what the methods output is one conditional probability per arrow,
+  P(child | parent). For every true arrow u → v, the true P(v | u) is counted from the **true story table**
+  (each story's true events, from the generator) and compared with the method's P(v | u) for its arrow u → v,
+  counted the same way from **its own story table** (Step 8 of the method, per arrow); KL is the mean of the
+  Bernoulli KL over the true arrows. A true arrow the method does not have, or a node it misses, gets 0.5; a
+  method without a story table uses its arrow's own number. The reference is these 200 stories, not the
+  population, so how the stories were sampled (half reach the outcome) does not count against any method, and
+  a method with the true graph that reads every story right scores exactly 0. Joint probabilities over several
+  causes are not scored: a story only reports the events of its own chain, so almost no story knows all the
+  causes of a node with several.
 - Not computed yet: node matching is not built.
 
 ### Summary scores (0–1, 1 is perfect)

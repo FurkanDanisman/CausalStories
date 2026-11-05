@@ -179,6 +179,26 @@ def topo(nodes, E):
     return order
 
 
+def true_values(story, nodes):
+    """A story's true events, from the generator's record (story_v2.lived_graph): both ends of an enabling or
+    carrying-out arrow happened; a blocker happened; the target of a 'stopped' or 'risk' arrow did not happen,
+    the target of a 'failed' blocker did; a distractor in the story happened. Events not in the story: None."""
+    v = {n: None for n in nodes}
+    for u, t, k in story["truth"]["arrows"]:
+        v[u] = 1
+        v[t] = 0 if k in ("stopped", "risk") else 1
+    for d in story["truth"].get("distractors", []):
+        if d in v: v[d] = 1
+    return v
+
+
+def kl2(p, q):
+    """KL between Bernoulli(p) and Bernoulli(q); exactly 0 when they are equal."""
+    if p == q: return 0.0
+    q = min(max(q, 1e-6), 1 - 1e-6)
+    return sum(pp * math.log(pp / qq) for pp, qq in ((p, q), (1 - p, 1 - q)) if pp > 0)
+
+
 def main(world, run, cut=None):
     cut = CUT if cut is None else cut
     run = Path(run); key = env_key()
@@ -269,7 +289,7 @@ def main(world, run, cut=None):
     Etrue = set(T)
     bad = sid(Etrue, Eg, TN)
     sid_norm = 1 - len(bad) / (len(TN) * (len(TN) - 1))
-    # KL of conditionals (option 1); strengths counted from the run's story table
+    # the method's own story table, over its kept groups (judge-matched to true nodes)
     tab = net["table"]
     def val(row, n):                                          # merged node = any of its groups happened;
         vs = [row.get(c) for c in kept if (gm[c] or f"x:{c}") == n]   # None = cannot tell (no imputation)
@@ -278,55 +298,31 @@ def main(world, run, cut=None):
     def p1(n, cond=None):                                     # counted only over stories where all are known
         rs = [r for r in rows if r[n] is not None and (cond is None or all(r[k] == v for k, v in cond.items()))]
         return (sum(r[n] for r in rs) / len(rs)) if rs else 0.0
-    Edag = break_cycles(set(E), Ew)
-    est_order = topo(est_nodes, Edag)
-    par = {n: [(u, E[(u, n)]) for u in est_nodes if (u, n) in Edag] for n in est_nodes}
-    strength = {}
-    for n in est_nodes:
-        for u, sg in par[n]:
-            if sg == "+": strength[(u, n)] = p1(n, {u: 1})
-            else:
-                pn = p1(n); strength[(u, n)] = max(0.0, min(1.0, 1 - p1(n, {u: 1}) / pn)) if pn else 0.0
-    root_f = {n: p1(n) for n in est_nodes if not par[n]}
-    def q_est(n, x, extra_vals):
-        """method's P(n = 1 | its estimated causes) at state x"""
-        if not par[n]: return root_f[n]
-        v = lambda u: x[u] if u in x else extra_vals[u]
-        en = [strength[(u, n)] for u, sg in par[n] if sg == "+" and v(u)]
-        bl = [strength[(u, n)] for u, sg in par[n] if sg == "-" and v(u)]
-        return min(max((1 - 0.99 * math.prod(1 - a for a in en)) * math.prod(1 - b for b in bl), 1e-6), 1 - 1e-6)
-    # Option 1: KL of conditionals only, against the real world. For every true node with causes,
-    # E over real-world people of KL( P_true(node | true causes) || P_est(node | estimated causes) ),
-    # summed over nodes; starting events are left out. The true world model scores exactly 0.
-    true_order = [n for n in list(W.ROOT) + list(W.MECH) if n in TN]
-    extra = [n for n in est_order if n.startswith("x:")]
-    def q_true(n, x):
-        en, bl = W.MECH[n]
-        return (1 - math.prod(1 - a for u, a in en.items() if x[u])) * math.prod(1 - b for u, b in bl.items() if x[u])
-    def kl2(p, q):
-        return sum(pp * math.log(pp / qq) for pp, qq in ((p, q), (1 - p, 1 - q)) if pp > 0)
-    kl_nodes = {n: 0.0 for n in W.MECH}
-    for bits in itertools.product((0, 1), repeat=len(true_order)):
-        x = dict(zip(true_order, bits)); pt = 1.0
-        for n in true_order:
-            q = W.ROOT[n] if n in W.ROOT else q_true(n, x)
-            pt *= q if x[n] else 1 - q
-        if pt == 0: continue
-        ev = {}                                          # extra nodes: the method's own probability given x
-        for u in extra:
-            ev[u] = q_est(u, x, {k: (1 if ev[k] >= 0.5 else 0) for k in ev})
-        for n in W.MECH:
-            if n in est_nodes:
-                qe = sum(math.prod(ev[u] if b else 1 - ev[u] for u, b in zip(extra, eb)) *
-                         q_est(n, x, dict(zip(extra, eb))) for eb in itertools.product((0, 1), repeat=len(extra)))
-            else:
-                qe = 0.5                                 # a missing true node gets 0.5
-            kl_nodes[n] += pt * kl2(q_true(n, x), min(max(qe, 1e-6), 1 - 1e-6))
-    kl = sum(kl_nodes.values())
+    # KL of the arrows' conditional probabilities (three_worlds.md, section 9), which is what the methods output:
+    # for every true arrow u -> v, the true P(v = 1 | u = 1), counted from the TRUE story table (each story's true
+    # events, from the generator), against the method's P(v = 1 | u = 1) for its arrow u -> v, counted the same
+    # way from its OWN story table (method_Oct.tex, Step 8, per arrow). A true arrow the method does not have
+    # (or a node it misses) gets 0.5; a method without a story table uses its arrow's own number. KL is the mean
+    # over the true arrows; a method with the true graph that reads every story right scores exactly 0.
+    def cond(table, v, u):                                    # P(v = 1 | u = 1) over rows with u = 1 and v known
+        rs = [r for r in table if r.get(u) == 1 and r.get(v) is not None]
+        return sum(r[v] for r in rs) / len(rs) if rs else None
+    true_rows = [true_values(stories[j], TN) for j in stories]
+    KL_MODEL = "per-arrow P(child | parent), counted tables" if rows else "per-arrow, the arrow's own number (no story table)"
+    kl_nodes = {}                                             # keyed "u -> v"
+    for v, (en, bl) in W.MECH.items():
+        for u in list(en) + list(bl):
+            p_ref = cond(true_rows, v, u)
+            if p_ref is None: continue                        # no story shows u happening with v known
+            if (u, v) not in E: q = 0.5
+            elif rows: q = cond(rows, v, u); q = 0.5 if q is None else q
+            else: q = Ew[(u, v)]
+            kl_nodes[f"{u} -> {v}"] = kl2(p_ref, q)
+    kl = sum(kl_nodes.values()) / len(kl_nodes) if kl_nodes else 0.0
     agg = {"cut": cut, "kept_groups": {c: {"usage": round(usage[c], 3), "match": gm[c]} for c in kept},
            "node_P": P, "node_R": R, "node_F1": f1(P, R), "shd": d, "true_arrows": len(T), "est_arrows": len(E),
            "arrows": arrows_norm, "sid_wrong": len(bad), "sid_pairs": len(TN) * (len(TN) - 1), "sid": sid_norm,
-           "kl": kl, "kl_by_node": kl_nodes, "kl_score": math.exp(-kl),
+           "kl": kl, "kl_by_arrow": kl_nodes, "kl_score": math.exp(-kl), "kl_model": KL_MODEL,
            "arrows_list": [{"head": h, "tail": t, "sign": sg, "estimate": Ew[(h, t)]} for (h, t), sg in E.items()]}
     agg["score"] = gmean([agg["node_F1"], arrows_norm, sid_norm, agg["kl_score"]])
     out = {"world": world, "run": str(run), "judge": JUDGE, "judge_usage_so_far": dict(JUDGE_USAGE), "individual": ind, "aggregated": agg,
