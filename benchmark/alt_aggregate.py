@@ -4,7 +4,8 @@ and C7 (PC / GES). Each reads story graphs and writes a world graph (abstraction
 that evaluate_run.py scores with Table 2.
 
 Same input for A1-A5: OUR story graphs and OUR groups from one run (<run>/abstraction.json:
-concepts with their member nodes, concept_edges per story). A concept is present in a story when the
+concepts with their member nodes, concept_edges per story), without the influence arrows (event -> participant),
+as in our own aggregation. A concept is present in a story when the
 story has one of its member nodes.
 
   A1 freq     frequency map (Causal Map overview): keep a link seen in >= MIN_LINK stories; sign = majority
@@ -37,7 +38,8 @@ def load_run(run):
     edges = defaultdict(list)            # story -> [(head concept, tail concept, rel, prob)]
     for s, es in abst.get("concept_edges", {}).items():
         for e in es:
-            if e["head"] != e["tail"] and e["head"] in concepts and e["tail"] in concepts:
+            if (e["head"] != e["tail"] and e["head"] in concepts and e["tail"] in concepts
+                    and concepts[e["tail"]].get("kind", "event") != "participant"):   # no influence arrows (separate layer)
                 edges[s].append((e["head"], e["tail"], e["rel"], float(e.get("prob", 1.0))))
     return concepts, table, edges
 
