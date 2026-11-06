@@ -55,7 +55,7 @@ for R in grid_cluster/*; do                                   # every run and ag
   case $(basename "$R") in _*) continue;; esac
   [ -d "$R" ] && [ -f "$R/abstraction.json" ] || continue
   [ -f "$R/.judged" ] && continue
-  if ls -a "$R" | grep -q '^\.done_' && [ ! -f "$R/.done_connect" ]; then echo "--- skip $R (its bench_run job has not finished)"; continue; fi
+  if [ -f "$R/.done_groups" ] && [ ! -f "$R/.done_connect" ]; then echo "--- skip $R (its bench_run job has not finished)"; continue; fi
   name=$(basename "$R" | sed 's/^agg__[^_]*__//')
   world=$(echo "$name" | sed 's/__.*//')
   echo "--- $R ($world)"

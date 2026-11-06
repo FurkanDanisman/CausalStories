@@ -33,7 +33,7 @@ n_c5=$(ls -d grid_cluster/agg__C5agg__*/ 2>/dev/null | while read d; do [ -f "$d
 n_judge=0; n_judgeable=0
 for R in grid_cluster/*/; do R=${R%/}; case $(basename "$R") in _*) continue;; esac
   [ -f "$R/abstraction.json" ] || continue
-  if ls -a "$R" | grep -q '^\.done_' && [ ! -f "$R/.done_connect" ]; then continue; fi
+  if [ -f "$R/.done_groups" ] && [ ! -f "$R/.done_connect" ]; then continue; fi
   n_judgeable=$(( n_judgeable + 1 )); [ -f "$R/.judged" ] && n_judge=$(( n_judge + 1 ))
 done
 echo "  A4 (LLM merge):           $n_a4 of 12 (4 generators x 3 worlds)"
