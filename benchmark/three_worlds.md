@@ -199,6 +199,8 @@ compared with the true world graph:
   extra node. Individual stories are matched against that story's own events; aggregated graphs
   against the world's nodes.
 - **SHD:** one error per node pair; arrows touching extra nodes count as extra arrows.
+- **Influence arrows** (event → participant, the method's separate influence layer) are not part of any metric:
+  they are left out of individual and aggregated graphs before scoring.
 - **SID** (common node set): extra nodes are contracted (parents joined to children); cycles are
   broken by dropping the weakest arrow.
 - **KL of conditionals (per arrow):** what the methods output is one conditional probability per arrow,

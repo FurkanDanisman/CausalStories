@@ -228,8 +228,10 @@ def main(world, run, cut=None):
         P = len(mapped) / len(ext) if ext else 0.0
         R = len({m[e] for e in mapped}) / len(tnodes)
         T, _ = signed([(h, t, "+" if k in POS else "-", 1) for h, t, k in s["truth"]["arrows"]])
+        kinds = g.get("kinds") or {}                     # influence arrows (event -> participant) are a separate
+        edges = [e for e in g["edges"] if kinds.get(e["tail"], "event") != "participant"]   # layer: never scored
         E, _ = signed([(m.get(e["head"]) or f"x:{e['head']}", m.get(e["tail"]) or f"x:{e['tail']}",
-                        "+" if e["rel"] == "enables" else "-", e.get("prob", 0)) for e in g["edges"]])
+                        "+" if e["rel"] == "enables" else "-", e.get("prob", 0)) for e in edges])
         d = shd(T, E); s_ = sum(d.values())
         arrows = 1 - s_ / (len(T) + len(E)) if (len(T) + len(E)) else 1.0
         node = f1(P, R)
@@ -276,7 +278,9 @@ def main(world, run, cut=None):
     P = len([c for c in kept if gm[c]]) / len(kept); R = len(mapped_true) / len(TN)
     T, _ = signed([(u, v, "+", 1) for v, (en, bl) in W.MECH.items() for u in en] +
                   [(u, v, "-", 1) for v, (en, bl) in W.MECH.items() for u in bl])
-    arr = [a for a in net["network"]["arrows"] if a["head"] in kept and a["tail"] in kept]
+    kind = {c: d.get("kind", "event") for c, d in abst["concepts"].items()}
+    arr = [a for a in net["network"]["arrows"] if a["head"] in kept and a["tail"] in kept
+           and kind.get(a["tail"], "event") != "participant"]          # influence arrows are never scored
     E, Ew = signed([(gm[a["head"]] or f"x:{a['head']}", gm[a["tail"]] or f"x:{a['tail']}",
                      "+" if a["rel"] == "enables" else "-", a["estimate"]) for a in arr])
     d = shd(T, E); s_ = sum(d.values())
