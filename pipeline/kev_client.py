@@ -24,6 +24,22 @@ def log_cost(usd, kind):
             f.write(f"{kind}\t{usd}\n")
 
 
+import threading
+_LOG_LOCK = threading.Lock()
+
+
+def log_inference(model: str, prompt_tokens=None, completion_tokens=None, questions=None, chars=None):
+    """Append one model call to $INFER_LOG (JSON lines), when that is set: which model, which step ($INFER_STEP),
+    tokens in and out if the server reports them, questions per request (decision model) and characters sent."""
+    path = os.environ.get("INFER_LOG")
+    if not path:
+        return
+    rec = {"model": model, "step": os.environ.get("INFER_STEP"), "prompt_tokens": prompt_tokens,
+           "completion_tokens": completion_tokens, "questions": questions, "chars": chars}
+    with _LOG_LOCK, open(path, "a") as f:
+        f.write(json.dumps(rec) + "\n")
+
+
 JEV_OPENROUTER_URL = "https://openrouter.ai/api/alpha/decisions"   # Jev on OpenRouter (decisions endpoint)
 
 
@@ -140,6 +156,9 @@ class KevClient:
                     self.requests += 1
                     resp = json.loads(r.read())
                     log_cost((resp.get("usage") or {}).get("cost"), "decision")
+                    u = resp.get("usage") or {}
+                    log_inference("decision", u.get("prompt_tokens"), u.get("completion_tokens"),
+                                  questions=len(questions), chars=len(body))
                     return resp["answers"]
             except urllib.error.HTTPError as e:
                 if e.code in (429, 500, 502, 503, 504) and attempt < 4:

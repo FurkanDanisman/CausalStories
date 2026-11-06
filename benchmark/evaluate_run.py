@@ -281,6 +281,10 @@ def main(world, run, cut=None):
     kind = {c: d.get("kind", "event") for c, d in abst["concepts"].items()}
     arr = [a for a in net["network"]["arrows"] if a["head"] in kept and a["tail"] in kept
            and kind.get(a["tail"], "event") != "participant"]          # influence arrows are never scored
+    knots7 = None
+    if graphs and all((run / f"{j}__connect.json").exists() for j in graphs):   # our aggregation (ours, C1-C4):
+        res7 = matrix.resolve(arr, matrix.cells(run, abst, list(graphs.values()), ids=True)["chain"], set(kept))
+        arr, knots7 = res7["main_arrows"], res7["knots"]                   # score Step 7's main graph at this cut
     E, Ew = signed([(gm[a["head"]] or f"x:{a['head']}", gm[a["tail"]] or f"x:{a['tail']}",
                      "+" if a["rel"] == "enables" else "-", a["estimate"]) for a in arr])
     d = shd(T, E); s_ = sum(d.values())
@@ -326,7 +330,7 @@ def main(world, run, cut=None):
     agg = {"cut": cut, "kept_groups": {c: {"usage": round(usage[c], 3), "match": gm[c]} for c in kept},
            "node_P": P, "node_R": R, "node_F1": f1(P, R), "shd": d, "true_arrows": len(T), "est_arrows": len(E),
            "arrows": arrows_norm, "sid_wrong": len(bad), "sid_pairs": len(TN) * (len(TN) - 1), "sid": sid_norm,
-           "kl": kl, "kl_by_arrow": kl_nodes, "kl_score": math.exp(-kl), "kl_model": KL_MODEL,
+           "kl": kl, "kl_by_arrow": kl_nodes, "kl_score": math.exp(-kl), "kl_model": KL_MODEL, "step7_knots": knots7,
            "arrows_list": [{"head": h, "tail": t, "sign": sg, "estimate": Ew[(h, t)]} for (h, t), sg in E.items()]}
     agg["score"] = gmean([agg["node_F1"], arrows_norm, sid_norm, agg["kl_score"]])
     out = {"world": world, "run": str(run), "judge": JUDGE, "judge_usage_so_far": dict(JUDGE_USAGE), "individual": ind, "aggregated": agg,

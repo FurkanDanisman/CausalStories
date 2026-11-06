@@ -27,7 +27,7 @@ for G in ${GENS:-gemma qwen llama gptoss}; do
     case $(basename "$R") in agg__*) continue;; esac          # our runs only, not aggregation outputs
     [ -f "$R/abstraction.json" ] || continue
     A=grid_cluster/agg__A4-${G}__$(basename "$R")
-    [ -f "$A/network.json" ] || { t0=$(date +%s); python benchmark/alt_aggregate.py A4 "$R" "$A" && printf "A4\t%s\n" $(( $(date +%s) - t0 )) >> "$A/timing.tsv"; }
+    [ -f "$A/network.json" ] || { t0=$(date +%s); mkdir -p "$A"; INFER_LOG="$PWD/$A/inference.jsonl" INFER_STEP=A4 python benchmark/alt_aggregate.py A4 "$R" "$A" && printf "A4\t%s\n" $(( $(date +%s) - t0 )) >> "$A/timing.tsv"; }
   done
   stop_llm
 done

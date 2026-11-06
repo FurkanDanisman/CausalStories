@@ -9,7 +9,7 @@ for R in grid_cluster/*/; do
   R=${R%/}; name=$(basename "$R")
   [ -f "$R/run_info.json" ] || [ -f "$R/network.json" ] || continue
   tmp=$(mktemp -d); mkdir -p "$tmp/$name"
-  cp "$R"/*.json "$R"/*.tsv "$tmp/$name/" 2>/dev/null || true
+  cp "$R"/*.json "$R"/*.jsonl "$R"/*.tsv "$tmp/$name/" 2>/dev/null || true
   tar -czf "results_cluster/$name.tar.gz" -C "$tmp" "$name"; rm -rf "$tmp"
   echo "packed $name"
 done

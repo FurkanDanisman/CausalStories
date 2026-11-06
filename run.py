@@ -178,11 +178,12 @@ def do_connect(args, outdir: Path) -> None:
     """Connect the inferred groups to each story graph, on top of the existing graph. New
     nodes = the event groups a story does not name but Jev inferred as happened / not
     happened (implied.json; "cannot tell" is left out), shown by their group name.
-    Walk (same rules as the chain walk): start from a random new node; when a node is first
-    reached it is asked only about nodes NOT on the current path (a new node about every
-    such node, an existing node only about the new ones; its existing arrows are reused, not
-    asked again); follow every child; restart from a node no path has reached, until every
-    node is on a path. Existing arrows are never changed. New event -> participant arrows
+    Walk (the chain walk's rule): start from a random node (existing or new); when a node x is
+    first reached it is asked only about nodes NOT on the current path that cannot already reach
+    x in the story's current graph (a new node about every such node, an existing node only about
+    the new ones; its existing arrows are reused, not asked again); follow every child; restart
+    from a random node no path has reached, until every node is on a path. The story's graph
+    stays acyclic (method_Oct.tex, Theorem 3). Existing arrows are never changed. New event -> participant arrows
     come from the separate influence question, as in the influence walk.
     Writes <outdir>/<id>__connect.json."""
     import random
@@ -210,17 +211,32 @@ def do_connect(args, outdir: Path) -> None:
             if kinds.get(e["tail"], "event") != "participant":          # existing chain arrows, reused
                 old.setdefault(e["head"], []).append((e["tail"], e["rel"], e["prob"]))
         children, asked, added, log = {}, [], [], []
+        out = {n: {t for t, _, _ in old.get(n, [])} for n in ids}      # the story's current graph (no influence arrows)
+
+        def reaches(y, x):                        # can y already reach x in the story's current graph?
+            seen, stack = set(), [y]
+            while stack:
+                u = stack.pop()
+                if u == x:
+                    return True
+                if u not in seen:
+                    seen.add(u); stack += list(out.get(u, ()))
+            return False
 
         def ask(path):
             x = path[-1]
             if x not in children:
-                cand = [y for y in ids if y not in path and (x in new or y in new)]
+                # the chain walk's rule, written so it also covers the existing arrows: x is asked only about
+                # nodes off its path that cannot already reach x (method_Oct.tex, Step 4); every question
+                # involves a new node (an existing node is asked only about new nodes)
+                cand = [y for y in ids if y not in path and (x in new or y in new) and not reaches(y, x)]
                 res = chain.kev_arrows(kev, g["text"], ids, [(x, y) for y in cand], kinds) if cand else []
                 got = [(t, c, p[c]) for _, t, c, p, _ in res if c != "none"]
                 asked.extend({"head": x, "tail": t, "probs": {k: round(v, 4) for k, v in p.items()}}
                              for _, t, _, p, _ in res)
                 added.extend({"head": x, "tail": t, "rel": c, "prob": round(pr, 3)} for t, c, pr in got)
                 children[x] = old.get(x, []) + got
+                out[x].update(t for t, _, _ in got)
                 log.append(f"  ask {x!r} (path {' > '.join(path)}): " +
                            (", ".join(f"{t} {c} {pr:.2f}" for t, c, pr in got) or "no new arrows"))
             return children[x]
@@ -257,12 +273,12 @@ def do_connect(args, outdir: Path) -> None:
                 expand(path + [t])
 
         rng = random.Random(args.seed)
-        unvisited = list(new)                                         # start from the new nodes
+        unvisited = list(ids)                                         # start from a random node, existing or new
         while unvisited:
             start = rng.choice(unvisited)
             log.append(f"  start at {start!r}")
             expand([start])
-            unvisited = [n for n in new if n not in reached] or [n for n in ids if n not in reached]
+            unvisited = [n for n in ids if n not in reached]
         # new event -> participant: the influence question, as in the influence walk
         parts = [n for n in g["nodes"] if kinds.get(n) == "participant"]
         pairs = [(e, p) for e in new for p in parts]

@@ -26,7 +26,8 @@ K = int(os.environ.get("MAX_EVENTS", "8"))   # the same event budget as our node
 # Our Prompt 1a sentence, added to every competing approach whose LLM picks its own nodes (C1, C5, C6);
 # participants are not counted, as in our method (they come from a separate call there).
 TOP_K = ("Use at most {k} events: the {k} most important for the causal chain. People and organisations "
-         "who act are not counted in this limit.")
+         "who act are not counted in this limit. Each event must be distinct in meaning: if two phrases in the "
+         "text describe the same event or state, list it only once.")
 
 # ReCITE's generation prompts (src/recite/prompts/causal_graph_generation*.md), verbatim except:
 # a "relation" field (enables / blocks) is added because the benchmark scores the sign, C1 does not get
@@ -77,6 +78,15 @@ NODE_JSON
 ```"""
 
 
+def log_inference(model, prompt_tokens=None, completion_tokens=None, questions=None, chars=None):
+    """One model call to $INFER_LOG (JSON lines), as pipeline/kev_client.log_inference."""
+    path = os.environ.get("INFER_LOG")
+    if path:
+        with open(path, "a") as f:
+            f.write(json.dumps({"model": model, "step": os.environ.get("INFER_STEP"), "prompt_tokens": prompt_tokens,
+                                "completion_tokens": completion_tokens, "questions": questions, "chars": chars}) + "\n")
+
+
 def chat(messages, max_tokens=16384, temperature=0.0, logprobs=False):
     body = {"model": MODEL, "messages": messages, "max_tokens": max_tokens, "temperature": temperature,
             "chat_template_kwargs": {"enable_thinking": False}}    # model thinking off (Qwen); ReCITE's <think> is in the text
@@ -88,7 +98,10 @@ def chat(messages, max_tokens=16384, temperature=0.0, logprobs=False):
             req = urllib.request.Request(URL, data=data, headers={"content-type": "application/json",
                                                                   "authorization": "Bearer EMPTY"})
             with urllib.request.urlopen(req, timeout=1800) as r:   # ReCITE's long reasoning (up to 16,384 tokens) can pass 10 min when many stories run at once
-                return json.loads(r.read())["choices"][0]
+                resp = json.loads(r.read())
+                u = resp.get("usage") or {}
+                log_inference("generator", u.get("prompt_tokens"), u.get("completion_tokens"), chars=len(data))
+                return resp["choices"][0]
         except (urllib.error.URLError, TimeoutError, ConnectionError, KeyError) as e:
             print(f"[retry] request failed ({type(e).__name__}), attempt {attempt + 1}/6", file=sys.stderr, flush=True)
             if attempt == 5:

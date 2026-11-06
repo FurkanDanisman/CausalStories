@@ -66,7 +66,7 @@ step() {                                    # step <run dir> <name> <command...>
   local d=$1 s=$2; shift 2
   [ -f "$d/.done_$s" ] && { echo "--- skip $d $s (done)"; return 0; }
   echo "--- $d $s"; local t=$(date +%s)
-  "$@" & wait $! && { touch "$d/.done_$s"; printf "%s\t%s\n" "$s" $(( $(date +%s) - t )) >> "$d/timing.tsv"; } \
+  INFER_LOG="$PWD/$d/inference.jsonl" INFER_STEP="$s" "$@" & wait $! && { touch "$d/.done_$s"; printf "%s\t%s\n" "$s" $(( $(date +%s) - t )) >> "$d/timing.tsv"; } \
        || { echo "!!! FAILED $d $s"; FAILS=$(( FAILS + 1 )); }
 }
 graphs() { echo "$1/*__gemma-kev.chain.json"; }

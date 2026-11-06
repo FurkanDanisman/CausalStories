@@ -16,8 +16,9 @@ FrameNet/MAVEN `event_types` (e.g. "Releasing", "Legal_rulings", "Change_of_lead
 
 Include an event only if it causally contributes to the story and connects into the
 causal chain. Omit mentions that neither cause nor are caused by an event and only add
-detail; fold such detail into the single event it modifies. Use concise,
-self-contained ids.
+detail; fold such detail into the single event it modifies. Each event must be
+distinct in meaning: if two phrases in the text describe the same event or state,
+list it only once. Use concise, self-contained ids.
 {{NODE_LIMIT}}
 
 --- worked example ---

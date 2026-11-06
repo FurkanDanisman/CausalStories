@@ -104,6 +104,12 @@ class OpenAIClient:
                 extra_body={"chat_template_kwargs": {"enable_thinking": False}},   # vLLM: no thinking (Qwen 3.5)
                 messages=[{"role": "user", "content": prompt + "\n\n" + _schema_instructions(schema)}],
             )
+            try:
+                from pipeline.kev_client import log_inference
+                log_inference("generator", getattr(resp.usage, "prompt_tokens", None),
+                              getattr(resp.usage, "completion_tokens", None), chars=len(prompt))
+            except Exception:
+                pass
             text = re.sub(r"^```(?:json)?\s*|\s*```$", "", (resp.choices[0].message.content or "").strip())
             try:
                 return schema.model_validate_json(text)
@@ -134,6 +140,12 @@ class OpenRouterClient(OpenAIClient):
                 from pipeline.kev_client import log_cost
                 u = resp.usage
                 log_cost(getattr(u, "cost", None) or (getattr(u, "model_extra", None) or {}).get("cost"), "generator")
+            except Exception:
+                pass
+            try:
+                from pipeline.kev_client import log_inference
+                log_inference("generator", getattr(resp.usage, "prompt_tokens", None),
+                              getattr(resp.usage, "completion_tokens", None), chars=len(prompt))
             except Exception:
                 pass
             text = (resp.choices[0].message.content or "").strip()
