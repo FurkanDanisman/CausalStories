@@ -2,7 +2,7 @@
 """Where the time goes, per run: seconds per step (timing.tsv), and the connect step's size (inferred nodes added
 per story, questions asked). Compares with an older results folder when given.
 Usage: python benchmark/step_stats.py [grid_cluster] [grid_cluster_v3]"""
-import json, statistics as st, sys
+import json, sys
 from collections import defaultdict
 from pathlib import Path
 
@@ -18,10 +18,13 @@ def stats(root):
             if len(p) >= 2:
                 try: t[p[0]] += float(p[1])
                 except ValueError: pass
-        con = [json.load(open(f)) for f in d.glob("*__connect.json") if not f.name.startswith("._")]
-        rows[d.name] = {"steps": dict(t), "total": sum(t.values()),
-                        "new_nodes": st.mean(len(c["new_nodes"]) for c in con) if con else None,
-                        "connect_q": sum(len(c["asked"]) for c in con) if con else None, "stories": len(con)}
+        n = nodes = q = 0                         # one connect file at a time (login nodes have little memory)
+        for f in d.glob("*__connect.json"):
+            if f.name.startswith("._"): continue
+            with open(f) as fh: c = json.load(fh)
+            n += 1; nodes += len(c["new_nodes"]); q += len(c["asked"]); del c
+        rows[d.name] = {"steps": dict(t), "total": sum(t.values()), "new_nodes": nodes / n if n else None,
+                        "connect_q": q if n else None, "stories": n}
     return rows
 
 
