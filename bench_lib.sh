@@ -15,7 +15,7 @@ export HF_HUB_OFFLINE=1
 KEV_DIR=$BASE/kev
 PIPE=$PWD
 DEC=${DEC:-kev9b}                         # decision model: kev9b (default; 1 GPU, Kev's server, batched) | kev27b (2 GPUs, split server, one request at a time)
-declare -A KEVS=([kev27b]=jaredpalmer/kev-27b [kev9b]=jaredpalmer/kev-9b)
+declare -A KEVS=([kev27b]=jaredpalmer/kev-27b [kev9b]=jaredpalmer/kev-9b [llm]="the generator LLM (no decision model)")
 P0=$(( 20000 + ${SLURM_JOB_ID:-0} % 4000 * 4 ))   # ports from the job id: two jobs on one node never talk to each other's servers
 LLM_PORT=$P0; KEV_PORT=$((P0 + 1)); KEV_PORT2=$((P0 + 2))
 KEV_URL=http://127.0.0.1:$KEV_PORT
@@ -46,6 +46,10 @@ start_llm() {                             # start_llm <gemma|qwen|llama|gptoss> 
 stop_llm() { kill $LLM_PID 2>/dev/null; wait $LLM_PID 2>/dev/null; sleep 5; }
 
 start_kev() {
+  if [ "$DEC" = llm ]; then                # no decision model: the generator answers the decision questions
+    start_llm "$GEN" 65536                 # (pipeline/kev_client.py, "llm:" mode: option probabilities from logprobs)
+    export KEV_MODEL=llm:llm; KEV_URL=http://127.0.0.1:$LLM_PORT; KEV_PIDS=$LLM_PID; return 0
+  fi
   if [ "$DEC" = kev27b ]; then            # ~55 GB: split over both GPUs
     # at most 24 GiB of weights on GPU 0: it also holds the head and the caches (36 GiB ran out of memory on long requests)
     (cd "$KEV_DIR" && PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True .venv/bin/python "$PIPE/kev_serve_2gpu.py" \

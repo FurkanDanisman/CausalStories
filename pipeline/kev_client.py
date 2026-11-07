@@ -107,6 +107,8 @@ class KevClient:
                     "messages": [{"role": "user", "content": prompt}]}
             if "openrouter.ai" in url:
                 body["reasoning"] = {"enabled": False}
+            else:                                         # local vLLM: no thinking (Qwen 3.5)
+                body["chat_template_kwargs"] = {"enable_thinking": False}
             data = json.dumps(body).encode()
             for attempt in range(6):
                 req = urllib.request.Request(url, data=data, headers={"authorization": f"Bearer {key}",
@@ -115,6 +117,9 @@ class KevClient:
                     with urllib.request.urlopen(req, timeout=self.timeout) as r:
                         resp = json.loads(r.read())
                     log_cost((resp.get("usage") or {}).get("cost"), "decision-llm")
+                    u = resp.get("usage") or {}
+                    log_inference("decision-llm", u.get("prompt_tokens"), u.get("completion_tokens"),
+                                  questions=1, chars=len(prompt))
                     ch = resp["choices"][0]
                     lp = {}
                     for t in ((ch.get("logprobs") or {}).get("content") or [{}])[0].get("top_logprobs", []):

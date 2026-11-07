@@ -23,16 +23,20 @@
 #   WORLDS:  default "homelessness career mental_health"     SMOKE=1: first 2 stories; N=20: first 20 (timing test)
 # Requeue: 10 min before the time limit the job submits itself again (same settings) and stops; the next job skips
 #   finished steps. It stops requeueing after MAX_ROUNDS (default 6) rounds, or when a round finished no step.
+#   DEC=llm: the generator LLM also answers the decision questions (no decision model); GROUPING=llm: the LLM groups
+#   (batches of 10 stories, merged in a tournament). Run folders: <world>__<gen>__<dec><-llmgroup>.
 #   KEV_WORKERS: stories sent to the Kev servers at once (default 32) for the chain walk, did it happen and connect
 set -uo pipefail
 GEN=${GEN:?GEN}; DEC=${DEC:-kev9b}
+GROUPING=${GROUPING:-decision}                # Step 1 grouping: decision (the decision model) | llm (pipeline/llm_group.py)
+VARIANT=""; [ "$GROUPING" = llm ] && VARIANT="-llmgroup"      # run folders of the LLM-grouping setting
 WORLDS=${WORLDS:-"homelessness career mental_health"}
 WORLDS=${WORLDS//+/ }
 METHODS=${METHODS:-"ours C1 C2 C3 C4 C5 C6"}
 METHODS=${METHODS//+/ }                    # METHODS=ours+C1 on the sbatch line (no spaces inside --export)
 N=${N:-}; [ -n "${SMOKE:-}" ] && N=2
 TAG=${N:+_n$N}; KW=${KEV_WORKERS:-32}
-OUT=grid_cluster/_logs/${GEN}__${DEC}__${WORLDS// /+}${TAG}     # one log folder per job (jobs for different worlds run side by side)
+OUT=grid_cluster/_logs/${GEN}__${DEC}${VARIANT}__${WORLDS// /+}${TAG}     # one log folder per job (jobs for different worlds run side by side)
 mkdir -p "$OUT"
 source bench_lib.sh
 K=${K:-8}; export MAX_EVENTS=$K              # event budget K: our Prompt 1a and C1, C5, C6 (same for every method)
@@ -48,14 +52,16 @@ resubmit() {                                # resubmit <reason>: the same job ag
   else
     echo "########## $1: requeueing as round $(( ROUND + 1 )) ($(( now - DONE0 )) steps finished this round)"
     (cd "$SLURM_SUBMIT_DIR" && env $(env | grep -o '^SLURM_[A-Z_]*' | sed 's/^/-u /') sbatch \
-      --export=ALL,GEN=$GEN,DEC=$DEC,WORLDS=${WORLDS// /+},METHODS=${METHODS// /+},ROUND=$(( ROUND + 1 )),MAX_ROUNDS=$MAX_ROUNDS,KEV_WORKERS=$KW,K=$K${N:+,N=$N} \
+      --export=ALL,GEN=$GEN,DEC=$DEC,GROUPING=$GROUPING,BATCH_SIZE=${BATCH_SIZE:-10},WORLDS=${WORLDS// /+},METHODS=${METHODS// /+},ROUND=$(( ROUND + 1 )),MAX_ROUNDS=$MAX_ROUNDS,KEV_WORKERS=$KW,K=$K${N:+,N=$N} \
       bench_run.sbatch)
   fi
 }
 requeue() { trap - USR1; resubmit "time limit"; kill $LLM_PID $KEV_PIDS 2>/dev/null; exit 0; }   # USR1, 10 min before the limit
 trap requeue USR1
 
-run_dir() { [ "$2" = ours ] && echo "grid_cluster/${1}__${GEN}__${DEC}${TAG}" || echo "grid_cluster/${1}__${GEN}__${2}${TAG}"; }
+run_dir() {                                 # competing approaches keep their v4 folders unless the setting differs
+  local v=""; { [ "$DEC" != kev9b ] || [ "$GROUPING" != decision ]; } && v="-${DEC}${VARIANT}"
+  [ "$2" = ours ] && echo "grid_cluster/${1}__${GEN}__${DEC}${VARIANT}${TAG}" || echo "grid_cluster/${1}__${GEN}__${2}${v}${TAG}"; }
 texts() {                                   # texts file of a world (first 2 stories with SMOKE=1)
   local f=${1}_v3.json
   if [ -n "$N" ]; then f=$OUT/${1}_texts.json
@@ -93,14 +99,16 @@ for W in $WORLDS; do
   [[ " $METHODS " == *" ours "* ]] && step "$R" chain_walk python run.py --mode chain-kev --kev-url "$KEV_URL" \
     --nodes-file "$R/chain_nodes.json" --tag gemma-kev --outdir "$R" --workers $KW
 done
-for R in $(agg_runs); do
+[ "$GROUPING" = decision ] && for R in $(agg_runs); do
   step "$R" groups python run.py --mode merge-kev --kev-url "$KEV_URL" --graphs-glob "$(graphs $R)" --outdir "$R"
 done
 stop_kev
 
-echo "########## phase 3: $GEN (group names)"
-start_llm "$GEN"
+echo "########## phase 3: $GEN (group names; groups too with GROUPING=llm)"
+start_llm "$GEN" 65536
 for R in $(agg_runs); do
+  [ "$GROUPING" = llm ] && step "$R" groups python run.py --mode merge-llm --batch-size ${BATCH_SIZE:-10} \
+    --graphs-glob "$(graphs $R)" --outdir "$R"
   step "$R" names python run.py --mode name-groups --backend openai --base-url "http://127.0.0.1:$LLM_PORT/v1" --model llm --outdir "$R"
 done
 stop_llm

@@ -7,6 +7,7 @@ Section 1 (one story -> one graph):
                  separate influence walk (event->participant)                     -> <id>__<tag>.chain.json
 Section 2 (story graphs -> one graph):
   merge-kev      Step 1: decision model groups nodes, one story at a time         -> abstraction.json
+  merge-llm      Step 1: LLM groups nodes in batches, merged in a tournament       -> abstraction.json
   name-groups    Step 1: generator names the groups (and their opposites)         -> abstraction.json
   node-happened  Step 3: did each named event node happen?                         -> <id>__happened.json
   implied        Step 3: did each group a story does not name happen? (1/0/cannot tell; no imputation)
@@ -114,6 +115,19 @@ def do_merge_kev(args, outdir: Path) -> None:
     for c, d in res["concepts"].items():
         print(f"  [{d['kind']}] {c}: " + "; ".join(f"{m[0]}: {m[1]}{' (opposite)' if m[2] < 0 else ''}"
                                                    for m in d["members"]))
+    (outdir / "abstraction.json").write_text(json.dumps(res, indent=2))
+    print(f"\nsaved {outdir}/abstraction.json")
+
+
+def do_merge_llm(args, outdir: Path) -> None:
+    """Section 2, Step 1 with an LLM (pipeline/llm_group.py): batches of --batch-size stories, merged in a
+    tournament, with Step 1's rules checked after every call. Writes <outdir>/abstraction.json."""
+    from pipeline import llm_group
+    graphs = _graphs(args)
+    print(f"=== MERGE (LLM, batches of {args.batch_size}) · {len(graphs)} graph(s) ===")
+    res = llm_group.llm_group(graphs, args.batch_size)
+    for c, d in res["concepts"].items():
+        print(f"  [{d['kind']}] {c}: " + "; ".join(f"{m[0]}: {m[1]}{' (opposite)' if m[2] < 0 else ''}" for m in d["members"]))
     (outdir / "abstraction.json").write_text(json.dumps(res, indent=2))
     print(f"\nsaved {outdir}/abstraction.json")
 
@@ -331,7 +345,8 @@ def do_matrix(args, outdir: Path) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", required=True, choices=['chain-nodes', 'chain-kev', 'merge-kev', 'name-groups', 'node-happened', 'implied', 'connect', 'matrix'])
+    ap.add_argument("--batch-size", type=int, default=10, help="merge-llm: stories per LLM grouping call")
+    ap.add_argument("--mode", required=True, choices=['chain-nodes', 'chain-kev', 'merge-kev', 'merge-llm', 'name-groups', 'node-happened', 'implied', 'connect', 'matrix'])
     ap.add_argument("--backend", default="openrouter",
                     choices=["anthropic", "openai", "openrouter", "ollama", "hf", "vllm"])
     ap.add_argument("--model", default=None)
@@ -350,7 +365,7 @@ def main() -> None:
     outdir = Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
     {
-        "chain-nodes": do_chain_nodes, "chain-kev": do_chain_kev, "merge-kev": do_merge_kev,
+        "chain-nodes": do_chain_nodes, "chain-kev": do_chain_kev, "merge-kev": do_merge_kev, "merge-llm": do_merge_llm,
         "name-groups": do_name_groups, "node-happened": do_node_happened, "implied": do_implied,
         "connect": do_connect, "matrix": do_matrix,
     }[args.mode](args, outdir)

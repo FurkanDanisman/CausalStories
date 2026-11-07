@@ -66,6 +66,12 @@ def kev_merge(kev: KevClient, graphs: list[dict], log=print) -> dict:
                 groups.append({"kind": kinds.get(v, "event"), "name": name, "members": [[j, v, 1]]})
                 log(f"  {v!r} -> new group")
 
+    return abstraction(groups, graphs, decisions)
+
+
+def abstraction(groups: list[dict], graphs: list[dict], decisions: list[dict]) -> dict:
+    """The grouping as abstraction.json: concepts with their members [story, node, sign], the story x concept
+    table and every story's arrows between concepts (an opposite member flips enables <-> blocks)."""
     concepts = {G["name"]: {"kind": G["kind"], "members": G["members"]} for G in groups}
     narratives = [g["id"] for g in graphs]
     table = {j: {c: (1 if any(m[0] == j for m in d["members"]) else None) for c, d in concepts.items()}
