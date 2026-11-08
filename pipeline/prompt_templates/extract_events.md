@@ -16,9 +16,14 @@ FrameNet/MAVEN `event_types` (e.g. "Releasing", "Legal_rulings", "Change_of_lead
 
 Include an event only if it causally contributes to the story and connects into the
 causal chain. Omit mentions that neither cause nor are caused by an event and only add
-detail; fold such detail into the single event it modifies. Each event must be
-distinct in meaning: if two phrases in the text describe the same event or state,
-list it only once. Use concise, self-contained ids.
+detail; fold such detail into the single event it modifies.
+Each event must be a different thing that happened. Never list two events for one
+happening, even when the story describes it twice or in two steps: "couldn't afford
+rent" and "fell behind on rent" are one event; "eviction notice" and "eviction" are
+one event. List it once, with the most general name. Never list an event together with
+its opposite: when the story says something was avoided, name the event that was
+avoided ("eviction"), not its opposite ("keeping the apartment").
+Use concise, self-contained ids.
 {{NODE_LIMIT}}
 
 --- worked example ---

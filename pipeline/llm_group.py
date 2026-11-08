@@ -6,9 +6,11 @@ generator LLM that sees many nodes at once.
   2. The batch groupings are merged pairwise in a tournament (20 -> 10 -> 5 -> 3 -> 2 -> 1 for 200 stories).
      A merge shows each group by up to 5 example members and asks, for every group of the second list, whether
      it is the same as a group of the first list, its opposite, or neither.
-  3. The rules of Step 1 are checked after every call: every node is in exactly one group (a node the answer
-     leaves out, or names twice, gets its own group); a group takes at most one node per story (a second node
-     of the same story starts its own group); opposite members are marked, as with the decision model.
+  3. The rules of Step 1 are checked after every call: every node is in exactly one group; a group takes at
+     most one node per story (a second node of the same story starts its own group); opposite members are
+     marked, as with the decision model. A node (or, in a merge, a group) the answer leaves out is asked about
+     again in a follow-up call, up to two rounds; only a node still left out then gets its own group, and is
+     counted. Every prompt and raw answer is saved ($LLM_GROUP_LOG).
 The result has the same format as merge_kev.kev_merge (abstraction.json); naming (Prompt 4c) follows as before.
 """
 
@@ -57,6 +59,31 @@ For every group of list B, say whether it is the same as a group of list A, the 
 Answer only with JSON: {{"matches": [{{"b": "<B id>", "a": "<A id or null>", "relation": "same" or "opposite" or "none"}}, ...]}}"""
 
 
+FOLLOW = """Groups of {what} from people's stories, each shown by example members:
+{groups}
+
+These {what} are not in a group yet:
+{items}
+
+{rules}
+For each of them, say which group it belongs to (the same {item}, or for events its opposite), or "new" if it fits
+none. Answer only with JSON: {{"placements": [{{"id": "<id>", "group": "<group id or new>", "opposite": false}}, ...]}}"""
+
+FOLLOW_MERGE = """Two lists of groups of {what} from people's stories were made separately. Each group is shown by
+example members. {rules}
+
+List A:
+{a}
+
+These groups of list B still need an answer:
+{b}
+
+For each of them, say whether it is the same as a group of list A, the opposite of one, or neither.
+Answer only with JSON: {{"matches": [{{"b": "<B id>", "a": "<A id or null>", "relation": "same" or "opposite" or "none"}}, ...]}}"""
+
+STATS = {"calls": 0, "followups": 0, "forced_own_group": 0}
+
+
 def chat_json(prompt: str, max_tokens: int = 8192) -> dict:
     """One call to the OpenAI-compatible LLM server ($LLM_URL, model $LLM_MODEL); the last JSON object of the answer."""
     url = os.environ.get("LLM_URL", "http://127.0.0.1:8000/v1/chat/completions")
@@ -73,6 +100,10 @@ def chat_json(prompt: str, max_tokens: int = 8192) -> dict:
             from .kev_client import log_inference
             log_inference("generator", u.get("prompt_tokens"), u.get("completion_tokens"), chars=len(prompt))
             text = resp["choices"][0]["message"]["content"] or ""
+            STATS["calls"] += 1
+            if os.environ.get("LLM_GROUP_LOG"):                 # every prompt and raw answer, to trace any group
+                with open(os.environ["LLM_GROUP_LOG"], "a") as f:
+                    f.write(json.dumps({"prompt": prompt, "answer": text}) + "\n")
             text = re.sub(r"<think>.*?</think>", "", text, flags=re.S)
             m = re.findall(r"\{.*\}", text, flags=re.S)
             return json.loads(m[-1]) if m else {}
@@ -102,7 +133,9 @@ def _fix(groups: list[list], allowed: set) -> list[list]:
             if all(m[2] < 0 for m in keep):
                 keep = [[m[0], m[1], 1] for m in keep]
             out.append(keep)
-    out += [[[j, v, 1]] for (j, v) in sorted(allowed - seen)]
+    left = sorted(allowed - seen)
+    STATS["forced_own_group"] += len(left)                      # still left out after the follow-up rounds
+    out += [[[j, v, 1]] for (j, v) in left]
     return out
 
 
@@ -117,14 +150,36 @@ def _batch(stories: list[tuple[str, list[str]]], kind: str) -> list[list]:
     what, item = ("events", "event") if kind == "event" else ("participants", "participant")
     ans = chat_json(BATCH.format(what=what, n=len(stories), rules=RULES if kind == "event" else RULES_P,
                                  item=item, listing="\n".join(lines)))
-    groups = []
+    groups, placed = [], set()
     for g in ans.get("groups", []) if isinstance(ans, dict) else []:
         ms = []
         for m in g.get("members", []) if isinstance(g, dict) else []:
             i = m.get("id") if isinstance(m, dict) else m
-            if i in ids:
+            if i in ids and i not in placed:
+                placed.add(i)
                 ms.append([ids[i][0], ids[i][1], -1 if isinstance(m, dict) and m.get("opposite") and kind == "event" else 1])
-        groups.append(ms)
+        if ms:
+            groups.append(ms)
+    for _ in range(2):                                           # follow-up: ask again about nodes left out
+        missing = [i for i in ids if i not in placed]
+        if not missing:
+            break
+        STATS["followups"] += 1
+        ans = chat_json(FOLLOW.format(what=what, item=item, rules=RULES if kind == "event" else RULES_P,
+                                      groups="\n".join(f"  [G{k}] {_show(g)}" for k, g in enumerate(groups)) or "  (none)",
+                                      items="\n".join(f'  [{i}] "{ids[i][1]}" (story {ids[i][0]})' for i in missing)))
+        for m in ans.get("placements", []) if isinstance(ans, dict) else []:
+            i = m.get("id") if isinstance(m, dict) else None
+            if i not in ids or i in placed:
+                continue
+            sign = -1 if m.get("opposite") and kind == "event" else 1
+            gid = str(m.get("group", "new"))
+            k = int(gid.lstrip("Gg")) if gid.lstrip("Gg").isdigit() else None
+            if k is not None and 0 <= k < len(groups):
+                groups[k].append([ids[i][0], ids[i][1], sign])
+            else:
+                groups.append([[ids[i][0], ids[i][1], 1]])
+            placed.add(i)
     return _fix(groups, set(ids.values()))
 
 
@@ -143,8 +198,25 @@ def _merge(A: list[list], B: list[list], kind: str) -> list[list]:
                                  a="\n".join(f"  [A{i}] {_show(g)}" for i, g in enumerate(A)),
                                  b="\n".join(f"  [B{i}] {_show(g)}" for i, g in enumerate(B))))
     out = [list(g) for g in A]
-    joined = set()
-    for m in ans.get("matches", []) if isinstance(ans, dict) else []:
+    joined, answered = set(), set()
+    answers = list(ans.get("matches", []) if isinstance(ans, dict) else [])
+    for m in answers:
+        try: answered.add(int(str(m.get("b", "")).lstrip("Bb")))
+        except ValueError: pass
+    for _ in range(2):                                           # follow-up: ask again about groups left out
+        missing = [i for i in range(len(B)) if i not in answered]
+        if not missing:
+            break
+        STATS["followups"] += 1
+        more = chat_json(FOLLOW_MERGE.format(what=what, rules=RULES if kind == "event" else RULES_P,
+                                             a="\n".join(f"  [A{i}] {_show(g)}" for i, g in enumerate(A)),
+                                             b="\n".join(f"  [B{i}] {_show(B[i])}" for i in missing)))
+        for m in more.get("matches", []) if isinstance(more, dict) else []:
+            try: bi = int(str(m.get("b", "")).lstrip("Bb"))
+            except ValueError: continue
+            if bi in missing and bi not in answered:
+                answered.add(bi); answers.append(m)
+    for m in answers:
         try:
             b = int(str(m.get("b", "")).lstrip("Bb")); a = m.get("a")
             a = None if a in (None, "null", "") else int(str(a).lstrip("Aa"))
@@ -183,4 +255,7 @@ def llm_group(graphs: list[dict], batch_size: int = 10, log=print) -> dict:
             name = first[1] if first[1] not in names else f"{first[1]} ({first[0]})"
             names.add(name)
             groups.append({"kind": kind, "name": name, "members": g})
-    return abstraction(groups, graphs, decisions=[])
+    res = abstraction(groups, graphs, decisions=[])
+    res["llm_group"] = dict(STATS, batch_size=batch_size)          # calls, follow-up calls, nodes forced into own group
+    log(f"  LLM grouping: {STATS}")
+    return res

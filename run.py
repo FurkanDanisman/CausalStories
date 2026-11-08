@@ -125,6 +125,8 @@ def do_merge_llm(args, outdir: Path) -> None:
     from pipeline import llm_group
     graphs = _graphs(args)
     print(f"=== MERGE (LLM, batches of {args.batch_size}) · {len(graphs)} graph(s) ===")
+    import os
+    os.environ.setdefault("LLM_GROUP_LOG", str(outdir / "llm_group_answers.jsonl"))   # every prompt and raw answer
     res = llm_group.llm_group(graphs, args.batch_size)
     for c, d in res["concepts"].items():
         print(f"  [{d['kind']}] {c}: " + "; ".join(f"{m[0]}: {m[1]}{' (opposite)' if m[2] < 0 else ''}" for m in d["members"]))

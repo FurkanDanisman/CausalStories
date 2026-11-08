@@ -26,8 +26,7 @@ K = int(os.environ.get("MAX_EVENTS", "8"))   # the same event budget as our node
 # Our Prompt 1a sentence, added to every competing approach whose LLM picks its own nodes (C1, C5, C6);
 # participants are not counted, as in our method (they come from a separate call there).
 TOP_K = ("Use at most {k} events: the {k} most important for the causal chain. People and organisations "
-         "who act are not counted in this limit. Each event must be distinct in meaning: if two phrases in the "
-         "text describe the same event or state, list it only once.")
+         "who act are not counted in this limit. " + 'Each event must be a different thing that happened. Never list two events for one happening, even when the story describes it twice or in two steps: "couldn\'t afford rent" and "fell behind on rent" are one event; "eviction notice" and "eviction" are one event. List it once, with the most general name. Never list an event together with its opposite: when the story says something was avoided, name the event that was avoided ("eviction"), not its opposite ("keeping the apartment").')
 
 # ReCITE's generation prompts (src/recite/prompts/causal_graph_generation*.md), verbatim except:
 # a "relation" field (enables / blocks) is added because the benchmark scores the sign, C1 does not get
