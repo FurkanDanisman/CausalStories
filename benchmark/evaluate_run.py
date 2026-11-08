@@ -247,6 +247,14 @@ def main(world, run, cut=None):
     def mean(k, rows=scored): return sum(r[k] for r in rows) / len(rows) if rows else None
 
     # ---------------- Table 2: aggregated graph ----------------
+    if not (run / "abstraction.json").exists():           # story graphs only (C1-C5): Table 1, no aggregated graph
+        if os.environ.get("JUDGE_ONLY"):
+            print(f"judged {run.name} (individual graphs only)"); return
+        S = {g: {k: mean(k, [r for r in scored if g == "all" or r["group"] == g]) for k in ("node_P", "node_R", "node_F1", "arrows", "score")}
+             for g in ("all", "outcome", "stopped")}
+        json.dump({"world": world, "run": str(run), "judge": JUDGE, "individual": ind, "aggregated": None, "individual_summary": S},
+                  open(run / f"evaluation_{SLUG}_cut{round(cut * 100):02d}.json", "w"), indent=1)
+        print(f"Table 1 (individual, {len(scored)} stories): story score {S['all']['score']:.2f}"); return
     abst = json.load(open(run / "abstraction.json"))
     n_st = len(graphs) or len(stories)                   # aggregated-only methods have no story graphs
     if graphs and all((run / f"{j}__connect.json").exists() for j in graphs):   # our method: agreed usage rule

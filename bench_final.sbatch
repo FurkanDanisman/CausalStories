@@ -53,9 +53,11 @@ start_llm gemma 32768
 export JUDGE_URL=$LLM_URL JUDGE=llm JUDGE_SLUG=gemma-4-31b-it JUDGE_ONLY=1
 for R in grid_cluster/*; do                                   # every run and aggregation output (not _logs, _smoke)
   case $(basename "$R") in _*) continue;; esac
-  [ -d "$R" ] && [ -f "$R/abstraction.json" ] || continue
+  [ -d "$R" ] || continue
+  [ -f "$R/abstraction.json" ] || ls "$R"/*__gemma-kev.chain.json >/dev/null 2>&1 || continue   # C1-C5 story graphs too
   [ -f "$R/.judged" ] && continue
   if [ -f "$R/.done_groups" ] && [ ! -f "$R/.done_connect" ]; then echo "--- skip $R (its bench_run job has not finished)"; continue; fi
+  if [ ! -f "$R/abstraction.json" ] && [ ! -f "$R/.done_story_graphs" ]; then echo "--- skip $R (story graphs not finished)"; continue; fi
   name=$(basename "$R" | sed 's/^agg__[^_]*__//')
   world=$(echo "$name" | sed 's/__.*//')
   echo "--- $R ($world)"

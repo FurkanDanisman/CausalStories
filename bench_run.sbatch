@@ -76,7 +76,7 @@ step() {                                    # step <run dir> <name> <command...>
        || { echo "!!! FAILED $d $s"; FAILS=$(( FAILS + 1 )); }
 }
 graphs() { echo "$1/*__gemma-kev.chain.json"; }
-agg_runs() { for W in $WORLDS; do for M in $METHODS; do [[ "$M" =~ ^(ours|C1|C2|C3|C4)$ ]] && run_dir $W $M; done; done; }
+agg_runs() { for W in $WORLDS; do [[ " $METHODS " == *" ours "* ]] && run_dir $W ours; done; }   # C1-C4: individual graphs only
 
 echo "########## phase 1: $GEN (nodes, competing approaches' story graphs)"
 start_llm "$GEN" 65536

@@ -1,19 +1,24 @@
 #!/bin/bash
-# Progress of the 12 full bench_run jobs (4 generators x 3 worlds), from the .done_<step> files each step leaves.
-# One job = 33 steps: ours 7 (nodes, chain walk, groups, names, node-happened, implied, connect), C1-C4 6 each
-# (story graphs + the same aggregation steps), C5 and C6 1 each (story graphs). Steps differ in length: groups and
-# connect are the long ones, so the step share runs a little ahead of the time share.
-#   bash bench_progress.sh
-DEC=${DEC:-kev9b}; tot=0
-for g in gemma qwen llama gptoss; do for w in homelessness career mental_health; do
-  n=0
-  for m in $DEC C1 C2 C3 C4 C5 C6; do
-    d=grid_cluster/${w}__${g}__$m
-    [ -d "$d" ] && n=$(( n + $(ls -a "$d" | grep -c '^\.done_') ))
-  done
-  printf "%-7s %-14s %3d%%  (%2d/33 steps)\n" "$g" "$w" $(( 100 * n / 33 )) "$n"; tot=$(( tot + n ))
-done; done
-printf "overall           %3d%%  (%d/396 steps)\n\n" $(( 100 * tot / 396 )) "$tot"
+# Progress of the full bench_run jobs, from the .done_<step> files each step leaves.
+# Configurations (CONFIGS, run-folder suffix of our method): kev9b-llmgroup (Kev + LLM grouping; its jobs also run
+# C1-C6's story graphs) and llm-llmgroup (no decision model). Our method = 7 steps (nodes, chain walk, groups, names,
+# node-happened, implied, connect); C1-C6 = 1 step each (story graphs). Groups and connect are the long steps.
+#   bash bench_progress.sh                     CONFIGS="kev9b" bash bench_progress.sh   (the v4 runs)
+CONFIGS=${CONFIGS:-"kev9b-llmgroup llm-llmgroup"}
+for cfg in $CONFIGS; do
+  echo "== $cfg"; tot=0; all=0
+  for g in gemma qwen llama gptoss; do for w in homelessness career mental_health; do
+    d=grid_cluster/${w}__${g}__${cfg}; [ -d "$d" ] || continue
+    n=$(ls -a "$d" | grep -c '^\.done_'); e=7
+    for m in C1 C2 C3 C4 C5 C6; do                # competing approaches of the same job (if it runs them)
+      c=grid_cluster/${w}__${g}__${m}-${cfg}; [ "$cfg" = kev9b ] && c=grid_cluster/${w}__${g}__${m}
+      [ -d "$c" ] && { n=$(( n + $(ls -a "$c" | grep -c '^\.done_story_graphs') )); e=$(( e + 1 )); }
+    done
+    printf "  %-7s %-14s %3d%%  (%2d/%2d steps)\n" "$g" "$w" $(( 100 * n / e )) "$n" "$e"; tot=$(( tot + n )); all=$(( all + e ))
+  done; done
+  [ "$all" -gt 0 ] && printf "  overall %3d%%  (%d/%d steps)\n" $(( 100 * tot / all )) "$tot" "$all"
+done
+echo
 echo "running now (last step started in each job's log):"
 for j in $(squeue --me -h -n bench-run -t R -o %i); do
   f=bench-run-bench-run-$j.out
