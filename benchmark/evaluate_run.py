@@ -19,6 +19,7 @@ SLUG = os.environ.get("JUDGE_SLUG") or re.sub(r"[^a-z0-9]+", "-", JUDGE.rstrip("
 POS = {"carries out", "enables", "risk"}          # true arrow types read as "+" (enables)
 NEG = {"stopped", "failed"}                       # true arrow types read as "-" (blocks)
 CUT = 0.10
+STORIES = os.environ.get("STORIES", "stories_v6")   # stories_v3 to rescore the earlier benchmark
 
 
 JUDGE_URL = os.environ.get("JUDGE_URL", "https://openrouter.ai/api/v1/chat/completions")   # local: vLLM server
@@ -184,6 +185,9 @@ def true_values(story, nodes):
     carrying-out arrow happened; a blocker happened; the target of a 'stopped' or 'risk' arrow did not happen,
     the target of a 'failed' blocker did; a distractor in the story happened. Events not in the story: None."""
     v = {n: None for n in nodes}
+    if isinstance(story["truth"].get("nodes"), dict):     # stories_v6: every told node with its value (1 or 0)
+        v.update({n: x for n, x in story["truth"]["nodes"].items() if n in v})
+        return v
     for u, t, k in story["truth"]["arrows"]:
         v[u] = 1
         v[t] = 0 if k in ("stopped", "risk") else 1
@@ -202,9 +206,15 @@ def kl2(p, q):
 def main(world, run, cut=None):
     cut = CUT if cut is None else cut
     run = Path(run); key = env_key()
-    mod = {"homelessness": "world_homelessness", "career": "world_career", "mental_health": "world_mental"}[world]
-    sys.path.insert(0, str(HERE)); W = __import__(mod)
-    stories = {s["id"]: s for s in json.load(open(HERE / "stories_v3" / f"{world}.json"))}
+    sys.path.insert(0, str(HERE))
+    if STORIES == "stories_v3":                                # the earlier benchmark (outcome-selected stories)
+        mod = {"homelessness": "world_homelessness", "career": "world_career", "mental_health": "world_mental"}[world]
+        W = __import__(mod)
+    else:                                                      # the current benchmark (benchmark/world_spec.md)
+        import types, worlds_random
+        Wd = worlds_random.WORLDS[world]
+        W = types.SimpleNamespace(ROOT=Wd["root"], MECH=Wd["mech"], DISTRACT=())
+    stories = {s["id"]: s for s in json.load(open(HERE / STORIES / f"{world}.json"))}
     cache_p = run / f"judge_cache_{SLUG}.json"
     cache = json.load(open(cache_p)) if cache_p.exists() else {}
 
@@ -216,7 +226,8 @@ def main(world, run, cut=None):
 
     def one(sid_):
         s = stories[sid_]; g = graphs.get(sid_)
-        tnodes = sorted({n for a in s["truth"]["arrows"] for n in a[:2]})
+        tnodes = sorted(s["truth"]["nodes"]) if isinstance(s["truth"].get("nodes"), dict) else \
+            sorted({n for a in s["truth"]["arrows"] for n in a[:2]})      # v6: every told node, also "did not happen"
         if g is None:
             return sid_, None
         ext = list(g["nodes"])

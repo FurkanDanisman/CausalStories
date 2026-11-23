@@ -1,91 +1,92 @@
-# Benchmark worlds and stories (spec, 2026-11-23)
+# Benchmark worlds and stories (spec)
 
-Code: `benchmark/worlds_random.py`. Stories: `benchmark/stories_v5/`. Earlier worlds (`world_homelessness.py`,
-`world_mental.py`, `stories_v3`, `stories_v4`) are kept only for the earlier results.
+Code: `benchmark/worlds_random.py`. Stories: `benchmark/stories_v6/<world>.json` (200 per world).
+Scorer: `benchmark/evaluate_run.py` (reads `stories_v6` by default; `STORIES=stories_v3` rescores the earlier
+benchmark). Earlier worlds and stories (`world_homelessness.py`, `world_mental.py`, `stories_v3`-`v5`) are kept
+only for the earlier results.
 
 ## 1. The worlds
 
-The original graphs (`benchmark/draft_graphs/`) with two removals, nothing added:
-- no house fire (homelessness);
-- savings blocks only *can't pay rent* (not homelessness), so every blocker blocks exactly one event.
+Each world is a causal Bayesian network over binary nodes. Roots happen with a rate. Every other event follows a
+noisy-OR with blockers: each present cause u fires with chance p_u, each present blocker b fires with chance
+q_b, and the event happens if some cause fired and no blocker fired:
 
-No hidden variables, no distractors. Every node is 0 or 1.
+P(v = 1 | parents) = [1 − Π over present causes (1 − p_u)] × Π over present blockers (1 − q_b).
+
+The chance in each arrow stands for everything outside the graph (a patient landlord, a severance payment, ...).
+Participants (UPPERCASE) carry out one event. Each blocker protects exactly one event. No hidden variables, no
+distractors.
 
 **Homelessness**
 
 | Root | Rate |
 |---|---|
-| EMPLOYER | 0.78 |
-| FAMILY MEMBER | 0.45 |
-| divorce | 0.60 |
+| EMPLOYER | 0.55 |
+| divorce | 0.45 |
 | savings | 0.30 |
+| FAMILY MEMBER | 0.45 |
 
-| Event | Causes (strength p) | Blockers (strength q) |
+| Event | Causes (p) | Blocker (q) |
 |---|---|---|
-| job loss | EMPLOYER 0.98 | |
+| job loss | EMPLOYER 1.00 | |
 | providing a place to stay | FAMILY MEMBER 0.90 | |
 | can't pay rent | job loss 0.95, divorce 0.60 | savings 0.80 |
 | eviction | can't pay rent 0.65 | |
-| homelessness | eviction 0.90 | providing a place to stay 0.95 |
+| homelessness | eviction 1.00 | providing a place to stay 0.95 |
 
 **Mental health**
 
 | Root | Rate |
 |---|---|
 | EMPLOYER | 0.50 |
-| THERAPIST | 0.40 |
+| losing a loved one | 0.70 |
 | CLOSE FRIENDS | 0.45 |
-| losing a loved one | 0.80 |
+| THERAPIST | 0.40 |
 
-| Event | Causes (strength p) | Blockers (strength q) |
+| Event | Causes (p) | Blocker (q) |
 |---|---|---|
-| job loss | EMPLOYER 0.98 | |
-| therapy | THERAPIST 1.00 | |
+| job loss | EMPLOYER 1.00 | |
 | social support | CLOSE FRIENDS 0.90 | |
+| therapy | THERAPIST 1.00 | |
 | loneliness | losing a loved one 0.90 | social support 0.60 |
 | chronic stress | job loss 0.72, loneliness 0.70 | |
 | depression | chronic stress 0.72 | therapy 0.70 |
 
-Arrow strengths are the original ones, except EMPLOYER → job loss in mental health (0.05 with EMPLOYER at
-100% before; now 0.98 with EMPLOYER at 50%, as in homelessness) and THERAPIST → therapy (0.95 → 1.00). Root rates are raised from the real-world
-rates so that a random person has events to tell.
+## 2. Who tells a story
 
-**Mechanism** (noisy-OR with blockers): for each event, in the order above, each present cause fires with its
-p and each present blocker fires with its q; the event happens if some cause fired and no blocker fired.
-P(event | parents) = [1 − Π over present causes (1 − p)] × Π over present blockers (1 − q).
-
-## 2. Who gets a story
-
-People are drawn at random. A person to whom nothing happened (every node 0, about 3%) is drawn again.
-Nothing else is selected. 200 people per world (seeds 800, 801).
+A person drawn at random tells a story if at least one starting event happened to them (homelessness: job loss
+or divorce; mental health: job loss or losing a loved one). This selects on parentless events only, so every
+P(child | parents) is unchanged (assumption E1 of the method). 200 people per world (seeds 900, 901).
 
 ## 3. What a story tells
 
 From the person's true values:
-1. every event that happened, and every participant who acted;
-2. every cause that brought on an event that happened;
-3. every block: a blocker that stopped a threatened event, with what threatened it; or a blocker that was
-   there but did not stop it;
-4. what did not happen, where it matters:
-   - (a) a blocker of a happened or threatened event that was absent ("I had no savings");
-   - (b) an event that a happened event can bring on, but which did not follow ("I was never evicted").
-5. if a cause happened, the event did not follow, and a blocker of it was present, the story credits the
-   blocker, as a reader would ("my sister took me in, so I never ended up on the street"). Only the story's
-   truth changes; the person's values are the same.
+- every starting event that happened, and the participant who carried it out;
+- for every event at stake (at least one of its causes happened):
+  - if it happened: every cause that happened brought it on;
+  - if it did not happen and its protection was there: the protection kept it from happening;
+  - if it did not happen and no protection was there: it did not follow;
+  - and its protection, if it has one: there or not there;
+- nothing about events that were not at stake.
 
-Writing rules for the two delicate cases: a prevented event is told as "A happened; B did not happen,
-because of C" (no "close to", no "could have"); an event with no arrow is told in its own sentence, clearly
-separate from the rest, never next to something that did not happen.
-
-Stories are written by Claude from these facts: first person, everyday words, nothing beyond the facts, no
-other people, nothing about what would have happened (rules of `three_worlds.md` §8, plus rule 4).
+So nothing is told that played no part in the person's life, and everything that did is told, including what
+did not happen.
 
 ## 4. Truth of a story
 
-Every node the story tells, with its value (1 or 0), and the arrows that fired (`truth["nodes"]`,
-`truth["arrows"]`). A node the story does not tell is not part of that story's truth.
+`truth["nodes"]`: every told node with its value (1 or 0). `truth["arrows"]`: the arrows above (carries out,
+enables, risk, stopped, failed). The scorer's true story table is these values; a node a story does not tell is
+unknown for that story.
 
-## 5. Known consequences of the original graph
+## 5. Writing and checking the stories
 
-- A participant acts whenever present (with its strength), whether or not it was needed. A story can
-  therefore mention help that nothing called for (e.g. "my sister offered me a place to stay").
+Stories are written by Claude from each person's facts (writing guide: natural first-person speech, explicit
+causal words, nothing beyond the facts, no timing between unrelated events, each protection linked only to its
+own event). Every story was then checked by independent reviewers against its facts (contradictions, unnatural
+or robotic wording, implied links not in the facts, missing facts, added content, ambiguous pronouns), fixed,
+and re-checked until no story was flagged.
+
+## 6. Perfect method
+
+A method that outputs each story's true graph, the true groups, the true world graph and each story's told values
+scores 1.00 on every metric (node F1, arrows, SID, KL; Table 1 and Table 2) at every usage cut from 5% to 20%.
