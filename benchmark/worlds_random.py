@@ -31,7 +31,7 @@ WORLDS = {
             "providing a place to stay": ({"FAMILY MEMBER": 1.0}, {}),
             "can't pay rent": ({"job loss": 0.95, "divorce": 0.6}, {"savings": 0.80}),
             "eviction": ({"can't pay rent": 0.65}, {}),
-            "homelessness": ({"eviction": 0.9, "house fire": 0.4}, {"providing a place to stay": 0.95, "savings": 0.95}),
+            "homelessness": ({"eviction": 0.9, "house fire": 0.4}, {"providing a place to stay": 0.95}),
         },
     },
     "mental_health": {
