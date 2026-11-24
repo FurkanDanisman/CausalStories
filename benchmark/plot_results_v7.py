@@ -69,7 +69,8 @@ def individual(w, sid, run, tag):
     return f, f"node F1 {r['node_F1']:.2f} $\\cdot$ arrows {r['arrows']:.2f} $\\cdot$ story score \\textbf{{{r['score']:.2f}}}"
 
 
-def aggregated(run, cut, tag):
+def aggregated(run, cut, tag, labels=True):
+    """labels: write the arrow's estimate on it (ours only: the other methods' numbers are not probabilities)."""
     e = ev(run, cut)
     if e is None or e["aggregated"] is None:
         return None, "not judged at this cut yet"
@@ -79,7 +80,7 @@ def aggregated(run, cut, tag):
     for x in a["arrows_list"]:
         u, v = x["head"].removeprefix("x:"), x["tail"].removeprefix("x:")
         nodes.setdefault(u, True); nodes.setdefault(v, True)
-        edges.append((u, v, x["sign"], f'{x["estimate"]:.2f}'))
+        edges.append((u, v, x["sign"], f'{x["estimate"]:.2f}' if labels else ""))
     f = dot(f"agg_{tag}_{cut:02d}", nodes, edges)
     cap = (f"{len(a['kept_groups'])} groups kept $\\cdot$ node F1 {a['node_F1']:.2f} $\\cdot$ arrows {a['arrows']:.2f} "
            f"$\\cdot$ SID {a['sid']:.2f} $\\cdot$ score \\textbf{{{a['score']:.2f}}}")
@@ -150,13 +151,13 @@ def main():
            r"strength); top right: ours at the 15\% usage cut (a group is kept if at least 15\% of stories use it); bottom left: Causal Map "
            r"and bottom right: Whole-corpus prompting, as they output them (the usage cut is a step of our method only). One page for "
            r"each of our two groupings. Score = geometric mean of node F1, arrows and SID; KL (only ours outputs conditional "
-           r"probabilities) is reported separately. Arrows of a method are labelled with its estimate. Appendix: ours at every other cut."]
+           r"probabilities) is reported separately. Our arrows are labelled with our estimate; the other methods' arrows carry no number (they output none: Causal Map's link weight is only the share of stories that mention the link, and Whole-corpus prompting gives no weight). Appendix: ours at every other cut."]
     OURS = [("Ours A (LLM grouping)", "llm-llmgroup", "A"), ("Ours B (Kev procedure)", "llm", "B")]
     for w, wt in WORLDS.items():
         for g, gt in GENS.items():
             comp = []
             for lab, run in [("Causal Map", f"agg__C5agg__{w}__{g}__C5-llm-llmgroup"), ("Whole-corpus prompting", f"{w}__{g}__C6-llm-llmgroup")]:
-                f, cap = aggregated(run, 0, f"{w}_{g}_{lab[:5]}")
+                f, cap = aggregated(run, 0, f"{w}_{g}_{lab[:5]}", labels=False)
                 comp.append((f, f"\\textbf{{{lab}}}\\\\" + cap))
             for lab, suf, t in OURS:
                 f, cap = aggregated(f"{w}__{g}__{suf}", 15, f"{w}_{g}_{t}")
