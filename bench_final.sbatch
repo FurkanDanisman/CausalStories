@@ -16,7 +16,8 @@
 # runs whose bench_run job is unfinished are left for the next submission, so it can run before every job is done.
 #   sbatch bench_final.sbatch      (GENS="gemma qwen" to run a subset)
 set -uo pipefail
-GRID=${GRID:-grid_v7}; SKIP_ABLATIONS=${SKIP_ABLATIONS:-1}   # SKIP_ABLATIONS=1: no A1-A5 (not part of the comparison)
+GRID=${GRID:-grid_v7}; SKIP_ABLATIONS=${SKIP_ABLATIONS:-1}
+CUTS=${CUTS:-0,5,10,15,20,25,30}; REJUDGE=${REJUDGE:-}   # REJUDGE=1: judge finished runs again (new cuts; cached answers are reused)   # SKIP_ABLATIONS=1: no A1-A5 (not part of the comparison)
 OUT=$GRID/_logs/final
 mkdir -p "$OUT"
 source bench_lib.sh
@@ -57,12 +58,12 @@ for R in $GRID/*; do                                   # every run and aggregati
   case $(basename "$R") in _*) continue;; esac
   [ -d "$R" ] || continue
   [ -f "$R/abstraction.json" ] || ls "$R"/*__gemma-kev.chain.json >/dev/null 2>&1 || continue   # C1-C5 story graphs too
-  [ -f "$R/.judged" ] && continue
+  [ -f "$R/.judged" ] && [ -z "$REJUDGE" ] && continue
   if [ -f "$R/.done_groups" ] && [ ! -f "$R/.done_connect" ]; then echo "--- skip $R (its bench_run job has not finished)"; continue; fi
   if [ ! -f "$R/abstraction.json" ] && [ ! -f "$R/.done_story_graphs" ]; then echo "--- skip $R (story graphs not finished)"; continue; fi
   name=$(basename "$R" | sed 's/^agg__[^_]*__//')
   world=$(echo "$name" | sed 's/__.*//')
   echo "--- $R ($world)"
-  python benchmark/evaluate_run.py "$world" "$R" 5,10,15,20,25,30 && touch "$R/.judged"
+  python benchmark/evaluate_run.py "$world" "$R" $CUTS && touch "$R/.judged"
 done
 stop_llm
