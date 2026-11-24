@@ -20,29 +20,34 @@
 #   sbatch --export=ALL,GEN=gemma,KEV_WORKERS=32 bench_run.sbatch       (DEC=kev9b by default)
 #   GEN: gemma | qwen | llama | gptoss    DEC: kev9b (default) | kev27b
 #   METHODS: default "ours C1 C2 C3 C4 C5 C6" (the competing approaches use the same decision model as ours)
-#   WORLDS:  default "homelessness career mental_health"     SMOKE=1: first 2 stories; N=20: first 20 (timing test)
+#   WORLDS:  default "homelessness mental_health"     SMOKE=1: first 2 stories; N=20: first 20 (timing test)
 # Requeue: 10 min before the time limit the job submits itself again (same settings) and stops; the next job skips
 #   finished steps. It stops requeueing after MAX_ROUNDS (default 6) rounds, or when a round finished no step.
 #   DEC=llm: the generator LLM also answers the decision questions (no decision model); GROUPING=llm: the LLM groups
 #   (batches of 10 stories, merged in a tournament). Run folders: <world>__<gen>__<dec><-llmgroup>.
+#   GRID: run folders (default grid_v7); TEXTS_TAG: stories <world>_<tag>.json (default v7); SHARE_FROM=llm-llmgroup:
+#   copy that run's nodes and story graphs (grouping B on grouping A's story graphs).
 #   KEV_WORKERS: stories sent to the Kev servers at once (default 32) for the chain walk, did it happen and connect
 set -uo pipefail
 GEN=${GEN:?GEN}; DEC=${DEC:-kev9b}
+GRID=${GRID:-grid_v7}; TEXTS_TAG=${TEXTS_TAG:-v7}       # run folders and story texts (<world>_<TEXTS_TAG>.json)
+SHARE_FROM=${SHARE_FROM:-}                    # e.g. llm-llmgroup: reuse that run's nodes and story graphs (same extraction)
+export GRID TEXTS_TAG SHARE_FROM
 GROUPING=${GROUPING:-decision}                # Step 1 grouping: decision (the decision model) | llm (pipeline/llm_group.py)
 VARIANT=""; [ "$GROUPING" = llm ] && VARIANT="-llmgroup"      # run folders of the LLM-grouping setting
-WORLDS=${WORLDS:-"homelessness career mental_health"}
+WORLDS=${WORLDS:-"homelessness mental_health"}
 WORLDS=${WORLDS//+/ }
 METHODS=${METHODS:-"ours C1 C2 C3 C4 C5 C6"}
 METHODS=${METHODS//+/ }                    # METHODS=ours+C1 on the sbatch line (no spaces inside --export)
 N=${N:-}; [ -n "${SMOKE:-}" ] && N=2
 TAG=${N:+_n$N}; KW=${KEV_WORKERS:-32}
-OUT=grid_cluster/_logs/${GEN}__${DEC}${VARIANT}__${WORLDS// /+}${TAG}     # one log folder per job (jobs for different worlds run side by side)
+OUT=$GRID/_logs/${GEN}__${DEC}${VARIANT}__${WORLDS// /+}${TAG}     # one log folder per job (jobs for different worlds run side by side)
 mkdir -p "$OUT"
 source bench_lib.sh
 K=${K:-8}; export MAX_EVENTS=$K              # event budget K: our Prompt 1a and C1, C5, C6 (same for every method)
 T0=$(date +%s); LOGS=$OUT                  # LOGS keeps the job folder (OUT is reused per run below)
 ROUND=${ROUND:-1}; MAX_ROUNDS=${MAX_ROUNDS:-6}
-n_done() { ls -a grid_cluster/*__${GEN}__* 2>/dev/null | grep -c '^\.done_\|__connect\.json$'; }   # finished steps + connected stories
+n_done() { ls -a $GRID/*__${GEN}__* 2>/dev/null | grep -c '^\.done_\|__connect\.json$'; }   # finished steps + connected stories
 DONE0=$(n_done)
 FAILS=0
 resubmit() {                                # resubmit <reason>: the same job again (next round skips finished steps)
@@ -61,11 +66,11 @@ trap requeue USR1
 
 run_dir() {                                 # competing approaches keep their v4 folders unless the setting differs
   local v=""; { [ "$DEC" != kev9b ] || [ "$GROUPING" != decision ]; } && v="-${DEC}${VARIANT}"
-  [ "$2" = ours ] && echo "grid_cluster/${1}__${GEN}__${DEC}${VARIANT}${TAG}" || echo "grid_cluster/${1}__${GEN}__${2}${v}${TAG}"; }
+  [ "$2" = ours ] && echo "$GRID/${1}__${GEN}__${DEC}${VARIANT}${TAG}" || echo "$GRID/${1}__${GEN}__${2}${v}${TAG}"; }
 texts() {                                   # texts file of a world (first 2 stories with SMOKE=1)
-  local f=${1}_v3.json
+  local f=${1}_${TEXTS_TAG}.json
   if [ -n "$N" ]; then f=$OUT/${1}_texts.json
-    python -c "import json;json.dump(json.load(open('${1}_v3.json'))[:$N],open('$f','w'))"; fi
+    python -c "import json;json.dump(json.load(open('${1}_${TEXTS_TAG}.json'))[:$N],open('$f','w'))"; fi
   echo "$f"
 }
 step() {                                    # step <run dir> <name> <command...>: skip if done; time it
@@ -77,6 +82,15 @@ step() {                                    # step <run dir> <name> <command...>
 }
 graphs() { echo "$1/*__gemma-kev.chain.json"; }
 agg_runs() { for W in $WORLDS; do [[ " $METHODS " == *" ours "* ]] && run_dir $W ours; done; }   # C1-C4: individual graphs only
+
+if [ -n "$SHARE_FROM" ]; then               # same nodes and story graphs as the $SHARE_FROM run: only grouping differs
+  for W in $WORLDS; do
+    S=$GRID/${W}__${GEN}__${SHARE_FROM}${TAG}; R=$(run_dir $W ours); mkdir -p "$R"
+    [ -f "$S/.done_chain_walk" ] || { echo "!!! $S has no finished chain walk: submit this job after that run"; exit 1; }
+    [ -f "$R/.done_chain_walk" ] || { cp "$S"/chain_nodes.json "$S"/*__gemma-kev.chain.json "$R/" && touch "$R/.done_nodes" "$R/.done_chain_walk"
+      echo "--- $R: nodes and story graphs copied from $S"; }
+  done
+fi
 
 echo "########## phase 1: $GEN (nodes, competing approaches' story graphs)"
 start_llm "$GEN" 65536

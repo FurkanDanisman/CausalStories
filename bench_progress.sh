@@ -4,14 +4,15 @@
 # C1-C6's story graphs) and llm-llmgroup (no decision model). Our method = 7 steps (nodes, chain walk, groups, names,
 # node-happened, implied, connect); C1-C6 = 1 step each (story graphs). Groups and connect are the long steps.
 #   bash bench_progress.sh                     CONFIGS="kev9b" bash bench_progress.sh   (the v4 runs)
-CONFIGS=${CONFIGS:-"kev9b-llmgroup llm-llmgroup"}
+GRID=${GRID:-grid_v7}
+CONFIGS=${CONFIGS:-"llm-llmgroup llm"}
 for cfg in $CONFIGS; do
   echo "== $cfg"; tot=0; all=0
-  for g in gemma qwen llama gptoss; do for w in homelessness career mental_health; do
-    d=grid_cluster/${w}__${g}__${cfg}; [ -d "$d" ] || continue
+  for g in gemma qwen llama gptoss; do for w in homelessness mental_health; do
+    d=$GRID/${w}__${g}__${cfg}; [ -d "$d" ] || continue
     n=$(ls -a "$d" | grep -c '^\.done_'); e=7
     for m in C1 C2 C3 C4 C5 C6; do                # competing approaches of the same job (if it runs them)
-      c=grid_cluster/${w}__${g}__${m}-${cfg}; [ "$cfg" = kev9b ] && c=grid_cluster/${w}__${g}__${m}
+      c=$GRID/${w}__${g}__${m}-${cfg}; [ "$cfg" = kev9b ] && c=$GRID/${w}__${g}__${m}
       [ -d "$c" ] && { n=$(( n + $(ls -a "$c" | grep -c '^\.done_story_graphs') )); e=$(( e + 1 )); }
     done
     printf "  %-7s %-14s %3d%%  (%2d/%2d steps)\n" "$g" "$w" $(( 100 * n / e )) "$n" "$e"; tot=$(( tot + n )); all=$(( all + e ))
@@ -32,11 +33,11 @@ echo "waiting in the queue: $(squeue --me -h -n bench-run -t PD | wc -l)"
 
 echo
 echo "bench_final (aggregation comparison and judge):"
-n_a4=$(ls -d grid_cluster/agg__A4-*/ 2>/dev/null | while read d; do [ -f "$d/network.json" ] && echo; done | wc -l)
-n_agg=$(for m in A1 A2 A3 pc ges; do ls -d grid_cluster/agg__${m}__*/ 2>/dev/null; done | while read d; do [ -f "$d/network.json" ] && echo; done | wc -l)
-n_c5=$(ls -d grid_cluster/agg__C5agg__*/ 2>/dev/null | while read d; do [ -f "$d/network.json" ] && echo; done | wc -l)
+n_a4=$(ls -d $GRID/agg__A4-*/ 2>/dev/null | while read d; do [ -f "$d/network.json" ] && echo; done | wc -l)
+n_agg=$(for m in A1 A2 A3 pc ges; do ls -d $GRID/agg__${m}__*/ 2>/dev/null; done | while read d; do [ -f "$d/network.json" ] && echo; done | wc -l)
+n_c5=$(ls -d $GRID/agg__C5agg__*/ 2>/dev/null | while read d; do [ -f "$d/network.json" ] && echo; done | wc -l)
 n_judge=0; n_judgeable=0
-for R in grid_cluster/*/; do R=${R%/}; case $(basename "$R") in _*) continue;; esac
+for R in $GRID/*/; do R=${R%/}; case $(basename "$R") in _*) continue;; esac
   [ -f "$R/abstraction.json" ] || continue
   if [ -f "$R/.done_groups" ] && [ ! -f "$R/.done_connect" ]; then continue; fi
   n_judgeable=$(( n_judgeable + 1 )); [ -f "$R/.judged" ] && n_judge=$(( n_judge + 1 ))

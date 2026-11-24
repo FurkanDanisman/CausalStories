@@ -3,9 +3,10 @@
 # (run info, judge scores, groups, story graphs, did-it-happen and connect files, the world graph), then
 # commit and push:   bash bench_pack.sh && git add results_cluster && git commit -m "cluster results" && git push
 set -euo pipefail
+GRID=${GRID:-grid_v7}
 source .venv/bin/activate
 mkdir -p results_cluster
-for R in grid_cluster/*/; do
+for R in $GRID/*/; do
   R=${R%/}; name=$(basename "$R")
   [ -f "$R/run_info.json" ] || [ -f "$R/network.json" ] || continue
   tmp=$(mktemp -d); mkdir -p "$tmp/$name"
