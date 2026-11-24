@@ -304,6 +304,7 @@ def main(world, run, cut=None):
     if graphs and all((run / f"{j}__connect.json").exists() for j in graphs):   # our aggregation (ours, C1-C4):
         res7 = matrix.resolve(arr, matrix.cells(run, abst, list(graphs.values()), ids=True)["chain"], set(kept))
         arr, knots7 = res7["main_arrows"], res7["knots"]                   # score Step 7's main graph at this cut
+        arr, _ = matrix.prune_shortcuts(arr, net["table"])                  # Step 8: shortcuts (A -> C also via B)
     E, Ew = signed([(gm[a["head"]] or f"x:{a['head']}", gm[a["tail"]] or f"x:{a['tail']}",
                      "+" if a["rel"] == "enables" else "-", a["estimate"]) for a in arr])
     d = shd(T, E); s_ = sum(d.values())

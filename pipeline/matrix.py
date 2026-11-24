@@ -16,6 +16,8 @@ defined it (results/api_world100_matrix/build_report.py). No model calls, no imp
           parent is None is skipped for that count; only parent combinations that occur are stored. Arrows
           are added strongest first and an arrow that would close a cycle is left out of the model. Each
           arrow also carries P(tail = 1 | head = 1) in the stories (both known).
+  shortcuts an arrow A -> C that also has a path A -> ... -> B -> C is kept only if C depends on A given B in the
+          story table (prune_shortcuts); applied to the Step 7 main graph before the model.
 """
 
 from __future__ import annotations
@@ -246,6 +248,47 @@ def resolve(arrows_: list[dict], id_cells: dict, keep: set | None = None, alpha:
             "settled": sorted(map(list, settled)), "knots": kn_out}
 
 
+def prune_shortcuts(arrows_: list[dict], table: dict, alpha: float = ALPHA) -> tuple[list[dict], list[dict]]:
+    """Step 8 (shortcuts). An arrow A -> C is a shortcut candidate when C has another parent B that A reaches through
+    the graph (A -> ... -> B -> C). It is kept only if C still depends on A once those parents B are known: within
+    each setting of the B's (stories where C and every B are known), P(C | A = 1) is compared with P(C | A = 0) by a
+    two-sided Fisher exact test, Holm-adjusted over the settings; the arrow stays if any adjusted p < alpha. With no
+    setting that has stories with both A = 1 and A = 0, the stories give no evidence of a direct effect and the arrow
+    is dropped. Every candidate is tested against the same graph. Returns the kept arrows and one report per candidate."""
+    from scipy.stats import fisher_exact
+    E = {(a["head"], a["tail"]) for a in arrows_}
+    def reach(u):
+        seen, st = set(), [u]
+        while st:
+            n = st.pop()
+            for x, w in E:
+                if x == n and w not in seen:
+                    seen.add(w); st.append(w)
+        return seen
+    rows, drop, report = list(table.values()), set(), []
+    for A, C in sorted(E):
+        meds = sorted(B for B, c in E if c == C and B != A and B in reach(A))
+        if not meds:
+            continue
+        known = [r for r in rows if r.get(A) in (0, 1) and r.get(C) in (0, 1) and all(r.get(B) in (0, 1) for B in meds)]
+        tests = []
+        for setting in sorted({tuple(r[B] for B in meds) for r in known}):
+            rs = [r for r in known if tuple(r[B] for B in meds) == setting]
+            n1 = [r[C] for r in rs if r[A] == 1]; n0 = [r[C] for r in rs if r[A] == 0]
+            if n1 and n0:
+                p = fisher_exact([[sum(n1), len(n1) - sum(n1)], [sum(n0), len(n0) - sum(n0)]])[1]
+                tests.append({"mediators": dict(zip(meds, setting)), "c_given_a1": [sum(n1), len(n1)],
+                              "c_given_a0": [sum(n0), len(n0)], "p": p})
+        for t, pa in zip(tests, _holm([t["p"] for t in tests]) if tests else []):
+            t["p_holm"] = pa
+        keep = any(t["p_holm"] < alpha for t in tests)
+        if not keep:
+            drop.add((A, C))
+        report.append({"arrow": [A, C], "through": meds, "tests": tests, "kept": keep,
+                       "reason": "direct effect" if keep else ("no direct effect" if tests else "no stories to test")})
+    return [a for a in arrows_ if (a["head"], a["tail"]) not in drop], report
+
+
 def cond_prob(table: dict, x: str, y: str) -> tuple[int, int]:
     """P(y = 1 | x = 1) in the stories: stories where x and y happened / stories where x happened (y known)."""
     rows = [v for v in table.values() if v.get(x) == 1 and v.get(y) is not None]
@@ -302,6 +345,7 @@ def aggregate(outdir: Path, graphs: list[dict]) -> dict:
     table = {j: d["values"] for j, d in imp.items()}
     arr = arrows(cl["chain"])
     res7 = resolve(arr, cells(outdir, abst, graphs, ids=True)["chain"])          # Step 7 (all concepts)
+    res7["main_arrows"], res7["shortcuts"] = prune_shortcuts(res7["main_arrows"], table)   # Step 8: shortcuts
     for a in arr:
         k, n = cond_prob(table, a["head"], a["tail"])
         a["p_tail_given_head"] = round(k / n, 4) if n else None
