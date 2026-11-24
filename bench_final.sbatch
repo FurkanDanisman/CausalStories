@@ -43,7 +43,7 @@ for R in $GRID/*__gemma__${DEC}; do
     [ -f "$A/network.json" ] || { t0=$(date +%s); python benchmark/alt_aggregate.py $M "$R" "$A" && printf "%s\t%s\n" $M $(( $(date +%s) - t0 )) >> "$A/timing.tsv"; }
   done
 done
-for R in $GRID/*__*__C5; do
+for R in $GRID/*__*__C5 $GRID/*__*__C5-*; do
   case $(basename "$R") in agg__*) continue;; esac
   [ -d "$R" ] || continue
   A=$GRID/agg__C5agg__$(basename "$R")
