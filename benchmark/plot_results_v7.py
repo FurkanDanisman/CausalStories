@@ -4,7 +4,7 @@
 Individual graphs: 10 stories per world (the same stories for every method), each shown as its true graph,
 then Ours, Per-story prompting and Causal Map for each generator, with node F1, arrows and story score.
 Aggregated graphs: per world and generator, the true world graph, Ours A (LLM grouping) and Ours B (Kev
-procedure) at every usage cut, then Causal Map and Whole-corpus prompting (10% cut), with node F1, arrows,
+procedure) at every usage cut, then Causal Map and Whole-corpus prompting as they output them (no usage cut: the cut is a step of our method), with node F1, arrows,
 SID, score, and KL for ours. Every graph is drawn in true-node names as the judge matched them; a node the
 judge could not match keeps the method's own name (grey). Green arrow: enables; red: blocks.
 Usage: python benchmark/plot_results_v7.py  ->  benchmark/stories_v7/results_graphs.pdf"""
@@ -134,9 +134,9 @@ def main():
                 for c in CUTS:
                     f, cap = aggregated(run, c, f"{w}_{g}_{lab[5]}")
                     tex.append(fig(f, f"\\textbf{{{c}\\% cut}}: " + cap, "0.3") if f else f"\\textbf{{{c}\\% cut}}: {cap}\\par\\medskip")
-            tex.append(r"\subsection*{Competing methods (10\% cut)}")
+            tex.append(r"\subsection*{Competing methods (their own output, no usage cut)}")
             for lab, run in [("Causal Map", f"agg__C5agg__{w}__{g}__C5-llm-llmgroup"), ("Whole-corpus prompting", f"{w}__{g}__C6-llm-llmgroup")]:
-                f, cap = aggregated(run, 10, f"{w}_{g}_{lab[:5]}")
+                f, cap = aggregated(run, 0, f"{w}_{g}_{lab[:5]}")
                 tex.append(fig(f, f"\\textbf{{{lab}}}: " + cap, "0.3"))
     tex.append(r"\end{document}")
     (OUT / "results_graphs.tex").write_text("\n".join(tex))
