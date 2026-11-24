@@ -19,7 +19,7 @@ SLUG = os.environ.get("JUDGE_SLUG") or re.sub(r"[^a-z0-9]+", "-", JUDGE.rstrip("
 POS = {"carries out", "enables", "risk"}          # true arrow types read as "+" (enables)
 NEG = {"stopped", "failed"}                       # true arrow types read as "-" (blocks)
 CUT = 0.10
-STORIES = os.environ.get("STORIES", "stories_v6")   # stories_v3 to rescore the earlier benchmark
+STORIES = os.environ.get("STORIES", "stories_v7")   # stories_v3 to rescore the earlier benchmark
 
 
 JUDGE_URL = os.environ.get("JUDGE_URL", "https://openrouter.ai/api/v1/chat/completions")   # local: vLLM server

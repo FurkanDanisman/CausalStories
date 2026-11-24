@@ -15,37 +15,42 @@ What a story tells (the story's truth: every told node with its value, and the a
       did not happen, its protection was there  -> the protection kept it from happening (the causes put the
                                                     person at risk of it);
       did not happen, no protection there       -> it did not follow from its causes;
-    and its protection, if it has one: there (with the participant behind it) or not there;
+    and its protection, if it has one and it could happen (a root, or its own cause happened): there (with
+    the participant behind it) or not there;
+    and, for financial struggle (loneliness): if it did not happen and job loss (losing a family member) did not
+    happen, that I still had my job (my family)
+    (a cause that did not happen, no arrow);
   - nothing about events that were not at stake (an event none of whose causes happened, or a protection whose
     target was not at stake).
 Usage: python benchmark/worlds_random.py           checks both worlds (rates, coverage of every node)
-       python benchmark/worlds_random.py facts     writes stories_v6/<world>_facts.json (200 people each)"""
+       python benchmark/worlds_random.py facts     writes stories_v7/<world>_facts.json (200 people each)"""
 import random, sys
 
 WORLDS = {
     "homelessness": {
         "outcome": "homelessness",
         "start": ["job loss", "divorce"],
-        "root": {"EMPLOYER": 0.55, "divorce": 0.45, "savings": 0.30, "FAMILY MEMBER": 0.45},
+        "tell_absent": {"financial struggle": ["job loss"]},   # divorce without a struggle, job kept: "I still had my job"
+        "root": {"EMPLOYER": 0.55, "divorce": 0.45, "savings": 0.30, "FAMILY MEMBER": 0.80},
         "mech": {   # event: ({cause: p}, {blocker: q}), in causal order
             "job loss": ({"EMPLOYER": 1.0}, {}),
-            "providing a place to stay": ({"FAMILY MEMBER": 0.9}, {}),
-            "can't pay rent": ({"job loss": 0.95, "divorce": 0.6}, {"savings": 0.80}),
-            "eviction": ({"can't pay rent": 0.65}, {}),
-            "homelessness": ({"eviction": 1.0}, {"providing a place to stay": 0.95}),
+            "providing a place to stay": ({"FAMILY MEMBER": 0.5}, {}),
+            "financial struggle": ({"job loss": 1.0, "divorce": 0.6}, {}),
+            "can't pay rent": ({"financial struggle": 1.0}, {"savings": 0.80}),
+            "eviction": ({"can't pay rent": 1.0}, {}),
+            "homelessness": ({"eviction": 1.0}, {"providing a place to stay": 1.0}),
         },
     },
     "mental_health": {
         "outcome": "depression",
-        "start": ["job loss", "losing a loved one"],
-        "root": {"EMPLOYER": 0.50, "losing a loved one": 0.70, "CLOSE FRIENDS": 0.45, "THERAPIST": 0.40},
+        "start": ["losing a family member", "breakup"],
+        "tell_absent": {"loneliness": ["losing a family member"]},   # breakup without loneliness, family kept: "I still had my family"
+        "root": {"losing a family member": 0.70, "breakup": 0.45, "CLOSE FRIENDS": 0.80, "THERAPIST": 0.40},
         "mech": {
-            "job loss": ({"EMPLOYER": 1.0}, {}),
-            "social support": ({"CLOSE FRIENDS": 0.9}, {}),
+            "social support": ({"CLOSE FRIENDS": 0.5}, {}),
             "therapy": ({"THERAPIST": 1.0}, {}),
-            "loneliness": ({"losing a loved one": 0.9}, {"social support": 0.6}),
-            "chronic stress": ({"job loss": 0.72, "loneliness": 0.7}, {}),
-            "depression": ({"chronic stress": 0.72}, {"therapy": 0.7}),
+            "loneliness": ({"losing a family member": 1.0, "breakup": 0.6}, {"social support": 0.6}),
+            "depression": ({"loneliness": 0.7}, {"therapy": 0.7}),
         },
     },
 }
@@ -53,8 +58,8 @@ ACTOR = {"job loss": "EMPLOYER", "providing a place to stay": "FAMILY MEMBER", "
          "therapy": "THERAPIST"}
 SAY = {"job loss": "my employer let me go", "providing a place to stay": "a family member offered me a place to stay",
        "social support": "my close friends stood by me", "therapy": "I was seeing a therapist", "savings": "I had savings",
-       "divorce": "I went through a divorce", "losing a loved one": "someone I loved died"}
-SAY_NOT = {"providing a place to stay": "no family member offered me a place to stay", "social support": "no close friends stood by me",
+       "divorce": "I went through a divorce", "losing a family member": "a family member died", "breakup": "my partner and I broke up"}
+SAY_NOT = {"job loss": "I still had my job", "losing a family member": "I still had my family", "providing a place to stay": "no family member offered me a place to stay", "social support": "no close friends stood by me",
            "therapy": "I was not seeing a therapist", "savings": "I had no savings"}
 
 
@@ -67,6 +72,11 @@ def person(w, rng):
         stop = [b for b, q in bl.items() if x[b] and rng.random() < q]
         x[v] = int(bool(fired) and not stop)
     return x
+
+
+def possible(W, x, n):
+    """A node could happen: a root, or an event with at least one cause that happened (not grey)."""
+    return n in W["root"] or any(x[u] for u in W["mech"][n][0])
 
 
 def tells(w, x):
@@ -82,7 +92,10 @@ def tells(w, x):
         causes = [u for u in en if x[u] and not u.isupper()]
         if not causes:
             continue                                           # not at stake: nothing told
-        prot = list(bl)
+        for u in W.get("tell_absent", {}).get(v, []):          # a cause that did not happen, told as absent
+            if not x[u] and not x[v]:                          # only when the event did not happen either
+                told[u] = 0; facts.append(SAY_NOT[u])
+        prot = [b for b in bl if possible(W, x, b)]            # a protection that could not happen is not told
         for b in prot:                                         # the protection of an event at stake
             told[b] = x[b]
             if x[b] and b in ACTOR:
@@ -117,7 +130,7 @@ def draw_stories(w, n=200, seed=0):
 
 if __name__ == "__main__" and sys.argv[1:2] == ["facts"]:
     import json, pathlib
-    d = pathlib.Path(__file__).parent / "stories_v6"; d.mkdir(exist_ok=True)
+    d = pathlib.Path(__file__).parent / "stories_v7"; d.mkdir(exist_ok=True)
     for i, w in enumerate(WORLDS):
         items = draw_stories(w, 200, seed=900 + i)
         (d / f"{w}_facts.json").write_text(json.dumps(items, indent=1))
