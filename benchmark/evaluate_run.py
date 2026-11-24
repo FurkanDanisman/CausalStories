@@ -336,6 +336,7 @@ def main(world, run, cut=None):
         return sum(r[v] for r in rs) / len(rs) if rs else None
     true_rows = [true_values(stories[j], TN) for j in stories]
     KL_MODEL = "per-arrow P(child | parent), counted tables" if rows else "per-arrow, the arrow's own number (no story table)"
+    agg_has_probs = bool(graphs) and all((run / f"{j}__connect.json").exists() for j in graphs)   # our method only
     kl_nodes = {}                                             # keyed "u -> v"
     for v, (en, bl) in W.MECH.items():
         for u in list(en) + list(bl):
@@ -351,7 +352,9 @@ def main(world, run, cut=None):
            "arrows": arrows_norm, "sid_wrong": len(bad), "sid_pairs": len(TN) * (len(TN) - 1), "sid": sid_norm,
            "kl": kl, "kl_by_arrow": kl_nodes, "kl_score": math.exp(-kl), "kl_model": KL_MODEL, "step7_knots": knots7,
            "arrows_list": [{"head": h, "tail": t, "sign": sg, "estimate": Ew[(h, t)]} for (h, t), sg in E.items()]}
-    agg["score"] = gmean([agg["node_F1"], arrows_norm, sid_norm, agg["kl_score"]])
+    agg["score"] = gmean([agg["node_F1"], arrows_norm, sid_norm])          # structure: comparable for every method
+    if not agg_has_probs: agg["kl"] = agg["kl_score"] = None               # KL only for a method that outputs conditional
+    agg["kl_by_arrow"] = kl_nodes if agg_has_probs else None              # probabilities (ours), reported separately
     out = {"world": world, "run": str(run), "judge": JUDGE, "judge_usage_so_far": dict(JUDGE_USAGE), "individual": ind, "aggregated": agg,
            "individual_summary": {g: {k: mean(k, [r for r in scored if g == "all" or r["group"] == g])
                                       for k in ("node_P", "node_R", "node_F1", "arrows", "score")}
@@ -364,7 +367,8 @@ def main(world, run, cut=None):
     else:
         print("Table 1: no story graphs (aggregated-only method)")
     print(f"Table 2 (aggregated): node P {P:.2f} R {R:.2f} F1 {agg['node_F1']:.2f} | SHD {s_} {d} -> {arrows_norm:.2f} "
-          f"| SID {len(bad)}/{agg['sid_pairs']} -> {sid_norm:.2f} | KL {kl:.3f} -> {agg['kl_score']:.2f} | score {agg['score']:.2f}")
+          f"| SID {len(bad)}/{agg['sid_pairs']} -> {sid_norm:.2f} | score {agg['score']:.2f}"
+          + (f" | KL {kl:.3f} -> {agg['kl_score']:.2f} (reported separately)" if agg["kl_score"] is not None else ""))
 
 
 if __name__ == "__main__":
