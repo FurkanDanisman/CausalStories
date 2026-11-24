@@ -5,12 +5,12 @@
 set -euo pipefail
 GRID=${GRID:-grid_v7}
 source .venv/bin/activate
-mkdir -p results_cluster
+mkdir -p results_cluster/$GRID                 # own folder: the earlier runs' packs in results_cluster/ stay as they are
 for R in $GRID/*/; do
   R=${R%/}; name=$(basename "$R")
   [ -f "$R/run_info.json" ] || [ -f "$R/network.json" ] || continue
   tmp=$(mktemp -d); mkdir -p "$tmp/$name"
   cp "$R"/*.json "$R"/*.jsonl "$R"/*.tsv "$tmp/$name/" 2>/dev/null || true
-  tar -czf "results_cluster/$name.tar.gz" -C "$tmp" "$name"; rm -rf "$tmp"
+  tar -czf "results_cluster/$GRID/$name.tar.gz" -C "$tmp" "$name"; rm -rf "$tmp"
   echo "packed $name"
 done
