@@ -7,7 +7,7 @@ Aggregated graphs: per world and generator, the true world graph, Ours A (LLM gr
 procedure) at every usage cut, then Causal Map and Whole-corpus prompting as they output them (no usage cut: the cut is a step of our method), with node F1, arrows,
 SID, score, and KL for ours. Every graph is drawn in true-node names as the judge matched them; a node the
 judge could not match keeps the method's own name (grey). Green arrow: enables; red: blocks.
-Usage: python benchmark/plot_results_v7.py  ->  benchmark/stories_v7/results_graphs.pdf"""
+Usage: python benchmark/plot_results_v7.py  ->  benchmark/stories_v7/results_individual.pdf, results_aggregated.pdf"""
 import json, random, subprocess, sys
 from pathlib import Path
 
@@ -20,7 +20,7 @@ GENS = {"gemma": "Gemma 4 31B", "qwen": "Qwen 3.5 27B"}
 WORLDS = {"homelessness": "Homelessness", "mental_health": "Mental health"}
 POS = {"carries out", "enables", "risk"}
 sys.path.insert(0, str(HERE)); import worlds_random as R
-STYLE = '''graph [rankdir=LR, nodesep=0.35, ranksep=0.6, pad=0.15, fontname="Helvetica"];
+STYLE = '''graph [rankdir=TB, nodesep=0.25, ranksep=0.45, pad=0.15, fontname="Helvetica"];
 node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=12, margin="0.12,0.06", fillcolor="#ffffff", color="#5c6763"];
 edge [fontname="Helvetica", fontsize=10, arrowsize=0.8];'''
 EXTRA = 'fillcolor="#eeeeee", color="#999999", fontcolor="#666666"'
@@ -102,47 +102,80 @@ def true_world(w):
     return dot(f"true_world_{w}", nodes, edges)
 
 
+HEAD = r"\documentclass[10pt]{article}\usepackage[margin=0.6in]{geometry}\usepackage{graphicx}\usepackage[T1]{fontenc}\begin{document}"
+NOTE = (r"Judge: Gemma 4 31B. Every method's graph is drawn in the true nodes' names as the judge matched them; a grey node is one "
+        r"the judge could not match to any true node (an extra node). Green arrow: enables; red arrow: blocks.")
+
+
+def cell(f, cap, h):
+    body = (r"\includegraphics[width=\linewidth,height=" + h + r"\textheight,keepaspectratio]{" + f + "}") if f else ""
+    return r"\begin{minipage}[t]{0.49\linewidth}\centering " + body + r"\par\small " + cap + r"\end{minipage}"
+
+
+def grid(cells, h):
+    """2 x 2: cells[0] top left, cells[1] top right, cells[2] bottom left, cells[3] bottom right."""
+    return (r"\noindent" + cell(*cells[0], h) + r"\hfill" + cell(*cells[1], h) + r"\par\bigskip\noindent" +
+            cell(*cells[2], h) + r"\hfill" + cell(*cells[3], h) + r"\par\medskip")
+
+
+def build(name, tex):
+    (OUT / f"{name}.tex").write_text("\n".join(tex + [r"\end{document}"]))
+    subprocess.run(["pdflatex", "-interaction=nonstopmode", f"{name}.tex"], cwd=OUT, capture_output=True)
+    (OUT / f"{name}.pdf").replace(HERE / "stories_v7" / f"{name}.pdf")
+    print("saved", HERE / "stories_v7" / f"{name}.pdf")
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    tex = [r"\documentclass[10pt]{article}\usepackage[margin=0.6in]{geometry}\usepackage{graphicx}\usepackage[T1]{fontenc}\begin{document}",
-           r"\section*{Benchmark v7 results: graphs and scores}",
-           r"Judge: Gemma 4 31B. Every method's graph is drawn in the true nodes' names as the judge matched them; a grey node is one "
-           r"the judge could not match to any true node (an extra node). Green arrow: enables; red arrow: blocks. Individual graphs: "
-           r"10 stories per world, the same for every method. Ours A and Ours B share their story graphs (they differ only in grouping). "
-           r"Aggregated score = geometric mean of node F1, arrows and SID; KL (only ours outputs conditional probabilities) is reported "
-           r"separately. Aggregated arrows are labelled with the method's estimate."]
+    # ---------------- individual graphs: 2 x 2 per story (true | ours / per-story | Causal Map)
+    tex = [HEAD, r"\section*{Individual graphs}", NOTE + r" 10 stories per world, the same for every method. Top left: the "
+           r"story's true graph; top right: ours; bottom left: Per-story prompting; bottom right: Causal Map. Ours A and Ours B share "
+           r"their story graphs (they differ only in grouping). Story score = geometric mean of node F1 and arrows."]
     for w, wt in WORLDS.items():
         S = {s["id"]: s for s in json.load(open(HERE / "stories_v7" / f"{w}.json"))}
         pick = sorted(random.Random(21).sample(sorted(S), 10))
         for g, gt in GENS.items():
-            tex.append(r"\clearpage\section*{" + wt + " -- individual graphs -- " + gt + "}")
-            runs = [("Ours", f"{w}__{g}__llm-llmgroup"), ("Per-story prompting", f"{w}__{g}__C1-llm-llmgroup"),
-                    ("Causal Map", f"{w}__{g}__C5-llm-llmgroup")]
             for sid in pick:
                 s = S[sid]
-                tex.append(r"\subsection*{" + sid + r"}\noindent\textit{``" + esc(s["text"]) + r"''}\par\medskip")
-                tex.append(fig(true_story(w, s), "\\textbf{True graph}", "0.13"))
-                for lab, run in runs:
+                tex.append(r"\clearpage\subsection*{" + wt + " -- " + gt + " -- " + sid + r"}\noindent\textit{``" + esc(s["text"]) + r"''}\par\medskip")
+                cells = [(true_story(w, s), r"\textbf{True graph}")]
+                for lab, run in [("Ours", f"{w}__{g}__llm-llmgroup"), ("Per-story prompting", f"{w}__{g}__C1-llm-llmgroup"),
+                                 ("Causal Map", f"{w}__{g}__C5-llm-llmgroup")]:
                     f, cap = individual(w, sid, run, f"{g}_{lab[:4]}")
-                    tex.append(fig(f, f"\\textbf{{{lab}}}: " + cap, "0.13"))
-                tex.append(r"\clearpage")
+                    cells.append((f, f"\\textbf{{{lab}}}\\\\" + cap))
+                tex.append(grid(cells, "0.3"))
+    build("results_individual", tex)
+    # ---------------- aggregated graphs: 2 x 2 at the 15% cut (ours), appendix: every other cut
+    tex = [HEAD, r"\section*{Aggregated graphs}", NOTE + r" Top left: the true world graph (arrow labels: cause strength / protection "
+           r"strength); top right: ours at the 15\% usage cut (a group is kept if at least 15\% of stories use it); bottom left: Causal Map "
+           r"and bottom right: Whole-corpus prompting, as they output them (the usage cut is a step of our method only). One page for "
+           r"each of our two groupings. Score = geometric mean of node F1, arrows and SID; KL (only ours outputs conditional "
+           r"probabilities) is reported separately. Arrows of a method are labelled with its estimate. Appendix: ours at every other cut."]
+    OURS = [("Ours A (LLM grouping)", "llm-llmgroup", "A"), ("Ours B (Kev procedure)", "llm", "B")]
+    for w, wt in WORLDS.items():
         for g, gt in GENS.items():
-            tex.append(r"\clearpage\section*{" + wt + " -- aggregated graphs -- " + gt + "}")
-            tex.append(fig(true_world(w), "\\textbf{True world graph} (arrow labels: cause strength / protection strength)", "0.3"))
-            for lab, run in [("Ours A (LLM grouping)", f"{w}__{g}__llm-llmgroup"), ("Ours B (Kev procedure)", f"{w}__{g}__llm")]:
-                tex.append(r"\subsection*{" + lab + r" -- every usage cut}")
-                for c in CUTS:
-                    f, cap = aggregated(run, c, f"{w}_{g}_{lab[5]}")
-                    tex.append(fig(f, f"\\textbf{{{c}\\% cut}}: " + cap, "0.3") if f else f"\\textbf{{{c}\\% cut}}: {cap}\\par\\medskip")
-            tex.append(r"\subsection*{Competing methods (their own output, no usage cut)}")
+            comp = []
             for lab, run in [("Causal Map", f"agg__C5agg__{w}__{g}__C5-llm-llmgroup"), ("Whole-corpus prompting", f"{w}__{g}__C6-llm-llmgroup")]:
                 f, cap = aggregated(run, 0, f"{w}_{g}_{lab[:5]}")
-                tex.append(fig(f, f"\\textbf{{{lab}}}: " + cap, "0.3"))
-    tex.append(r"\end{document}")
-    (OUT / "results_graphs.tex").write_text("\n".join(tex))
-    subprocess.run(["pdflatex", "-interaction=nonstopmode", "results_graphs.tex"], cwd=OUT, capture_output=True)
-    (OUT / "results_graphs.pdf").replace(HERE / "stories_v7" / "results_graphs.pdf")
-    print("saved", HERE / "stories_v7" / "results_graphs.pdf")
+                comp.append((f, f"\\textbf{{{lab}}}\\\\" + cap))
+            for lab, suf, t in OURS:
+                f, cap = aggregated(f"{w}__{g}__{suf}", 15, f"{w}_{g}_{t}")
+                tex.append(r"\clearpage\subsection*{" + wt + " -- " + gt + " -- " + lab + r"}")
+                tex.append(grid([(true_world(w), r"\textbf{True world graph}"), (f, f"\\textbf{{{lab}, 15\\% cut}}\\\\" + cap)] + comp, "0.38"))
+    tex.append(r"\clearpage\appendix\section*{Appendix: ours at every usage cut}")
+    for w, wt in WORLDS.items():
+        for g, gt in GENS.items():
+            for lab, suf, t in OURS:
+                tex.append(r"\clearpage\subsection*{" + wt + " -- " + gt + " -- " + lab + r"}")
+                cs = [c for c in CUTS if c != 15]
+                for i in range(0, len(cs), 4):
+                    cells = []
+                    for c in cs[i:i + 4]:
+                        f, cap = aggregated(f"{w}__{g}__{suf}", c, f"{w}_{g}_{t}")
+                        cells.append((f, f"\\textbf{{{c}\\% cut}}\\\\" + cap))
+                    while len(cells) < 4: cells.append((None, ""))
+                    tex.append(grid(cells, "0.36") + r"\clearpage")
+    build("results_aggregated", tex)
 
 
 if __name__ == "__main__":
