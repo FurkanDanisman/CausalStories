@@ -352,7 +352,9 @@ def main(world, run, cut=None):
            "node_P": P, "node_R": R, "node_F1": f1(P, R), "shd": d, "true_arrows": len(T), "est_arrows": len(E),
            "arrows": arrows_norm, "sid_wrong": len(bad), "sid_pairs": len(TN) * (len(TN) - 1), "sid": sid_norm,
            "kl": kl, "kl_by_arrow": kl_nodes, "kl_score": math.exp(-kl), "kl_model": KL_MODEL, "step7_knots": knots7,
-           "arrows_list": [{"head": h, "tail": t, "sign": sg, "estimate": Ew[(h, t)]} for (h, t), sg in E.items()]}
+           "arrows_list": [{"head": h, "tail": t, "sign": sg, "estimate": Ew[(h, t)]} for (h, t), sg in E.items()],
+           "own_graph": {"nodes": kept, "arrows": [{"head": a["head"], "tail": a["tail"], "rel": a["rel"],     # the method's
+                                                    "estimate": a["estimate"]} for a in arr]}}               # output as is
     agg["score"] = gmean([agg["node_F1"], arrows_norm, sid_norm])          # structure: comparable for every method
     if not agg_has_probs: agg["kl"] = agg["kl_score"] = None               # KL only for a method that outputs conditional
     agg["kl_by_arrow"] = kl_nodes if agg_has_probs else None              # probabilities (ours), reported separately

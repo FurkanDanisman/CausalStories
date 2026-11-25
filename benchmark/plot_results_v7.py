@@ -5,8 +5,7 @@ Individual graphs: 10 stories per world (the same stories for every method), eac
 then Ours, Per-story prompting and Causal Map for each generator, with node F1, arrows and story score.
 Aggregated graphs: per world and generator, the true world graph, Ours A (LLM grouping) and Ours B (Kev
 procedure) at every usage cut, then Causal Map and Whole-corpus prompting as they output them (no usage cut: the cut is a step of our method), with node F1, arrows,
-SID, score, and KL for ours. Every graph is drawn in true-node names as the judge matched them; a node the
-judge could not match keeps the method's own name (grey). Green arrow: enables; red: blocks.
+SID, score, and KL for ours. Every graph is drawn exactly as the method output it (its own names; no renaming). Green arrow: enables; red: blocks.
 Usage: python benchmark/plot_results_v7.py  ->  benchmark/stories_v7/results_individual.pdf, results_aggregated.pdf"""
 import json, random, subprocess, sys
 from pathlib import Path
@@ -55,34 +54,35 @@ def fig(f, cap, h="0.27"):
 
 
 def individual(w, sid, run, tag):
-    """A method's story graph in true-node names, with its scores."""
+    """A method's story graph exactly as it output it (its own node names), with its scores."""
     e = ev(run, 10)
     g = json.load(open(GRID / run / f"{sid}__gemma-kev.chain.json"))
     r = e["individual"][sid]
-    m = r["map"]
     kinds = g.get("kinds") or {}
-    lab = {n: (m.get(n) or n) for n in g["nodes"]}
-    nodes = {lab[n]: not m.get(n) for n in g["nodes"]}
-    edges = [(lab[x["head"]], lab[x["tail"]], "+" if x["rel"] == "enables" else "-", "")
+    nodes = {n: False for n in g["nodes"]}
+    edges = [(x["head"], x["tail"], "+" if x["rel"] == "enables" else "-", "")
              for x in g["edges"] if kinds.get(x["tail"], "event") != "participant"]
+    for u, v, _, _ in edges:
+        nodes.setdefault(u, False); nodes.setdefault(v, False)
     f = dot(f"ind_{tag}_{sid}", nodes, edges)
     return f, f"node F1 {r['node_F1']:.2f} $\\cdot$ arrows {r['arrows']:.2f} $\\cdot$ story score \\textbf{{{r['score']:.2f}}}"
 
 
 def aggregated(run, cut, tag, labels=True):
-    """labels: write the arrow's estimate on it (ours only: the other methods' numbers are not probabilities)."""
+    """A method's world graph exactly as it output it at this cut (its own group names; ours: after Steps 7-8).
+    labels: write the arrow's estimate on it (ours only: the other methods' numbers are not probabilities)."""
     e = ev(run, cut)
     if e is None or e["aggregated"] is None:
         return None, "not judged at this cut yet"
     a = e["aggregated"]
-    nodes = {(v["match"] or k): not v["match"] for k, v in a["kept_groups"].items()}
+    own = a["own_graph"]
+    nodes = {n: False for n in own["nodes"]}
     edges = []
-    for x in a["arrows_list"]:
-        u, v = x["head"].removeprefix("x:"), x["tail"].removeprefix("x:")
-        nodes.setdefault(u, True); nodes.setdefault(v, True)
-        edges.append((u, v, x["sign"], f'{x["estimate"]:.2f}' if labels else ""))
+    for x in own["arrows"]:
+        nodes.setdefault(x["head"], False); nodes.setdefault(x["tail"], False)
+        edges.append((x["head"], x["tail"], "+" if x["rel"] == "enables" else "-", f'{x["estimate"]:.2f}' if labels else ""))
     f = dot(f"agg_{tag}_{cut:02d}", nodes, edges)
-    cap = (f"{len(a['kept_groups'])} groups kept $\\cdot$ node F1 {a['node_F1']:.2f} $\\cdot$ arrows {a['arrows']:.2f} "
+    cap = (f"{len(own['nodes'])} groups kept $\\cdot$ node F1 {a['node_F1']:.2f} $\\cdot$ arrows {a['arrows']:.2f} "
            f"$\\cdot$ SID {a['sid']:.2f} $\\cdot$ score \\textbf{{{a['score']:.2f}}}")
     if a.get("kl_score") is not None:
         cap += f" $\\cdot$ KL {a['kl_score']:.2f}"
@@ -104,8 +104,8 @@ def true_world(w):
 
 
 HEAD = r"\documentclass[10pt]{article}\usepackage[margin=0.6in]{geometry}\usepackage{graphicx}\usepackage[T1]{fontenc}\begin{document}"
-NOTE = (r"Judge: Gemma 4 31B. Every method's graph is drawn in the true nodes' names as the judge matched them; a grey node is one "
-        r"the judge could not match to any true node (an extra node). Green arrow: enables; red arrow: blocks.")
+NOTE = (r"Every method's graph is drawn exactly as the method output it, with its own node and group names (no renaming). "
+        r"Scores: the judge (Gemma 4 31B) matches nodes to the true nodes only for scoring. Green arrow: enables; red arrow: blocks.")
 
 
 def cell(f, cap, h):
