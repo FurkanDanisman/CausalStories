@@ -249,7 +249,7 @@ def resolve(arrows_: list[dict], id_cells: dict, keep: set | None = None, alpha:
 
 
 def prune_shortcuts(arrows_: list[dict], table: dict, alpha: float = ALPHA) -> tuple[list[dict], list[dict]]:
-    """Step 8 (shortcuts). An arrow A -> C is a shortcut candidate when C has another parent B that A reaches through
+    """Step 7, shortcut check (method_Oct.tex). An arrow A -> C is a shortcut candidate when C has another parent B that A reaches through
     the graph (A -> ... -> B -> C). It is kept only if C still depends on A once those parents B are known: within
     each setting of the B's (stories where C and every B are known), P(C | A = 1) is compared with P(C | A = 0) by a
     two-sided Fisher exact test, Holm-adjusted over the settings; the arrow stays if any adjusted p < alpha. With no
@@ -345,7 +345,7 @@ def aggregate(outdir: Path, graphs: list[dict]) -> dict:
     table = {j: d["values"] for j, d in imp.items()}
     arr = arrows(cl["chain"])
     res7 = resolve(arr, cells(outdir, abst, graphs, ids=True)["chain"])          # Step 7 (all concepts)
-    res7["main_arrows"], res7["shortcuts"] = prune_shortcuts(res7["main_arrows"], table)   # Step 8: shortcuts
+    res7["main_arrows"], res7["shortcuts"] = prune_shortcuts(res7["main_arrows"], table)   # Step 7, shortcut check
     for a in arr:
         k, n = cond_prob(table, a["head"], a["tail"])
         a["p_tail_given_head"] = round(k / n, 4) if n else None

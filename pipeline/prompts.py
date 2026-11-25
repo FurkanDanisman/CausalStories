@@ -47,9 +47,9 @@ def _listing(node_ids: list[str]) -> str:
 
 # Kev choice options for kev_arrow.md; descriptions follow extract_edges.md.
 KEV_ARROW_OPTIONS = {
-    "enables": 'the first node makes the second happen, start, continue, or become more likely',
-    "blocks": 'the first node makes the second stop, or prevents it / makes it less likely',
-    "none": 'the text does not justify a direct causal arrow from the first node to the second',
+    "enables": 'the first node directly makes the second happen, start, continue, or become more likely, not only through another listed node',
+    "blocks": 'the first node directly makes the second stop, or prevents it / makes it less likely, not only through another listed node',
+    "none": 'the text does not justify a direct causal arrow from the first node to the second, or the first node affects the second only through another listed node',
 }
 
 

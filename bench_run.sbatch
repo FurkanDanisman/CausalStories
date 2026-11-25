@@ -32,7 +32,8 @@ set -uo pipefail
 GEN=${GEN:?GEN}; DEC=${DEC:-kev9b}
 GRID=${GRID:-grid_v7}; TEXTS_TAG=${TEXTS_TAG:-v7}       # run folders and story texts (<world>_<TEXTS_TAG>.json)
 SHARE_FROM=${SHARE_FROM:-}                    # e.g. llm-llmgroup: reuse that run's nodes and story graphs (same extraction)
-export GRID TEXTS_TAG SHARE_FROM
+NODES_FROM=${NODES_FROM:-}                    # e.g. grid_v7: reuse the extracted nodes of the same run there (only later steps change)
+export GRID TEXTS_TAG SHARE_FROM NODES_FROM
 GROUPING=${GROUPING:-decision}                # Step 1 grouping: decision (the decision model) | llm (pipeline/llm_group.py)
 VARIANT=""; [ "$GROUPING" = llm ] && VARIANT="-llmgroup"      # run folders of the LLM-grouping setting
 WORLDS=${WORLDS:-"homelessness mental_health"}
@@ -57,7 +58,7 @@ resubmit() {                                # resubmit <reason>: the same job ag
   else
     echo "########## $1: requeueing as round $(( ROUND + 1 )) ($(( now - DONE0 )) steps finished this round)"
     (cd "$SLURM_SUBMIT_DIR" && env $(env | grep -o '^SLURM_[A-Z_]*' | sed 's/^/-u /') sbatch \
-      --export=ALL,GEN=$GEN,DEC=$DEC,GROUPING=$GROUPING,BATCH_SIZE=${BATCH_SIZE:-10},WORLDS=${WORLDS// /+},METHODS=${METHODS// /+},ROUND=$(( ROUND + 1 )),MAX_ROUNDS=$MAX_ROUNDS,KEV_WORKERS=$KW,K=$K${N:+,N=$N} \
+      --export=ALL,GEN=$GEN,DEC=$DEC,GROUPING=$GROUPING,GRID=$GRID,NODES_FROM=$NODES_FROM,SHARE_FROM=$SHARE_FROM,BATCH_SIZE=${BATCH_SIZE:-10},WORLDS=${WORLDS// /+},METHODS=${METHODS// /+},ROUND=$(( ROUND + 1 )),MAX_ROUNDS=$MAX_ROUNDS,KEV_WORKERS=$KW,K=$K${N:+,N=$N} \
       bench_run.sbatch)
   fi
 }
@@ -89,6 +90,14 @@ if [ -n "$SHARE_FROM" ]; then               # same nodes and story graphs as the
     [ -f "$S/.done_chain_walk" ] || { echo "!!! $S has no finished chain walk: submit this job after that run"; exit 1; }
     [ -f "$R/.done_chain_walk" ] || { cp "$S"/chain_nodes.json "$S"/*__gemma-kev.chain.json "$R/" && touch "$R/.done_nodes" "$R/.done_chain_walk"
       echo "--- $R: nodes and story graphs copied from $S"; }
+  done
+fi
+
+if [ -n "$NODES_FROM" ] && [ -z "$SHARE_FROM" ]; then  # same extracted nodes as the run in $NODES_FROM
+  for W in $WORLDS; do
+    R=$(run_dir $W ours); S=$NODES_FROM/$(basename "$R"); mkdir -p "$R"
+    [ -f "$S/chain_nodes.json" ] || { echo "!!! $S/chain_nodes.json missing"; exit 1; }
+    [ -f "$R/.done_nodes" ] || { cp "$S/chain_nodes.json" "$R/" && touch "$R/.done_nodes"; echo "--- $R: nodes copied from $S"; }
   done
 fi
 
