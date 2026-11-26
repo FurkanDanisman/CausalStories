@@ -1,8 +1,8 @@
 # Benchmark worlds and stories (spec)
 
-Code: `benchmark/worlds_random.py`. Stories: `benchmark/stories_v7/<world>.json` (200 per world).
-Scorer: `benchmark/evaluate_run.py` (reads `stories_v7` by default; `STORIES=stories_v3` rescores the earlier
-benchmark). Earlier worlds and stories (`world_homelessness.py`, `world_mental.py`, `stories_v3`-`v6`) are kept
+Code: `benchmark/worlds_random.py`. Stories: `benchmark/stories_v8/<world>.json` (200 per world).
+Scorer: `benchmark/evaluate_run.py` (reads `stories_v8` by default; `STORIES=stories_v3` rescores the earlier
+benchmark). Earlier worlds and stories (`world_homelessness.py`, `world_mental.py`, `stories_v3`-`v7`) are kept
 only for the earlier results.
 
 ## 1. The worlds
@@ -29,7 +29,7 @@ distractors.
 | Event | Causes (p) | Blocker (q) |
 |---|---|---|
 | job loss | EMPLOYER 1.00 | |
-| providing a place to stay | FAMILY MEMBER 0.50 | |
+| providing a place to stay | FAMILY MEMBER 0.75 | |
 | financial struggle | job loss 1.00, divorce 0.60 | |
 | can't pay rent | financial struggle 1.00 | savings 0.80 |
 | eviction | can't pay rent 1.00 | |
@@ -47,7 +47,7 @@ distractors.
 | Event | Causes (p) | Blocker (q) |
 |---|---|---|
 | breakup | ROMANTIC PARTNER 1.00 | |
-| social support | CLOSE FRIENDS 0.50 | |
+| social support | CLOSE FRIENDS 0.75 | |
 | therapy | PROTAGONIST 1.00 (the narrator sees a therapist) | |
 | loneliness | losing a family member 1.00, breakup 0.60 | social support 0.60 |
 | depression | loneliness 0.70 | therapy 0.70 |
@@ -81,9 +81,16 @@ did not happen.
 
 ## 4. Truth of a story
 
-`truth["nodes"]`: every told node with its value (1 or 0). `truth["arrows"]`: the arrows above (carries out,
-enables, risk, stopped, failed). The scorer's true story table is these values; a node a story does not tell is
-unknown for that story.
+`truth["nodes"]`: every told node with its value (1 happened, 0 did not happen). `truth["arrows"]`: every arrow of the
+world graph whose two ends the story tells, whatever their values (drawn green/red). The scorer's true story table is
+these values; a node a story does not tell is unknown for that story.
+
+**Evaluation of story graphs.** A cause or protection the story tells as absent ("I had no savings", "none of my family
+offered…", "none of my close friends were there", "I still had my job", "I still had my family") is a circumstance that
+mattered. The evaluation scores it under its opposite name with its arrows flipped (`truth["names"]`,
+`worlds_random.eval_view`): no savings -> can't pay rent, still had my job -| financial struggle. An outcome that did not
+happen ("I never ended up on the street") keeps its name. The ground truth itself is not changed. The world graph is
+scored as it is; a group may be matched to a node by the node's opposite.
 
 ## 5. Writing and checking the stories
 

@@ -8,7 +8,8 @@ out one event.
 
 Who tells a story: a person to whom at least one starting event happened (a selection on parentless events only).
 
-What a story tells (the story's truth: every told node with its value, and the arrows):
+What a story tells (the story's truth: every told node with its value 1 / 0, and every world arrow between two
+told nodes):
   - every starting event that happened, and the participant who carried it out;
   - for every event with at least one cause that happened (the event is "at stake"):
       happened      -> every cause that happened brought it on;
@@ -23,7 +24,7 @@ What a story tells (the story's truth: every told node with its value, and the a
   - nothing about events that were not at stake (an event none of whose causes happened, or a protection whose
     target was not at stake).
 Usage: python benchmark/worlds_random.py           checks both worlds (rates, coverage of every node)
-       python benchmark/worlds_random.py facts     writes stories_v7/<world>_facts.json (200 people each)"""
+       python benchmark/worlds_random.py facts     writes stories_v8/<world>_facts.json (200 people each)"""
 import random, sys
 
 WORLDS = {
@@ -34,7 +35,7 @@ WORLDS = {
         "root": {"EMPLOYER": 0.55, "divorce": 0.45, "savings": 0.30, "FAMILY MEMBER": 0.80},
         "mech": {   # event: ({cause: p}, {blocker: q}), in causal order
             "job loss": ({"EMPLOYER": 1.0}, {}),
-            "providing a place to stay": ({"FAMILY MEMBER": 0.5}, {}),
+            "providing a place to stay": ({"FAMILY MEMBER": 0.75}, {}),
             "financial struggle": ({"job loss": 1.0, "divorce": 0.6}, {}),
             "can't pay rent": ({"financial struggle": 1.0}, {"savings": 0.80}),
             "eviction": ({"can't pay rent": 1.0}, {}),
@@ -48,7 +49,7 @@ WORLDS = {
         "root": {"losing a family member": 0.70, "breakup": 0.45, "CLOSE FRIENDS": 0.80, "PROTAGONIST": 0.40},
         "actors": {"breakup": "ROMANTIC PARTNER"},   # a starting event carried out by a participant (graph(): ROMANTIC PARTNER -> breakup)
         "mech": {
-            "social support": ({"CLOSE FRIENDS": 0.5}, {}),
+            "social support": ({"CLOSE FRIENDS": 0.75}, {}),
             "therapy": ({"PROTAGONIST": 1.0}, {}),          # the narrator sees a therapist
             "loneliness": ({"losing a family member": 1.0, "breakup": 0.6}, {"social support": 0.6}),
             "depression": ({"loneliness": 0.7}, {"therapy": 0.7}),
@@ -86,6 +87,11 @@ def graph(w):
     mech = {e: ({a: 1.0}, {}) for e, a in act.items()}
     mech.update(W["mech"])
     return root, mech
+
+
+OPPOSITE = {"savings": "no savings", "providing a place to stay": "no place to stay from family",
+            "social support": "no support from close friends", "job loss": "still had my job",
+            "losing a family member": "still had my family", "therapy": "no therapy"}   # name of a node told as absent
 
 
 def possible(W, x, n):
@@ -126,7 +132,25 @@ def tells(w, x):
             facts += [f"{' and '.join(causes)} put me at risk of {v}"] + [f"{b} kept {v} from happening" for b in there]
         else:
             facts.append(f"{' and '.join(causes)} happened, but {v} did not follow (did not happen)")
+    # the story's true graph: every world arrow whose two ends the story tells, whatever their values
+    # (a node that did not happen keeps its arrows: "no savings" is savings = 0 with savings -| can't pay rent)
+    root, mech = graph(w)
+    arrows = [(u, v, "carries out" if u.isupper() else "enables") for v, (en, bl) in mech.items() for u in en
+              if u in told and v in told] + \
+             [(u, v, "blocks") for v, (en, bl) in mech.items() for u in bl if u in told and v in told]
     return told, arrows, facts
+
+
+def eval_view(truth):
+    """The story's truth as the evaluation reads it (the ground truth itself is unchanged): a cause or protection the
+    story tells as absent ("I had no savings", "I still had my job") is a circumstance that mattered, so it is scored
+    under its opposite name with its arrows flipped (no savings -> can't pay rent). An outcome that did not happen
+    ("I never ended up on the street") keeps its name. Returns (node names, arrows)."""
+    names = truth.get("names", {})
+    flip = {"enables": "blocks", "blocks": "enables", "carries out": "carries out"}
+    arrows = [(names.get(u, u), names.get(v, v), flip.get(k, k) if (u in names) != (v in names) else k)
+              for u, v, k in truth["arrows"]]
+    return [names.get(n, n) for n in truth["nodes"]], arrows
 
 
 def draw_stories(w, n=200, seed=0):
@@ -137,14 +161,15 @@ def draw_stories(w, n=200, seed=0):
         if not any(x[s] for s in W["start"]):
             continue
         told, arrows, facts = tells(w, x)
+        names = {n: OPPOSITE[n] for n, v in told.items() if v == 0 and n in OPPOSITE}   # world node -> name in this story
         out.append({"id": f"{w[:2]}{len(out):03d}", "world": w, "group": "random",
-                    "truth": {"arrows": arrows, "nodes": told, "distractors": []}, "values": x, "facts": facts})
+                    "truth": {"arrows": arrows, "nodes": told, "names": names, "distractors": []}, "values": x, "facts": facts})
     return out
 
 
 if __name__ == "__main__" and sys.argv[1:2] == ["facts"]:
     import json, pathlib
-    d = pathlib.Path(__file__).parent / "stories_v7"; d.mkdir(exist_ok=True)
+    d = pathlib.Path(__file__).parent / "stories_v8"; d.mkdir(exist_ok=True)
     for i, w in enumerate(WORLDS):
         items = draw_stories(w, 200, seed=900 + i)
         (d / f"{w}_facts.json").write_text(json.dumps(items, indent=1))

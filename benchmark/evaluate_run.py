@@ -19,7 +19,7 @@ SLUG = os.environ.get("JUDGE_SLUG") or re.sub(r"[^a-z0-9]+", "-", JUDGE.rstrip("
 POS = {"carries out", "enables", "risk"}          # true arrow types read as "+" (enables)
 NEG = {"stopped", "failed"}                       # true arrow types read as "-" (blocks)
 CUT = 0.10
-STORIES = os.environ.get("STORIES", "stories_v7")   # stories_v3 to rescore the earlier benchmark
+STORIES = os.environ.get("STORIES", "stories_v8")   # stories_v3 to rescore the earlier benchmark
 
 
 JUDGE_URL = os.environ.get("JUDGE_URL", "https://openrouter.ai/api/v1/chat/completions")   # local: vLLM server
@@ -228,7 +228,8 @@ def main(world, run, cut=None):
         s = stories[sid_]; g = graphs.get(sid_)
         tnodes = sorted(s["truth"]["nodes"]) if isinstance(s["truth"].get("nodes"), dict) else \
             sorted({n for a in s["truth"]["arrows"] for n in a[:2]})      # v6: every told node, also "did not happen"
-        tnodes = sorted({n for a in s["truth"]["arrows"] for n in a[:2]})   # a node needs an arrow (truth too)
+        _, t_arrows = worlds_random.eval_view(s["truth"]) if "names" in s["truth"] else (None, s["truth"]["arrows"])
+        tnodes = sorted({n for a in t_arrows for n in a[:2]})                # a node needs an arrow (truth too)
         if g is None or not tnodes:                       # a story with no true arrow has nothing to score
             return sid_, None
         ext = list(g["nodes"])
@@ -242,7 +243,7 @@ def main(world, run, cut=None):
         mapped = [e for e in ext if m.get(e)]
         P = len(mapped) / len(ext) if ext else 0.0
         R = len({m[e] for e in mapped}) / len(tnodes)
-        T, _ = signed([(h, t, "+" if k in POS else "-", 1) for h, t, k in s["truth"]["arrows"]])
+        T, _ = signed([(h, t, "+" if k in POS else "-", 1) for h, t, k in t_arrows])
         E, _ = signed([(m.get(e["head"]) or f"x:{e['head']}", m.get(e["tail"]) or f"x:{e['tail']}",
                         "+" if e["rel"] == "enables" else "-", e.get("prob", 0)) for e in edges])
         d = shd(T, E); s_ = sum(d.values())
