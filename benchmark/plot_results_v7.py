@@ -75,6 +75,8 @@ def individual(w, sid, run, tag):
     for u, v, *_ in edges:
         nodes.setdefault(u, False); nodes.setdefault(v, False)
     f = dot(f"ind_{tag}_{sid}", nodes, edges)
+    if r is None:
+        return f, "not scored: the story's true graph has no arrow"
     return f, f"node F1 {r['node_F1']:.2f} $\\cdot$ arrows {r['arrows']:.2f} $\\cdot$ story score \\textbf{{{r['score']:.2f}}}"
 
 
