@@ -45,17 +45,18 @@ WORLDS = {
         "outcome": "depression",
         "start": ["losing a family member", "breakup"],
         "tell_absent": {"loneliness": ["losing a family member"]},   # breakup without loneliness, family kept: "I still had my family"
-        "root": {"losing a family member": 0.70, "breakup": 0.45, "CLOSE FRIENDS": 0.80, "THERAPIST": 0.40},
+        "root": {"losing a family member": 0.70, "breakup": 0.45, "CLOSE FRIENDS": 0.80, "PROTAGONIST": 0.40},
+        "actors": {"breakup": "ROMANTIC PARTNER"},   # a starting event carried out by a participant (graph(): ROMANTIC PARTNER -> breakup)
         "mech": {
             "social support": ({"CLOSE FRIENDS": 0.5}, {}),
-            "therapy": ({"THERAPIST": 1.0}, {}),
+            "therapy": ({"PROTAGONIST": 1.0}, {}),          # the narrator sees a therapist
             "loneliness": ({"losing a family member": 1.0, "breakup": 0.6}, {"social support": 0.6}),
             "depression": ({"loneliness": 0.7}, {"therapy": 0.7}),
         },
     },
 }
 ACTOR = {"job loss": "EMPLOYER", "providing a place to stay": "FAMILY MEMBER", "social support": "CLOSE FRIENDS",
-         "therapy": "THERAPIST"}
+         "therapy": "PROTAGONIST", "breakup": "ROMANTIC PARTNER"}
 SAY = {"job loss": "my employer let me go", "providing a place to stay": "a family member offered me a place to stay",
        "social support": "my close friends stood by me", "therapy": "I was seeing a therapist", "savings": "I had savings",
        "divorce": "I went through a divorce", "losing a family member": "a family member died", "breakup": "my partner and I broke up"}
@@ -71,7 +72,20 @@ def person(w, rng):
         fired = [u for u, p in en.items() if x[u] and rng.random() < p]
         stop = [b for b, q in bl.items() if x[b] and rng.random() < q]
         x[v] = int(bool(fired) and not stop)
+    for e, a in W.get("actors", {}).items():                     # the participant who carried out a starting event
+        x[a] = x[e]
     return x
+
+
+def graph(w):
+    """The world's causal graph (roots with rates, mechanisms) as the ground truth shows it: a starting event that is
+    carried out by a participant (W["actors"]) becomes ROLE -> event (1.0), the participant taking the event's rate."""
+    W = WORLDS[w]
+    act = W.get("actors", {})
+    root = {act.get(r, r): p for r, p in W["root"].items()}
+    mech = {e: ({a: 1.0}, {}) for e, a in act.items()}
+    mech.update(W["mech"])
+    return root, mech
 
 
 def possible(W, x, n):
@@ -139,7 +153,7 @@ if __name__ == "__main__" and sys.argv[1:2] == ["facts"]:
 
 if __name__ == "__main__":
     for w, W in WORLDS.items():
-        nodes = list(W["root"]) + list(W["mech"])
+        root, mech = graph(w); nodes = list(root) + list(mech)
         big = draw_stories(w, 50_000, seed=1)
         out = sum(s["values"][W["outcome"]] for s in big) / len(big)
         print(f"\n{w}: outcome among storytellers {out:.1%}")

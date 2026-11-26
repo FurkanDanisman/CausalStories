@@ -40,16 +40,20 @@ distractors.
 | Root | Rate |
 |---|---|
 | losing a family member | 0.70 |
-| breakup | 0.45 |
+| ROMANTIC PARTNER | 0.45 |
 | CLOSE FRIENDS | 0.80 |
-| THERAPIST | 0.40 |
+| PROTAGONIST | 0.40 |
 
 | Event | Causes (p) | Blocker (q) |
 |---|---|---|
+| breakup | ROMANTIC PARTNER 1.00 | |
 | social support | CLOSE FRIENDS 0.50 | |
-| therapy | THERAPIST 1.00 | |
+| therapy | PROTAGONIST 1.00 (the narrator sees a therapist) | |
 | loneliness | losing a family member 1.00, breakup 0.60 | social support 0.60 |
 | depression | loneliness 0.70 | therapy 0.70 |
+
+(In the code, `breakup` is drawn as a root with rate 0.45 and ROMANTIC PARTNER is set equal to it, `worlds_random.graph`
+gives the graph above; PROTAGONIST is the narrator who sees a therapist.)
 
 ## 2. Who tells a story
 

@@ -212,8 +212,8 @@ def main(world, run, cut=None):
         W = __import__(mod)
     else:                                                      # the current benchmark (benchmark/world_spec.md)
         import types, worlds_random
-        Wd = worlds_random.WORLDS[world]
-        W = types.SimpleNamespace(ROOT=Wd["root"], MECH=Wd["mech"], DISTRACT=())
+        root, mech = worlds_random.graph(world)                 # the ground-truth view of the world (actors included)
+        W = types.SimpleNamespace(ROOT=root, MECH=mech, DISTRACT=())
     stories = {s["id"]: s for s in json.load(open(HERE / STORIES / f"{world}.json"))}
     cache_p = run / f"judge_cache_{SLUG}.json"
     cache = json.load(open(cache_p)) if cache_p.exists() else {}

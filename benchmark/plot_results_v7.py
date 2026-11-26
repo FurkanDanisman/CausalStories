@@ -108,10 +108,10 @@ def true_story(w, s):
 
 
 def true_world(w):
-    W = R.WORLDS[w]
-    nodes = {n: False for n in list(W["root"]) + list(W["mech"])}
-    edges = [(u, v, "+", f"{p:.2f}") for v, (en, bl) in W["mech"].items() for u, p in en.items()] + \
-            [(u, v, "-", f"{q:.2f}") for v, (en, bl) in W["mech"].items() for u, q in bl.items()]
+    root, mech = R.graph(w)
+    nodes = {n: False for n in list(root) + list(mech)}
+    edges = [(u, v, "+", f"{p:.2f}") for v, (en, bl) in mech.items() for u, p in en.items()] + \
+            [(u, v, "-", f"{q:.2f}") for v, (en, bl) in mech.items() for u, q in bl.items()]
     return dot(f"true_world_{w}", nodes, edges)
 
 
