@@ -321,6 +321,17 @@ def main(world, run, cut=None):
     sid_norm = 1 - len(bad) / (len(TN) * (len(TN) - 1))
     # the method's own story table, over its kept groups (judge-matched to true nodes)
     tab = net["table"]
+    flipped = []
+    if os.environ.get("FLIP_OPPOSITE"):                       # analysis only: a group whose story values disagree with
+        tv = {j: true_values(stories[j], TN) for j in stories}  # its true node's in most stories is the other side of
+        tab = {j: dict(r) for j, r in tab.items()}              # that node; its values are flipped before KL
+        for c in conn:
+            if not gm[c] or kind.get(c, "event") == "participant": continue   # events only: a participant has no other side
+            pairs = [(r.get(c), tv[j][gm[c]]) for j, r in tab.items() if j in tv and r.get(c) in (0, 1) and tv[j][gm[c]] in (0, 1)]
+            if len(pairs) >= 10 and sum(x == y for x, y in pairs) / len(pairs) < 0.5:
+                flipped.append(c)
+                for r in tab.values():
+                    if r.get(c) in (0, 1): r[c] = 1 - r[c]
     def val(row, n):                                          # merged node = any of its groups happened;
         vs = [row.get(c) for c in kept if (gm[c] or f"x:{c}") == n]   # None = cannot tell (no imputation)
         return 1 if 1 in vs else (0 if vs and all(v == 0 for v in vs) else None)
@@ -353,7 +364,7 @@ def main(world, run, cut=None):
     agg = {"cut": cut, "kept_groups": {c: {"usage": round(usage[c], 3), "match": gm[c], "connected": c in conn} for c in kept},
            "node_P": P, "node_R": R, "node_F1": f1(P, R), "shd": d, "true_arrows": len(T), "est_arrows": len(E),
            "arrows": arrows_norm, "sid_wrong": len(bad), "sid_pairs": len(TN) * (len(TN) - 1), "sid": sid_norm,
-           "kl": kl, "kl_by_arrow": kl_nodes, "kl_score": math.exp(-kl), "kl_model": KL_MODEL, "step7_knots": knots7,
+           "kl": kl, "kl_flipped_groups": flipped, "kl_by_arrow": kl_nodes, "kl_score": math.exp(-kl), "kl_model": KL_MODEL, "step7_knots": knots7,
            "arrows_list": [{"head": h, "tail": t, "sign": sg, "estimate": Ew[(h, t)]} for (h, t), sg in E.items()],
            "own_graph": {"nodes": kept, "arrows": [{"head": a["head"], "tail": a["tail"], "rel": a["rel"],     # the method's
                                                     "estimate": a["estimate"]} for a in arr]}}               # output as is
@@ -364,7 +375,7 @@ def main(world, run, cut=None):
            "individual_summary": {g: {k: mean(k, [r for r in scored if g == "all" or r["group"] == g])
                                       for k in ("node_P", "node_R", "node_F1", "arrows", "score")}
                                   for g in ("all", "outcome", "stopped")}}
-    json.dump(out, open(run / f"evaluation_{SLUG}_cut{round(cut * 100):02d}.json", "w"), indent=1)
+    json.dump(out, open(run / f"evaluation_{SLUG}{'_flip' if os.environ.get('FLIP_OPPOSITE') else ''}_cut{round(cut * 100):02d}.json", "w"), indent=1)
     S = out["individual_summary"]["all"]
     if scored:
         print(f"Table 1 (individual, {len(scored)} stories): node P {S['node_P']:.2f} R {S['node_R']:.2f} "
