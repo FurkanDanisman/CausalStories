@@ -11,7 +11,15 @@ import json, random, subprocess, sys
 from pathlib import Path
 
 HERE = Path(__file__).parent
-GRID = HERE.parent / "grid_v7"
+import os
+GRID = HERE.parent / "grid_v7"                                   # competing methods (and ours with OURS_GRID=grid_v7)
+OURS = HERE.parent / os.environ.get("OURS_GRID", "grid_v7b")    # our runs: the direct-only arrow prompt
+SUFFIX = os.environ.get("PDF_SUFFIX", "")
+
+
+def base(run):
+    """Our runs (<world>__<gen>__llm or __llm-llmgroup) come from OURS; the others from GRID."""
+    return OURS if run.endswith("__llm") or run.endswith("__llm-llmgroup") else GRID
 OUT = HERE / "stories_v7" / "results_build"
 SLUG = "gemma-4-31b-it"
 CUTS = [0, 5, 10, 15, 20, 25, 30]
@@ -27,7 +35,7 @@ PLUS, MINUS = 'color="#1f7a4d", fontcolor="#1f7a4d"', 'color="#b4462f", fontcolo
 
 
 def ev(run, cut):
-    f = GRID / run / f"evaluation_{SLUG}_cut{cut:02d}.json"
+    f = base(run) / run / f"evaluation_{SLUG}_cut{cut:02d}.json"
     return json.load(open(f)) if f.exists() else None
 
 
@@ -56,7 +64,7 @@ def fig(f, cap, h="0.27"):
 def individual(w, sid, run, tag):
     """A method's story graph exactly as it output it (its own node names), with its scores."""
     e = ev(run, 10)
-    g = json.load(open(GRID / run / f"{sid}__gemma-kev.chain.json"))
+    g = json.load(open(base(run) / run / f"{sid}__gemma-kev.chain.json"))
     r = e["individual"][sid]
     kinds = g.get("kinds") or {}
     nodes = {n: False for n in g["nodes"]}
@@ -122,8 +130,8 @@ def grid(cells, h):
 def build(name, tex):
     (OUT / f"{name}.tex").write_text("\n".join(tex + [r"\end{document}"]))
     subprocess.run(["pdflatex", "-interaction=nonstopmode", f"{name}.tex"], cwd=OUT, capture_output=True)
-    (OUT / f"{name}.pdf").replace(HERE / "stories_v7" / f"{name}.pdf")
-    print("saved", HERE / "stories_v7" / f"{name}.pdf")
+    (OUT / f"{name}.pdf").replace(HERE / "stories_v7" / f"{name}{SUFFIX}.pdf")
+    print("saved", HERE / "stories_v7" / f"{name}{SUFFIX}.pdf")
 
 
 def main():
