@@ -228,19 +228,21 @@ def main(world, run, cut=None):
         s = stories[sid_]; g = graphs.get(sid_)
         tnodes = sorted(s["truth"]["nodes"]) if isinstance(s["truth"].get("nodes"), dict) else \
             sorted({n for a in s["truth"]["arrows"] for n in a[:2]})      # v6: every told node, also "did not happen"
-        if g is None:
+        tnodes = sorted({n for a in s["truth"]["arrows"] for n in a[:2]})   # a node needs an arrow (truth too)
+        if g is None or not tnodes:                       # a story with no true arrow has nothing to score
             return sid_, None
         ext = list(g["nodes"])
         ck = f"ind:{sid_}"
         if ck not in cache:
             cache[ck] = judge_call(match_prompt(f"STORY:\n{s['text']}", tnodes, ext), key)["map"]
         m = {e: (v if v in tnodes else None) for e, v in cache[ck].items()}
+        kinds = g.get("kinds") or {}                     # influence arrows (event -> participant) are a separate
+        edges = [e for e in g["edges"] if kinds.get(e["tail"], "event") != "participant"]   # layer: never scored
+        ext = [e for e in ext if any(e in (x["head"], x["tail"]) for x in edges)]   # a node needs a scored arrow
         mapped = [e for e in ext if m.get(e)]
         P = len(mapped) / len(ext) if ext else 0.0
         R = len({m[e] for e in mapped}) / len(tnodes)
         T, _ = signed([(h, t, "+" if k in POS else "-", 1) for h, t, k in s["truth"]["arrows"]])
-        kinds = g.get("kinds") or {}                     # influence arrows (event -> participant) are a separate
-        edges = [e for e in g["edges"] if kinds.get(e["tail"], "event") != "participant"]   # layer: never scored
         E, _ = signed([(m.get(e["head"]) or f"x:{e['head']}", m.get(e["tail"]) or f"x:{e['tail']}",
                         "+" if e["rel"] == "enables" else "-", e.get("prob", 0)) for e in edges])
         d = shd(T, E); s_ = sum(d.values())
@@ -378,7 +380,7 @@ def main(world, run, cut=None):
     json.dump(out, open(run / f"evaluation_{SLUG}{'_flip' if os.environ.get('FLIP_OPPOSITE') else ''}_cut{round(cut * 100):02d}.json", "w"), indent=1)
     S = out["individual_summary"]["all"]
     if scored:
-        print(f"Table 1 (individual, {len(scored)} stories): node P {S['node_P']:.2f} R {S['node_R']:.2f} "
+        print(f"Table 1 (individual, {len(scored)} stories with a true arrow): node P {S['node_P']:.2f} R {S['node_R']:.2f} "
               f"F1 {S['node_F1']:.2f} | arrows {S['arrows']:.2f} | story score {S['score']:.2f}")
     else:
         print("Table 1: no story graphs (aggregated-only method)")
