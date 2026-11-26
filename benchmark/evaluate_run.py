@@ -292,9 +292,6 @@ def main(world, run, cut=None):
         name = k.split("  (e.g.")[0].strip()
         gm[name] = v if v in TN else None
     gm = {c: gm.get(c) for c in kept}
-    mapped_true = {v for v in gm.values() if v}
-    est_nodes = {gm[c] or f"x:{c}" for c in kept}
-    P = len([c for c in kept if gm[c]]) / len(kept); R = len(mapped_true) / len(TN)
     T, _ = signed([(u, v, "+", 1) for v, (en, bl) in W.MECH.items() for u in en] +
                   [(u, v, "-", 1) for v, (en, bl) in W.MECH.items() for u in bl])
     kind = {c: d.get("kind", "event") for c, d in abst["concepts"].items()}
@@ -305,6 +302,11 @@ def main(world, run, cut=None):
         res7 = matrix.resolve(arr, matrix.cells(run, abst, list(graphs.values()), ids=True)["chain"], set(kept))
         arr, knots7 = res7["main_arrows"], res7["knots"]                   # score Step 7's main graph at this cut
         arr, _ = matrix.prune_shortcuts(arr, net["table"])                  # Step 7, shortcut check (A -> C also via B)
+    # nodes: only the kept groups with at least one scored arrow (a group with no arrow is not part of the graph)
+    conn = [c for c in kept if any(c in (a["head"], a["tail"]) for a in arr)]
+    mapped_true = {gm[c] for c in conn if gm[c]}
+    est_nodes = {gm[c] or f"x:{c}" for c in conn}
+    P = len([c for c in conn if gm[c]]) / len(conn) if conn else 0.0; R = len(mapped_true) / len(TN)
     E, Ew = signed([(gm[a["head"]] or f"x:{a['head']}", gm[a["tail"]] or f"x:{a['tail']}",
                      "+" if a["rel"] == "enables" else "-", a["estimate"]) for a in arr])
     d = shd(T, E); s_ = sum(d.values())
@@ -348,7 +350,7 @@ def main(world, run, cut=None):
             else: q = Ew[(u, v)]
             kl_nodes[f"{u} -> {v}"] = kl2(p_ref, q)
     kl = sum(kl_nodes.values()) / len(kl_nodes) if kl_nodes else 0.0
-    agg = {"cut": cut, "kept_groups": {c: {"usage": round(usage[c], 3), "match": gm[c]} for c in kept},
+    agg = {"cut": cut, "kept_groups": {c: {"usage": round(usage[c], 3), "match": gm[c], "connected": c in conn} for c in kept},
            "node_P": P, "node_R": R, "node_F1": f1(P, R), "shd": d, "true_arrows": len(T), "est_arrows": len(E),
            "arrows": arrows_norm, "sid_wrong": len(bad), "sid_pairs": len(TN) * (len(TN) - 1), "sid": sid_norm,
            "kl": kl, "kl_by_arrow": kl_nodes, "kl_score": math.exp(-kl), "kl_model": KL_MODEL, "step7_knots": knots7,
