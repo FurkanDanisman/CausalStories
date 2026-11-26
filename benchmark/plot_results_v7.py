@@ -44,8 +44,10 @@ def dot(name, nodes, edges):
     L = [f"digraph G {{ {STYLE}"]
     for n, extra in nodes.items():
         L.append(f'"{n}" [{EXTRA if extra else ""}];')
-    for u, v, s, lab in edges:
-        L.append(f'"{u}" -> "{v}" [{PLUS if s == "+" else MINUS}{", label=" + chr(34) + lab + chr(34) if lab else ""}];')
+    for e in edges:
+        u, v, s, lab = e[:4]
+        style = ', style=dashed, color="#8a8a8a", fontcolor="#8a8a8a", arrowhead=' + ("normal" if s == "+" else "tee") if len(e) > 4 and e[4] else ""
+        L.append(f'"{u}" -> "{v}" [{PLUS if s == "+" else MINUS}{", label=" + chr(34) + lab + chr(34) if lab else ""}{style}];')
     L.append("}")
     f = OUT / f"{name}.pdf"
     subprocess.run(["dot", "-Tpdf", "-o", str(f)], input="\n".join(L), text=True, check=True)
@@ -68,9 +70,9 @@ def individual(w, sid, run, tag):
     r = e["individual"][sid]
     kinds = g.get("kinds") or {}
     nodes = {n: False for n in g["nodes"]}
-    edges = [(x["head"], x["tail"], "+" if x["rel"] == "enables" else "-", "")
-             for x in g["edges"] if kinds.get(x["tail"], "event") != "participant"]
-    for u, v, _, _ in edges:
+    edges = [(x["head"], x["tail"], "+" if x["rel"] == "enables" else "-", "",          # influence arrows (event -> participant):
+              kinds.get(x["tail"], "event") == "participant") for x in g["edges"]]       # dashed grey, a separate layer, not scored
+    for u, v, *_ in edges:
         nodes.setdefault(u, False); nodes.setdefault(v, False)
     f = dot(f"ind_{tag}_{sid}", nodes, edges)
     return f, f"node F1 {r['node_F1']:.2f} $\\cdot$ arrows {r['arrows']:.2f} $\\cdot$ story score \\textbf{{{r['score']:.2f}}}"
@@ -113,7 +115,8 @@ def true_world(w):
 
 HEAD = r"\documentclass[10pt]{article}\usepackage[margin=0.6in]{geometry}\usepackage{graphicx}\usepackage[T1]{fontenc}\begin{document}"
 NOTE = (r"Every method's graph is drawn exactly as the method output it, with its own node and group names (no renaming). "
-        r"Scores: the judge (Gemma 4 31B) matches nodes to the true nodes only for scoring. Green arrow: enables; red arrow: blocks.")
+        r"Scores: the judge (Gemma 4 31B) matches nodes to the true nodes only for scoring. Green arrow: enables; red arrow: blocks. "
+        r"Dashed grey arrow: influence (an event acting on a participant, e.g. losing job -| I); a separate layer that is not scored.")
 
 
 def cell(f, cap, h):
