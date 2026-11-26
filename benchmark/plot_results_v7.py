@@ -160,34 +160,44 @@ def main():
     build("results_individual", tex)
     # ---------------- aggregated graphs: 2 x 2 at the 5% cut (ours), appendix: every other cut
     tex = [HEAD, r"\section*{Aggregated graphs}", NOTE + r" Top left: the true world graph (arrow labels: cause strength / protection "
-           r"strength); top right: ours at the 5\% usage cut (a group is kept if at least 5\% of stories use it); bottom left: Causal Map "
-           r"and bottom right: Whole-corpus prompting, as they output them (the usage cut is a step of our method only). One page for "
-           r"each of our two groupings. Score = geometric mean of node F1, arrows and SID; KL (only ours outputs conditional "
-           r"probabilities) is reported separately. Our arrows are labelled with our estimate; the other methods' arrows carry no number (they output none: Causal Map's link weight is only the share of stories that mention the link, and Whole-corpus prompting gives no weight). Appendix: ours at every other cut."]
-    OURS = [("Ours A (LLM grouping)", "llm-llmgroup", "A", 5), ("Ours B (Kev procedure)", "llm", "B", 5)]   # main cut of each grouping
+           r"strength); top right: ours (grouping by the Kev procedure, answered by the LLM) at the 5\% usage cut (a group is kept if at least 5\% of stories use it); bottom left: Causal Map "
+           r"and bottom right: Whole-corpus prompting, as they output them (the usage cut is a step of our method only). Score = geometric mean of node F1, arrows and SID; KL (only ours outputs conditional "
+           r"probabilities) is reported separately. Our arrows are labelled with our estimate; the other methods' arrows carry no number (they output none: Causal Map's link weight is only the share of stories that mention the link, and Whole-corpus prompting gives no weight). Appendix A: ours with LLM grouping; Appendix B: ours at every other cut."]
+    MAIN = ("Ours", "llm", "B", 5)                                    # main text: grouping B (Kev procedure), 5% cut
+    APPX = ("Ours A (LLM grouping)", "llm-llmgroup", "A", 5)          # appendix: grouping A, then every other cut
+
+    def page(w, wt, g, gt, lab, suf, t, mc):
+        comp = []
+        for cl, run in [("Causal Map", f"agg__C5agg__{w}__{g}__C5-llm-llmgroup"), ("Whole-corpus prompting", f"{w}__{g}__C6-llm-llmgroup")]:
+            f, cap = aggregated(run, 0, f"{w}_{g}_{cl[:5]}", labels=False)
+            comp.append((f, f"\\textbf{{{cl}}}\\\\" + cap))
+        f, cap = aggregated(f"{w}__{g}__{suf}", mc, f"{w}_{g}_{t}")
+        tex.append(r"\clearpage\subsection*{" + wt + " -- " + gt + r"}")
+        tex.append(grid([(true_world(w), r"\textbf{True world graph}"), (f, f"\\textbf{{{lab}, {mc}\\% cut}}\\\\" + cap)] + comp, "0.38"))
+
+    def cuts(w, wt, g, gt, lab, suf, t, skip):
+        tex.append(r"\clearpage\subsection*{" + wt + " -- " + gt + " -- " + lab + r"}")
+        cs = [c for c in CUTS if c != skip]
+        for i in range(0, len(cs), 4):
+            cells = []
+            for c in cs[i:i + 4]:
+                f, cap = aggregated(f"{w}__{g}__{suf}", c, f"{w}_{g}_{t}")
+                cells.append((f, f"\\textbf{{{c}\\% cut}}\\\\" + cap))
+            while len(cells) < 4: cells.append((None, ""))
+            tex.append(grid(cells, "0.36") + r"\clearpage")
+
     for w, wt in WORLDS.items():
         for g, gt in GENS.items():
-            comp = []
-            for lab, run in [("Causal Map", f"agg__C5agg__{w}__{g}__C5-llm-llmgroup"), ("Whole-corpus prompting", f"{w}__{g}__C6-llm-llmgroup")]:
-                f, cap = aggregated(run, 0, f"{w}_{g}_{lab[:5]}", labels=False)
-                comp.append((f, f"\\textbf{{{lab}}}\\\\" + cap))
-            for lab, suf, t, mc in OURS:
-                f, cap = aggregated(f"{w}__{g}__{suf}", mc, f"{w}_{g}_{t}")
-                tex.append(r"\clearpage\subsection*{" + wt + " -- " + gt + " -- " + lab + r"}")
-                tex.append(grid([(true_world(w), r"\textbf{True world graph}"), (f, f"\\textbf{{{lab}, {mc}\\% cut}}\\\\" + cap)] + comp, "0.38"))
-    tex.append(r"\clearpage\appendix\section*{Appendix: ours at every usage cut}")
+            page(w, wt, g, gt, *MAIN)
+    tex.append(r"\clearpage\appendix\section*{Appendix A: Ours with LLM grouping (5\% cut)}")
     for w, wt in WORLDS.items():
         for g, gt in GENS.items():
-            for lab, suf, t, mc in OURS:
-                tex.append(r"\clearpage\subsection*{" + wt + " -- " + gt + " -- " + lab + r"}")
-                cs = [c for c in CUTS if c != mc]
-                for i in range(0, len(cs), 4):
-                    cells = []
-                    for c in cs[i:i + 4]:
-                        f, cap = aggregated(f"{w}__{g}__{suf}", c, f"{w}_{g}_{t}")
-                        cells.append((f, f"\\textbf{{{c}\\% cut}}\\\\" + cap))
-                    while len(cells) < 4: cells.append((None, ""))
-                    tex.append(grid(cells, "0.36") + r"\clearpage")
+            page(w, wt, g, gt, *APPX)
+    tex.append(r"\clearpage\section*{Appendix B: ours at every other usage cut}")
+    for w, wt in WORLDS.items():
+        for g, gt in GENS.items():
+            cuts(w, wt, g, gt, "Ours (Kev procedure)", "llm", "B", 5)
+            cuts(w, wt, g, gt, "Ours A (LLM grouping)", "llm-llmgroup", "A", 5)
     build("results_aggregated", tex)
 
 
