@@ -67,7 +67,7 @@ def individual(w, sid, run, tag):
     """A method's story graph exactly as it output it (its own node names), with its scores."""
     e = ev(run, 10)
     g = json.load(open(base(run) / run / f"{sid}__gemma-kev.chain.json"))
-    r = e["individual"][sid]
+    r = e["individual"][sid] if e else "pending"
     kinds = g.get("kinds") or {}
     nodes = {n: False for n in g["nodes"]}
     edges = [(x["head"], x["tail"], "+" if x["rel"] == "enables" else "-", "")         # no influence arrows (event -> participant)
@@ -75,6 +75,8 @@ def individual(w, sid, run, tag):
     for u, v, *_ in edges:
         nodes.setdefault(u, False); nodes.setdefault(v, False)
     f = dot(f"ind_{tag}_{sid}", nodes, edges)
+    if r == "pending":
+        return f, "not judged yet (ground truth updated)"
     if r is None:
         return f, "not scored: the story's true graph has no arrow"
     return f, f"node F1 {r['node_F1']:.2f} $\\cdot$ arrows {r['arrows']:.2f} $\\cdot$ story score \\textbf{{{r['score']:.2f}}}"
@@ -85,7 +87,7 @@ def aggregated(run, cut, tag, labels=True):
     labels: write the arrow's estimate on it (ours only: the other methods' numbers are not probabilities)."""
     e = ev(run, cut)
     if e is None or e["aggregated"] is None:
-        return None, "not judged at this cut yet"
+        return None, "not judged yet (ground truth updated)"
     a = e["aggregated"]
     own = a["own_graph"]
     nodes = {n: False for n in own["nodes"]}
