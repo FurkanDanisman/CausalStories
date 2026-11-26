@@ -158,29 +158,29 @@ def main():
                     cells.append((f, f"\\textbf{{{lab}}}\\\\" + cap))
                 tex.append(grid(cells, "0.3"))
     build("results_individual", tex)
-    # ---------------- aggregated graphs: 2 x 2 at the 15% cut (ours), appendix: every other cut
+    # ---------------- aggregated graphs: 2 x 2 at our main cuts (A 5%, B 0%), appendix: every other cut
     tex = [HEAD, r"\section*{Aggregated graphs}", NOTE + r" Top left: the true world graph (arrow labels: cause strength / protection "
-           r"strength); top right: ours at the 15\% usage cut (a group is kept if at least 15\% of stories use it); bottom left: Causal Map "
+           r"strength); top right: ours, Ours A at the 5\% and Ours B at the 0\% usage cut (a group is kept if at least that share of stories use it); bottom left: Causal Map "
            r"and bottom right: Whole-corpus prompting, as they output them (the usage cut is a step of our method only). One page for "
            r"each of our two groupings. Score = geometric mean of node F1, arrows and SID; KL (only ours outputs conditional "
            r"probabilities) is reported separately. Our arrows are labelled with our estimate; the other methods' arrows carry no number (they output none: Causal Map's link weight is only the share of stories that mention the link, and Whole-corpus prompting gives no weight). Appendix: ours at every other cut."]
-    OURS = [("Ours A (LLM grouping)", "llm-llmgroup", "A"), ("Ours B (Kev procedure)", "llm", "B")]
+    OURS = [("Ours A (LLM grouping)", "llm-llmgroup", "A", 5), ("Ours B (Kev procedure)", "llm", "B", 0)]   # main cut of each grouping
     for w, wt in WORLDS.items():
         for g, gt in GENS.items():
             comp = []
             for lab, run in [("Causal Map", f"agg__C5agg__{w}__{g}__C5-llm-llmgroup"), ("Whole-corpus prompting", f"{w}__{g}__C6-llm-llmgroup")]:
                 f, cap = aggregated(run, 0, f"{w}_{g}_{lab[:5]}", labels=False)
                 comp.append((f, f"\\textbf{{{lab}}}\\\\" + cap))
-            for lab, suf, t in OURS:
-                f, cap = aggregated(f"{w}__{g}__{suf}", 15, f"{w}_{g}_{t}")
+            for lab, suf, t, mc in OURS:
+                f, cap = aggregated(f"{w}__{g}__{suf}", mc, f"{w}_{g}_{t}")
                 tex.append(r"\clearpage\subsection*{" + wt + " -- " + gt + " -- " + lab + r"}")
-                tex.append(grid([(true_world(w), r"\textbf{True world graph}"), (f, f"\\textbf{{{lab}, 15\\% cut}}\\\\" + cap)] + comp, "0.38"))
+                tex.append(grid([(true_world(w), r"\textbf{True world graph}"), (f, f"\\textbf{{{lab}, {mc}\\% cut}}\\\\" + cap)] + comp, "0.38"))
     tex.append(r"\clearpage\appendix\section*{Appendix: ours at every usage cut}")
     for w, wt in WORLDS.items():
         for g, gt in GENS.items():
-            for lab, suf, t in OURS:
+            for lab, suf, t, mc in OURS:
                 tex.append(r"\clearpage\subsection*{" + wt + " -- " + gt + " -- " + lab + r"}")
-                cs = [c for c in CUTS if c != 15]
+                cs = [c for c in CUTS if c != mc]
                 for i in range(0, len(cs), 4):
                     cells = []
                     for c in cs[i:i + 4]:
