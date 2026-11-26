@@ -70,8 +70,8 @@ def individual(w, sid, run, tag):
     r = e["individual"][sid]
     kinds = g.get("kinds") or {}
     nodes = {n: False for n in g["nodes"]}
-    edges = [(x["head"], x["tail"], "+" if x["rel"] == "enables" else "-", "",          # influence arrows (event -> participant):
-              kinds.get(x["tail"], "event") == "participant") for x in g["edges"]]       # dashed grey, a separate layer, not scored
+    edges = [(x["head"], x["tail"], "+" if x["rel"] == "enables" else "-", "")         # no influence arrows (event -> participant)
+             for x in g["edges"] if kinds.get(x["tail"], "event") != "participant"]
     for u, v, *_ in edges:
         nodes.setdefault(u, False); nodes.setdefault(v, False)
     f = dot(f"ind_{tag}_{sid}", nodes, edges)
@@ -117,8 +117,7 @@ def true_world(w):
 
 HEAD = r"\documentclass[10pt]{article}\usepackage[margin=0.6in]{geometry}\usepackage{graphicx}\usepackage[T1]{fontenc}\begin{document}"
 NOTE = (r"Every method's graph is drawn exactly as the method output it, with its own node and group names (no renaming). "
-        r"Scores: the judge (Gemma 4 31B) matches nodes to the true nodes only for scoring. Green arrow: enables; red arrow: blocks. "
-        r"Dashed grey arrow: influence (an event acting on a participant, e.g. losing job -| I); a separate layer that is not scored.")
+        r"Scores: the judge (Gemma 4 31B) matches nodes to the true nodes only for scoring. Green arrow: enables; red arrow: blocks.")
 
 
 def cell(f, cap, h):
