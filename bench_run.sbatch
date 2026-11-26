@@ -42,7 +42,7 @@ METHODS=${METHODS:-"ours C1 C2 C3 C4 C5 C6"}
 METHODS=${METHODS//+/ }                    # METHODS=ours+C1 on the sbatch line (no spaces inside --export)
 N=${N:-}; [ -n "${SMOKE:-}" ] && N=2
 TAG=${N:+_n$N}; KW=${KEV_WORKERS:-32}
-OUT=$GRID/_logs/${GEN}__${DEC}${VARIANT}__${WORLDS// /+}${TAG}     # one log folder per job (jobs for different worlds run side by side)
+OUT=$GRID/_logs/${GEN}__${DEC}${VARIANT}__${WORLDS// /+}${TAG}__${METHODS// /+}     # one log folder per job (jobs for different worlds run side by side)
 mkdir -p "$OUT"
 source bench_lib.sh
 K=${K:-8}; export MAX_EVENTS=$K              # event budget K: our Prompt 1a and C1, C5, C6 (same for every method)
@@ -101,11 +101,14 @@ if [ -n "$NODES_FROM" ] && [ -z "$SHARE_FROM" ]; then  # same extracted nodes as
   done
 fi
 
+HAS_OURS=0; [[ " $METHODS " == *" ours "* ]] && HAS_OURS=1        # jobs split by method run side by side
+OTHERS=$(for M in $METHODS; do [ "$M" != ours ] && echo -n "$M "; done)
+if [ -n "$OTHERS" ] || { [ $HAS_OURS = 1 ] && [ -z "$SHARE_FROM" ]; }; then   # phase 1 only when it has work
 echo "########## phase 1: $GEN (nodes, competing approaches' story graphs)"
 start_llm "$GEN" 65536
 for W in $WORLDS; do
-  TX=$(texts $W); R=$(run_dir $W ours); mkdir -p "$R"
-  step "$R" nodes python run.py --mode chain-nodes --backend openai --base-url "http://127.0.0.1:$LLM_PORT/v1" --model llm \
+  TX=$(texts $W); R=$(run_dir $W ours)
+  [ $HAS_OURS = 1 ] && mkdir -p "$R" && step "$R" nodes python run.py --mode chain-nodes --backend openai --base-url "http://127.0.0.1:$LLM_PORT/v1" --model llm \
     --texts-file "$TX" --max-nodes $K --outdir "$R" --workers 16
   for M in $METHODS; do
     [ "$M" = ours ] && continue
@@ -114,7 +117,9 @@ for W in $WORLDS; do
   done
 done
 stop_llm
+fi
 
+if [ $HAS_OURS = 1 ]; then                    # phases 2-4: our method only
 echo "########## phase 2: $DEC (chain walk, groups)"
 start_kev
 for W in $WORLDS; do
@@ -144,6 +149,7 @@ for R in $(agg_runs); do
   done
 done
 stop_kev
+fi
 
 for W in $WORLDS; do for M in $METHODS; do R=$(run_dir $W $M); [ -d "$R" ] || continue
   WORLD=$W; OUT=$R; run_info "${MODELS[$GEN]}" "$( [ $M = ours ] && echo "${KEVS[$DEC]}" || echo "$M + ${KEVS[$DEC]}" )" \
