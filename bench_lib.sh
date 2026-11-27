@@ -28,11 +28,12 @@ declare -A MODELS=(
   [llama]=/model-weights/Meta-Llama-3.1-8B-Instruct
   [gptoss]=/model-weights/gpt-oss-20b
   [llama70]=/model-weights/Llama-3.3-70B-Instruct
-  [olmo]=$BASE/model-weights/Olmo-3-7B-Instruct   # our copy: shared weights linked, config.json with rope_theta inside rope_scaling
+  [olmo]=/model-weights/Olmo-3-7B-Instruct
 )
 # per-model vLLM settings: Llama-3.3-70B (~140 GB in bf16) is quantised to FP8 on load (weights ~70 GB) with an FP8 KV
 # cache, and a 32k context (enough for every prompt, including Whole-corpus prompting's 200 stories)
-declare -A VLLM_EXTRA=([llama70]="--quantization fp8 --kv-cache-dtype fp8 --gpu-memory-utilization 0.90 --enforce-eager")
+declare -A VLLM_EXTRA=([llama70]="--quantization fp8 --kv-cache-dtype fp8 --gpu-memory-utilization 0.90 --enforce-eager"
+                       [olmo]="--model-impl transformers")   # vLLM 0.25's own OLMo-3 code fails on its rope config
 declare -A MAX_LEN=([llama70]=32768)
 GPU_NAME=$(nvidia-smi --query-gpu=name --format=csv,noheader | head -1)
 GPU_COUNT=$(nvidia-smi -L | wc -l)
