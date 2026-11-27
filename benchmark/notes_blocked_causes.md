@@ -69,3 +69,12 @@ current definition: DeepInfra none 1.00 (no logprobs: answer letter only) | Next
 Regan's rows: DeepInfra none 1.00 (3x, no logprobs) | Parasail none 0.962 | CoreWeave blocks 0.75
 -> Gemma 4 31B answers none on every provider except CoreWeave; the earlier "OpenRouter enables 0.93" was CoreWeave.
    Our cluster Gemma agrees with the majority. The problem is the model's reading of the question, not serving.
+
+## Llama-3.3-70B story graphs: shortcut arrows (2026-11-27) — accepted as a model limitation
+- Llama draws A -> C next to A -> B -> C: EMPLOYER -> financial struggle in 104/137 stories, job loss -> can't pay rent
+  in 84/102 (Gemma: none in 156/156 and 122/122). Without these arrows its story score would be 0.76 / 0.81 (now 0.71 /
+  0.76; Per-story prompting 0.74 / 0.79).
+- Stronger wording of the direct-only sentence ("by way of another listed node, for example HEAD -> X -> TAIL"),
+  10 shortcut questions on OpenRouter: enables 8 -> 7 of 10 (providers not pinned). No fix.
+- Removing shortcuts from the story graph's own paths: Llama +0.02 / -0.01, Gemma -0.01 / -0.03. Not adopted.
+- User decision: keep the method as it is; report it as a model limitation.
