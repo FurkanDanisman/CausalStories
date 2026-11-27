@@ -28,11 +28,11 @@ declare -A MODELS=(
   [llama]=/model-weights/Meta-Llama-3.1-8B-Instruct
   [gptoss]=/model-weights/gpt-oss-20b
   [llama70]=/model-weights/Llama-3.3-70B-Instruct
-  [olmo]=/model-weights/Olmo-3-7B-Instruct
+  [olmo]=$BASE/model-weights/Olmo-3-7B-Instruct   # our copy: shared weights linked, config.json with rope_theta inside rope_scaling
 )
 # per-model vLLM settings: Llama-3.3-70B (~140 GB in bf16) is quantised to FP8 on load (weights ~70 GB) with an FP8 KV
 # cache, and a 32k context (enough for every prompt, including Whole-corpus prompting's 200 stories)
-declare -A VLLM_EXTRA=([llama70]="--quantization fp8 --kv-cache-dtype fp8 --gpu-memory-utilization 0.95")
+declare -A VLLM_EXTRA=([llama70]="--quantization fp8 --kv-cache-dtype fp8 --gpu-memory-utilization 0.90 --enforce-eager")
 declare -A MAX_LEN=([llama70]=32768)
 GPU_NAME=$(nvidia-smi --query-gpu=name --format=csv,noheader | head -1)
 GPU_COUNT=$(nvidia-smi -L | wc -l)
@@ -49,7 +49,12 @@ start_llm() {                             # start_llm <gemma|qwen|llama|gptoss> 
   done
   echo "LLM server did not start"; exit 1
 }
-stop_llm() { kill $LLM_PID 2>/dev/null; wait $LLM_PID 2>/dev/null; sleep 5; }
+gpu_free() {                              # wait (up to 3 min) until every GPU has less than 1 GiB in use
+  for i in $(seq 1 36); do
+    local used=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits 2>/dev/null | sort -n | tail -1)
+    [ -z "$used" ] || [ "$used" -lt 1024 ] && return 0; sleep 5
+  done; echo "GPU memory still in use after 3 min: ${used} MiB"; }
+stop_llm() { kill $LLM_PID 2>/dev/null; wait $LLM_PID 2>/dev/null; sleep 5; gpu_free; }
 
 start_kev() {
   if [ "$DEC" = llm ]; then                # no decision model: the generator answers the decision questions
@@ -79,7 +84,7 @@ start_kev() {
   done
   echo "Kev server did not start"; exit 1
 }
-stop_kev() { kill $KEV_PIDS 2>/dev/null; wait $KEV_PIDS 2>/dev/null; sleep 5; }
+stop_kev() { kill $KEV_PIDS 2>/dev/null; wait $KEV_PIDS 2>/dev/null; sleep 5; gpu_free; }
 
 # GPU part of our aggregation on the story graphs in $OUT (method_Oct.tex, Section 2): Kev groups, the LLM
 # names the groups, Kev decides what happened (named nodes, then missing groups) and connects the inferred
