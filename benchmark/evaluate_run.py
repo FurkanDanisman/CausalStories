@@ -299,9 +299,13 @@ def main(world, run, cut=None):
     for c in kept:
         if not gm[c] or kind.get(c, "event") == "participant":
             continue
-        pk = f"polarity:{c}=>{gm[c]}"
+        pk = f"polarity2:{c}=>{gm[c]}"
         if pk not in cache:
-            ex = "; ".join(sorted({m[1] for m in abst["concepts"][c]["members"]})[:4])
+            # examples: the members stated the same way as the group (third field +1; our grouping also puts the
+            # other side in a group, e.g. 'laying off' (-1) in 'employment'); other methods' members are all shown
+            mem = abst["concepts"][c]["members"]
+            same = [m for m in mem if len(m) < 3 or m[2] != -1] or mem
+            ex = "; ".join(sorted({m[1] for m in same})[:4])
             cache[pk] = judge_call(
                 f"In first-person stories about {world.replace('_', ' ')}, the group of extracted nodes \"{c}\" "
                 f"(e.g. {ex}) was matched to the reference node \"{gm[c]}\". Is the group the same event as the "
