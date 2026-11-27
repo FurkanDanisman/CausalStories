@@ -46,10 +46,28 @@ for old, add in (ROW_ENABLES, ROW_BLOCKS):
     assert regan["instructions"].count(old) == 1, "definition text not found"
     regan["instructions"] = regan["instructions"].replace(old, old + add)
 
+# New group headers (2026-11-27) and Regan et al.'s two Without-effect rows in their own words (Table 2)
+HEAD1 = ("(1) A makes B happen, start, or keep going:\n",
+         "(1) A makes B more likely: A makes B happen, start, or keep going, or raises the\n"
+         "    chance of B even when B does not happen in the end:\n")
+HEAD2 = ("(2) A makes B stop, or keeps B from happening:\n",
+         "(2) A makes B less likely: A makes B stop, or keeps B from happening, or lowers\n"
+         "    the chance of B even when B happens anyway:\n")
+REGAN_ENABLES = '  * Despite expectations, no enabling effect (despite, even though): "Despite our\n    efforts, we couldn\'t get the ball rolling."\n'
+REGAN_BLOCKS = '  * Despite expectations, no blocking effect (despite, even though): "We tried but\n    could not stop the ball."\n'
+headers = dict(current)
+for old, new in (HEAD1, HEAD2):
+    assert headers["instructions"].count(old) == 1, "header not found"
+    headers["instructions"] = headers["instructions"].replace(old, new)
+for old, add in ((ROW_ENABLES[0], REGAN_ENABLES), (ROW_BLOCKS[0], REGAN_BLOCKS)):
+    headers["instructions"] = headers["instructions"].replace(old, old + add)
+VARIANTS = {"current": ("current definition", current), "regan_mine": ("with Regan's two rows", regan),
+            "headers": ("new headers + Regan's rows (their wording)", headers)}
+
 import os
 MODEL = os.environ.get("TEST_MODEL", "llm:llm")     # llm:llm -> LLM_URL (local vLLM), as in the benchmark;
 kev = KevClient(base_url="http://127.0.0.1:1", model=MODEL)   # llm:google/gemma-4-31b-it -> OpenRouter (LLM_URL unset)
-for name, q in [("current definition", current), ("with Regan's two rows", regan)]:
+for name, q in [VARIANTS[v] for v in os.environ.get("VARIANTS", "current,regan_mine").split(",")]:
     print(f"===== {name}", flush=True)
     for i in range(5):
         raw.clear()

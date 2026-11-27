@@ -29,7 +29,7 @@ source bench_lib.sh
 # skipped). At the end it packs the results into results_cluster/$GRID.
 ROUND=${ROUND:-1}
 self_again() { (cd "$SLURM_SUBMIT_DIR" && env $(env | grep -o '^SLURM_[A-Z_]*' | sed 's/^/-u /') sbatch --parsable \
-  --exclude=${EXCLUDE:-kn133,kn036} "$@" \
+  --exclude=${EXCLUDE:-kn133,kn036,kn101} "$@" \
   --export=ALL,GRID=$GRID,SKIP_ABLATIONS=$SKIP_ABLATIONS,REJUDGE=$REJUDGE,ROUND=$(( ROUND + 1 )) bench_final.sbatch); }   # no CUTS here: --export splits at its commas
 WAIT=""; for j in $(squeue --me -h -n bench-run -o %i); do
   s=$(sacct -j $j -n -X -o SubmitLine%2000 2>/dev/null)

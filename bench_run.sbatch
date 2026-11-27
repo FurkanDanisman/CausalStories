@@ -58,7 +58,7 @@ resubmit() {                                # resubmit <reason>: the same job ag
   else
     echo "########## $1: requeueing as round $(( ROUND + 1 )) ($(( now - DONE0 )) steps finished this round)"
     (cd "$SLURM_SUBMIT_DIR" && env $(env | grep -o '^SLURM_[A-Z_]*' | sed 's/^/-u /') sbatch \
-      --exclude=${EXCLUDE:-kn133,kn036} \
+      --exclude=${EXCLUDE:-kn133,kn036,kn101} \
       --export=ALL,GEN=$GEN,DEC=$DEC,GROUPING=$GROUPING,GRID=$GRID,NODES_FROM=$NODES_FROM,SHARE_FROM=$SHARE_FROM,BATCH_SIZE=${BATCH_SIZE:-10},WORLDS=${WORLDS// /+},METHODS=${METHODS// /+},ROUND=$(( ROUND + 1 )),MAX_ROUNDS=$MAX_ROUNDS,KEV_WORKERS=$KW,K=$K${N:+,N=$N} \
       bench_run.sbatch)
   fi
