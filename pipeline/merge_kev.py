@@ -24,6 +24,9 @@ from .llm_client import LLMClient
 from .schema import NodeClustering
 
 
+TIE = 0.01                             # answers within this of each other are a tie (see kev_merge)
+
+
 def kev_merge(kev: KevClient, graphs: list[dict], log=print) -> dict:
     groups: list[dict] = []            # {"kind", "name", "members": [[j, v, sign]]}
     decisions: list[dict] = []
@@ -49,8 +52,18 @@ def kev_merge(kev: KevClient, graphs: list[dict], log=print) -> dict:
                                   "probs": {r: round(x, 4) for r, x in pr.items()}, "choice": choice})
                 if choice in ("same", "opposite"):
                     cands.append((pr[choice], v, gi, 1 if choice == "same" else -1))
-        placed, taken = {}, set()
+        # a node "same"/"opposite" to several groups with probabilities within TIE of its best one is a tie: it goes
+        # to the group created first (lowest index), not to whichever is a hair more probable. Each pair is ranked by
+        # the probability at the top of its node's tie, then by group age.
+        top = {}
         for p, v, gi, sign in sorted(cands, key=lambda c: -c[0]):
+            run = top.setdefault(v, [])
+            if not run or run[-1][0] - p > TIE:
+                run.append([p])
+            run[-1].append(gi)
+        eff = {(v, gi): run[0] for v, runs in top.items() for run in runs for gi in run[1:]}
+        placed, taken = {}, set()
+        for p, v, gi, sign in sorted(cands, key=lambda c: (-eff[(c[1], c[2])], c[2])):
             if v in placed or gi in taken:
                 continue
             placed[v] = (gi, sign)
