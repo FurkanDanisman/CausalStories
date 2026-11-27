@@ -8,12 +8,14 @@ MODEL = sys.argv[1] if len(sys.argv) > 1 else "meta-llama/llama-3.3-70b-instruct
 PROVIDER = sys.argv[2] if len(sys.argv) > 2 else None
 R = "grid_v8/homelessness__llama70__llm"
 S = {s["id"]: s for s in json.load(open("benchmark/stories_v8/homelessness.json"))}
-e = json.load(open(R + "/evaluation_gemma-4-31b-it_flip_cut10.json"))["individual"]
+EV = R + "/evaluation_gemma-4-31b-it_flip_cut10.json"
+e = json.load(open(EV))["individual"] if os.path.exists(EV) else {}
 OLD = 'If "{h}" affects\n"{t}" only through another listed node, answer none.'
 NEW = 'If "{h}" leads to\n"{t}" by way of another listed node, for example "{h}" -> X -> "{t}", answer none.'
 
+CASES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "shortcut_cases.json")
 cases = []
-for A, C in [("EMPLOYER", "financial struggle"), ("job loss", "can't pay rent")]:
+for A, C in ([] if os.path.exists(CASES) else [("EMPLOYER", "financial struggle"), ("job loss", "can't pay rent")]):
     n = 0
     for sid in sorted(e):
         r = e[sid]
@@ -23,6 +25,12 @@ for A, C in [("EMPLOYER", "financial struggle"), ("job loss", "can't pay rent")]
             if m.get(x["head"]) == A and m.get(x["tail"]) == C and max(x["probs"], key=x["probs"].get) == "enables":
                 cases.append((sid, x["head"], x["tail"], G["nodes"], x["probs"])); n += 1; break
         if n == 5: break
+
+if os.path.exists(CASES):                          # the 10 cases, fixed (the cluster has no evaluation files)
+    cases = [tuple(c) for c in json.load(open(CASES))]
+else:
+    json.dump(cases, open(CASES, "w"), indent=1)
+
 
 def ask(text, q):
     opts = list(q["criteria"].items()); L = [chr(65 + i) for i in range(len(opts))]
