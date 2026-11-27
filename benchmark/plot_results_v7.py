@@ -158,7 +158,7 @@ def main():
                 cells = [(true_story(w, s), r"\textbf{True graph}")]
                 for lab, run in [("Causal Stories", f"{w}__{g}__llm"), ("Per-story prompting", f"{w}__{g}__C1-llm-llmgroup"),
                                  ("Causal Map", f"{w}__{g}__C5-llm-llmgroup")]:
-                    f, cap = individual(w, sid, run, f"{g}_{lab[:4]}")
+                    f, cap = individual(w, sid, run, f"{g}_{lab.replace(chr(32), chr(95))}")
                     cells.append((f, f"\\textbf{{{lab}}}\\\\" + cap))
                 tex.append(grid(cells, "0.3"))
     build("results_individual", tex)
@@ -173,7 +173,7 @@ def main():
     def page(w, wt, g, gt, lab, suf, t, mc):
         comp = []
         for cl, run in [("Causal Map", f"agg__C5agg__{w}__{g}__C5-llm-llmgroup"), ("Whole-corpus prompting", f"{w}__{g}__C6-llm-llmgroup")]:
-            f, cap = aggregated(run, 0, f"{w}_{g}_{cl[:5]}", labels=False)
+            f, cap = aggregated(run, 0, f"{w}_{g}_{cl.replace(chr(32), chr(95))}", labels=False)
             comp.append((f, f"\\textbf{{{cl}}}\\\\" + cap))
         f, cap = aggregated(f"{w}__{g}__{suf}", mc, f"{w}_{g}_{t}")
         tex.append(r"\clearpage\subsection*{" + wt + " -- " + gt + r"}")
