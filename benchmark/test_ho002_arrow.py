@@ -61,7 +61,12 @@ if HEAD1[1] not in headers["instructions"]:
         headers["instructions"] = headers["instructions"].replace(old, new)
     for old, add in ((ROW_ENABLES[0], REGAN_ENABLES), (ROW_BLOCKS[0], REGAN_BLOCKS)):
         headers["instructions"] = headers["instructions"].replace(old, old + add)
-VARIANTS = {"current": ("current definition", current), "regan_mine": ("with Regan's two rows", regan),
+old = dict(current)                           # the definition before a10f983 (the v8 runs): old headers, no Regan rows
+if HEAD1[1] in old["instructions"]:
+    for o, n in (HEAD1, HEAD2):
+        old["instructions"] = old["instructions"].replace(n, o)
+    old["instructions"] = old["instructions"].replace(REGAN_ENABLES, "").replace(REGAN_BLOCKS, "")
+VARIANTS = {"old": ("old definition (v8 runs)", old), "current": ("current definition", current), "regan_mine": ("with Regan's two rows", regan),
             "headers": ("new headers + Regan's rows (their wording)", headers)}
 
 import os

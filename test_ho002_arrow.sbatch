@@ -15,5 +15,5 @@ OUT=_test_arrow; mkdir -p $OUT
 source bench_lib.sh
 GEN=${GEN:-gemma}                          # GEN=llama70: the same test with Llama-3.3-70B
 start_llm $GEN 32768
-VARIANTS=${VARIANTS:-current,headers} TEST_FREE=${TEST_FREE:-30} python benchmark/test_ho002_arrow.py
+VARIANTS=${VARIANTS:-old,current} TEST_FREE=${TEST_FREE:-30} python benchmark/test_ho002_arrow.py
 stop_llm
