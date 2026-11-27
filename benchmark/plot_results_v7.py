@@ -2,7 +2,7 @@
 """Results PDF for the v7 benchmark runs (grid_v7/): graphs with their scores.
 
 Individual graphs: 10 stories per world (the same stories for every method), each shown as its true graph,
-then Ours, Per-story prompting and Causal Map for each generator, with node F1, arrows and story score.
+then CausalStories, Per-story prompting and Causal Map for each generator, with node F1, arrows and story score.
 Aggregated graphs: per world and generator, the true world graph, CausalStories (grouping procedure) and, in the appendix, CausalStories with LLM grouping (Kev
 procedure) at every usage cut, then Causal Map and Whole-corpus prompting as they output them (no usage cut: the cut is a step of our method), with node F1, arrows,
 SID, score, and KL for ours. Every graph is drawn exactly as the method output it (its own names; no renaming). Green arrow: enables; red: blocks.
