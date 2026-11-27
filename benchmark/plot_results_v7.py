@@ -18,9 +18,20 @@ STORIES = os.environ.get("STORIES", "stories_v8")
 SUFFIX = os.environ.get("PDF_SUFFIX", "")
 
 
+# A newer run of ours for one generator: "gemma=grid_v8c" (Gemma's grouping rerun with the new opposite question)
+OURS_BY_GEN = dict(x.split("=") for x in os.environ.get("OURS_BY_GEN", "gemma=grid_v8c").split(",") if x)
+
+
+def ours(run):
+    return run.endswith("__llm") or run.endswith("__llm-llmgroup")
+
+
 def base(run):
-    """Our runs (<world>__<gen>__llm or __llm-llmgroup) come from OURS; the others from GRID."""
-    return OURS if run.endswith("__llm") or run.endswith("__llm-llmgroup") else GRID
+    """Our runs (<world>__<gen>__llm or __llm-llmgroup) come from OURS (grouping procedure: OURS_BY_GEN's grid for that
+    generator); the others from GRID."""
+    if run.endswith("__llm") and run.split("__")[1] in OURS_BY_GEN:
+        return HERE.parent / OURS_BY_GEN[run.split("__")[1]]
+    return OURS if ours(run) else GRID
 OUT = HERE / STORIES / "results_build"
 SLUG = "gemma-4-31b-it"
 CUTS = [0, 5, 10, 15, 20, 25, 30]
@@ -36,7 +47,9 @@ PLUS, MINUS = 'color="#1f7a4d", fontcolor="#1f7a4d"', 'color="#b4462f", fontcolo
 
 
 def ev(run, cut):
-    f = base(run) / run / f"evaluation_{SLUG}_cut{cut:02d}.json"
+    """Ours: the evaluation with KL computed correctly (a group stated the other way round, e.g. 'employment' for
+    'job loss', is compared with its true node with the values flipped; only KL differs from the plain evaluation)."""
+    f = base(run) / run / f"evaluation_{SLUG}{'_flip' if ours(run) else ''}_cut{cut:02d}.json"
     return json.load(open(f)) if f.exists() else None
 
 
@@ -101,7 +114,7 @@ def aggregated(run, cut, tag, labels=True):
     cap = (f"{len(own['nodes'])} groups kept $\\cdot$ node F1 {a['node_F1']:.2f} $\\cdot$ arrows {a['arrows']:.2f} "
            f"$\\cdot$ SID {a['sid']:.2f} $\\cdot$ score \\textbf{{{a['score']:.2f}}}")
     if a.get("kl_score") is not None:
-        cap += f" $\\cdot$ KL {a['kl_score']:.2f}"
+        cap += f" $\\cdot$ score with KL \\textbf{{{(a['node_F1'] * a['arrows'] * a['sid'] * a['kl_score']) ** 0.25:.2f}}}"
     return f, cap
 
 
@@ -165,8 +178,10 @@ def main():
     # ---------------- aggregated graphs: 2 x 2 at the 10% cut (ours), appendix: every other cut
     tex = [HEAD, r"\section*{Aggregated graphs}", NOTE + r" Top left: the true world graph (arrow labels: cause strength / protection "
            r"strength); top right: Causal Stories at the 10\% usage cut (a group is kept if at least 10\% of stories use it); bottom left: Causal Map "
-           r"and bottom right: Whole-corpus prompting, as they output them (the usage cut is a step of our method only). Score = geometric mean of node F1, arrows and SID; KL (only Causal Stories outputs conditional "
-           r"probabilities) is reported separately. Causal Stories' arrows are labelled with its estimate; the other methods' arrows carry no number (they output none: Causal Map's link weight is only the share of stories that mention the link, and Whole-corpus prompting gives no weight). Appendix A: Causal Stories with LLM grouping instead of its grouping procedure (Gemma and Qwen only); Appendix B: Causal Stories at every other cut."]
+           r"and bottom right: Whole-corpus prompting, as they output them (the usage cut is a step of our method only). Score = geometric mean of node F1, arrows and SID (comparable across methods); score with KL (Causal Stories "
+           r"only, the only method with conditional probabilities) = geometric mean of node F1, arrows, SID and $\\exp(-\\mathrm{KL})$, "
+           r"where a group stated the other way round (e.g. `employment' for `job loss') is compared with its true node with the values flipped. "
+           r"Causal Stories with Gemma 4 31B: the grouping rerun with the new opposite question. Causal Stories' arrows are labelled with its estimate; the other methods' arrows carry no number (they output none: Causal Map's link weight is only the share of stories that mention the link, and Whole-corpus prompting gives no weight). Appendix A: Causal Stories with LLM grouping instead of its grouping procedure (Gemma and Qwen only); Appendix B: Causal Stories at every other cut."]
     MAIN = ("Causal Stories", "llm", "B", 10)                                    # main text: grouping B (Kev procedure), 10% cut
     APPX = ("Causal Stories with LLM grouping", "llm-llmgroup", "A", 10)          # appendix: grouping A, then every other cut
 
