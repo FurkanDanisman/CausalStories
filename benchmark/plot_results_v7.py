@@ -12,15 +12,16 @@ from pathlib import Path
 
 HERE = Path(__file__).parent
 import os
-GRID = HERE.parent / "grid_v7"                                   # competing methods (and ours with OURS_GRID=grid_v7)
-OURS = HERE.parent / os.environ.get("OURS_GRID", "grid_v7b")    # our runs: the direct-only arrow prompt
+GRID = HERE.parent / os.environ.get("COMP_GRID", "grid_v8")       # competing methods
+OURS = HERE.parent / os.environ.get("OURS_GRID", "grid_v8")      # our runs
+STORIES = os.environ.get("STORIES", "stories_v8")
 SUFFIX = os.environ.get("PDF_SUFFIX", "")
 
 
 def base(run):
     """Our runs (<world>__<gen>__llm or __llm-llmgroup) come from OURS; the others from GRID."""
     return OURS if run.endswith("__llm") or run.endswith("__llm-llmgroup") else GRID
-OUT = HERE / "stories_v7" / "results_build"
+OUT = HERE / STORIES / "results_build"
 SLUG = "gemma-4-31b-it"
 CUTS = [0, 5, 10, 15, 20, 25, 30]
 GENS = {"gemma": "Gemma 4 31B", "qwen": "Qwen 3.5 27B"}
@@ -42,8 +43,9 @@ def ev(run, cut):
 def dot(name, nodes, edges):
     """nodes: {name: extra?}; edges: [(u, v, '+'/'-', label)]."""
     L = [f"digraph G {{ {STYLE}"]
-    for n, extra in nodes.items():
-        L.append(f'"{n}" [{EXTRA if extra else ""}];')
+    for n, extra in nodes.items():                               # extra: True = grey, "green" / "red" = true value
+        st = {"green": 'fillcolor="#cfeccf", color="#2e7d32"', "red": 'fillcolor="#f6cfcf", color="#b23b3b"'}.get(extra, EXTRA if extra else "")
+        L.append(f'"{n}" [{st}];')
     for e in edges:
         u, v, s, lab = e[:4]
         style = ', style=dashed, color="#8a8a8a", fontcolor="#8a8a8a", arrowhead=' + ("normal" if s == "+" else "tee") if len(e) > 4 and e[4] else ""
@@ -74,6 +76,8 @@ def individual(w, sid, run, tag):
              for x in g["edges"] if kinds.get(x["tail"], "event") != "participant"]
     for u, v, *_ in edges:
         nodes.setdefault(u, False); nodes.setdefault(v, False)
+    if base(run) == OURS:                                             # ours: nodes without an arrow are not drawn
+        nodes = {n: x for n, x in nodes.items() if any(n in e[:2] for e in edges)}
     f = dot(f"ind_{tag}_{sid}", nodes, edges)
     if r == "pending":
         return f, "not judged yet (ground truth updated)"
@@ -95,6 +99,8 @@ def aggregated(run, cut, tag, labels=True):
     for x in own["arrows"]:
         nodes.setdefault(x["head"], False); nodes.setdefault(x["tail"], False)
         edges.append((x["head"], x["tail"], "+" if x["rel"] == "enables" else "-", f'{x["estimate"]:.2f}' if labels else ""))
+    if base(run) == OURS:                                             # ours: groups without an arrow are not drawn
+        nodes = {n: x for n, x in nodes.items() if any(n in e[:2] for e in edges)}
     f = dot(f"agg_{tag}_{cut:02d}", nodes, edges)
     cap = (f"{len(own['nodes'])} groups kept $\\cdot$ node F1 {a['node_F1']:.2f} $\\cdot$ arrows {a['arrows']:.2f} "
            f"$\\cdot$ SID {a['sid']:.2f} $\\cdot$ score \\textbf{{{a['score']:.2f}}}")
@@ -104,7 +110,7 @@ def aggregated(run, cut, tag, labels=True):
 
 
 def true_story(w, s):
-    nodes = {n: False for n in s["truth"]["nodes"]}
+    nodes = {n: ("green" if v else "red") for n, v in s["truth"]["nodes"].items()}
     edges = [(u, v, "+" if k in POS else "-", "") for u, v, k in s["truth"]["arrows"]]
     return dot(f"true_{s['id']}", nodes, edges)
 
@@ -136,8 +142,8 @@ def grid(cells, h):
 def build(name, tex):
     (OUT / f"{name}.tex").write_text("\n".join(tex + [r"\end{document}"]))
     subprocess.run(["pdflatex", "-interaction=nonstopmode", f"{name}.tex"], cwd=OUT, capture_output=True)
-    (OUT / f"{name}.pdf").replace(HERE / "stories_v7" / f"{name}{SUFFIX}.pdf")
-    print("saved", HERE / "stories_v7" / f"{name}{SUFFIX}.pdf")
+    (OUT / f"{name}.pdf").replace(HERE / STORIES / f"{name}{SUFFIX}.pdf")
+    print("saved", HERE / STORIES / f"{name}{SUFFIX}.pdf")
 
 
 def main():
@@ -147,7 +153,7 @@ def main():
            r"story's true graph; top right: ours; bottom left: Per-story prompting; bottom right: Causal Map. Ours A and Ours B share "
            r"their story graphs (they differ only in grouping). Story score = geometric mean of node F1 and arrows."]
     for w, wt in WORLDS.items():
-        S = {s["id"]: s for s in json.load(open(HERE / "stories_v7" / f"{w}.json"))}
+        S = {s["id"]: s for s in json.load(open(HERE / STORIES / f"{w}.json"))}
         pick = sorted(random.Random(21).sample(sorted(S), 10))
         for g, gt in GENS.items():
             for sid in pick:
