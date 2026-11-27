@@ -2,8 +2,8 @@
 """Results PDF for the v7 benchmark runs (grid_v7/): graphs with their scores.
 
 Individual graphs: 10 stories per world (the same stories for every method), each shown as its true graph,
-then CausalStories, Per-story prompting and Causal Map for each generator, with node F1, arrows and story score.
-Aggregated graphs: per world and generator, the true world graph, CausalStories (grouping procedure) and, in the appendix, CausalStories with LLM grouping (Kev
+then Causal Stories, Per-story prompting and Causal Map for each generator, with node F1, arrows and story score.
+Aggregated graphs: per world and generator, the true world graph, Causal Stories (grouping procedure) and, in the appendix, Causal Stories with LLM grouping (Kev
 procedure) at every usage cut, then Causal Map and Whole-corpus prompting as they output them (no usage cut: the cut is a step of our method), with node F1, arrows,
 SID, score, and KL for ours. Every graph is drawn exactly as the method output it (its own names; no renaming). Green arrow: enables; red: blocks.
 Usage: python benchmark/plot_results_v7.py  ->  benchmark/stories_v7/results_individual.pdf, results_aggregated.pdf"""
@@ -146,7 +146,7 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     # ---------------- individual graphs: 2 x 2 per story (true | ours / per-story | Causal Map)
     tex = [HEAD, r"\section*{Individual graphs}", NOTE + r" 10 stories per world, the same for every method. Top left: the "
-           r"story's true graph; top right: CausalStories; bottom left: Per-story prompting; bottom right: Causal Map. "
+           r"story's true graph; top right: Causal Stories; bottom left: Per-story prompting; bottom right: Causal Map. "
            r"their story graphs (they differ only in grouping). Story score = geometric mean of node F1 and arrows."]
     for w, wt in WORLDS.items():
         S = {s["id"]: s for s in json.load(open(HERE / STORIES / f"{w}.json"))}
@@ -156,7 +156,7 @@ def main():
                 s = S[sid]
                 tex.append(r"\clearpage\subsection*{" + wt + " -- " + gt + " -- " + sid + r"}\noindent\textit{``" + esc(s["text"]) + r"''}\par\medskip")
                 cells = [(true_story(w, s), r"\textbf{True graph}")]
-                for lab, run in [("CausalStories", f"{w}__{g}__llm"), ("Per-story prompting", f"{w}__{g}__C1-llm-llmgroup"),
+                for lab, run in [("Causal Stories", f"{w}__{g}__llm"), ("Per-story prompting", f"{w}__{g}__C1-llm-llmgroup"),
                                  ("Causal Map", f"{w}__{g}__C5-llm-llmgroup")]:
                     f, cap = individual(w, sid, run, f"{g}_{lab[:4]}")
                     cells.append((f, f"\\textbf{{{lab}}}\\\\" + cap))
@@ -164,11 +164,11 @@ def main():
     build("results_individual", tex)
     # ---------------- aggregated graphs: 2 x 2 at the 10% cut (ours), appendix: every other cut
     tex = [HEAD, r"\section*{Aggregated graphs}", NOTE + r" Top left: the true world graph (arrow labels: cause strength / protection "
-           r"strength); top right: CausalStories at the 10\% usage cut (a group is kept if at least 10\% of stories use it); bottom left: Causal Map "
-           r"and bottom right: Whole-corpus prompting, as they output them (the usage cut is a step of our method only). Score = geometric mean of node F1, arrows and SID; KL (only CausalStories outputs conditional "
-           r"probabilities) is reported separately. CausalStories' arrows are labelled with its estimate; the other methods' arrows carry no number (they output none: Causal Map's link weight is only the share of stories that mention the link, and Whole-corpus prompting gives no weight). Appendix A: CausalStories with LLM grouping instead of its grouping procedure (Gemma and Qwen only); Appendix B: CausalStories at every other cut."]
-    MAIN = ("CausalStories", "llm", "B", 10)                                    # main text: grouping B (Kev procedure), 10% cut
-    APPX = ("CausalStories with LLM grouping", "llm-llmgroup", "A", 10)          # appendix: grouping A, then every other cut
+           r"strength); top right: Causal Stories at the 10\% usage cut (a group is kept if at least 10\% of stories use it); bottom left: Causal Map "
+           r"and bottom right: Whole-corpus prompting, as they output them (the usage cut is a step of our method only). Score = geometric mean of node F1, arrows and SID; KL (only Causal Stories outputs conditional "
+           r"probabilities) is reported separately. Causal Stories' arrows are labelled with its estimate; the other methods' arrows carry no number (they output none: Causal Map's link weight is only the share of stories that mention the link, and Whole-corpus prompting gives no weight). Appendix A: Causal Stories with LLM grouping instead of its grouping procedure (Gemma and Qwen only); Appendix B: Causal Stories at every other cut."]
+    MAIN = ("Causal Stories", "llm", "B", 10)                                    # main text: grouping B (Kev procedure), 10% cut
+    APPX = ("Causal Stories with LLM grouping", "llm-llmgroup", "A", 10)          # appendix: grouping A, then every other cut
 
     def page(w, wt, g, gt, lab, suf, t, mc):
         comp = []
@@ -193,15 +193,15 @@ def main():
     for w, wt in WORLDS.items():
         for g, gt in GENS.items():
             page(w, wt, g, gt, *MAIN)
-    tex.append(r"\clearpage\appendix\section*{Appendix A: CausalStories with LLM grouping (10\% cut)}")
+    tex.append(r"\clearpage\appendix\section*{Appendix A: Causal Stories with LLM grouping (10\% cut)}")
     for w, wt in WORLDS.items():
         for g, gt in GENS.items():
             page(w, wt, g, gt, *APPX)
-    tex.append(r"\clearpage\section*{Appendix B: CausalStories at every other usage cut}")
+    tex.append(r"\clearpage\section*{Appendix B: Causal Stories at every other usage cut}")
     for w, wt in WORLDS.items():
         for g, gt in GENS.items():
-            cuts(w, wt, g, gt, "CausalStories", "llm", "B", 10)
-            cuts(w, wt, g, gt, "CausalStories with LLM grouping", "llm-llmgroup", "A", 10)
+            cuts(w, wt, g, gt, "Causal Stories", "llm", "B", 10)
+            cuts(w, wt, g, gt, "Causal Stories with LLM grouping", "llm-llmgroup", "A", 10)
     build("results_aggregated", tex)
 
 
