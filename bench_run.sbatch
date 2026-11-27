@@ -103,7 +103,8 @@ fi
 
 HAS_OURS=0; [[ " $METHODS " == *" ours "* ]] && HAS_OURS=1        # jobs split by method run side by side
 OTHERS=$(for M in $METHODS; do [ "$M" != ours ] && echo -n "$M "; done)
-if [ -n "$OTHERS" ] || { [ $HAS_OURS = 1 ] && [ -z "$SHARE_FROM" ]; }; then   # phase 1 only when it has work
+NODES_TODO=0; for W in $WORLDS; do [ -f "$(run_dir $W ours)/.done_nodes" ] || NODES_TODO=1; done
+if [ -n "$OTHERS" ] || { [ $HAS_OURS = 1 ] && [ -z "$SHARE_FROM" ] && [ $NODES_TODO = 1 ]; }; then   # phase 1 only when it has work
 echo "########## phase 1: $GEN (nodes, competing approaches' story graphs)"
 start_llm "$GEN" 65536
 for W in $WORLDS; do
