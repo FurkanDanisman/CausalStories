@@ -67,8 +67,25 @@ VARIANTS = {"current": ("current definition", current), "regan_mine": ("with Reg
 import os
 MODEL = os.environ.get("TEST_MODEL", "llm:llm")     # llm:llm -> LLM_URL (local vLLM), as in the benchmark;
 kev = KevClient(base_url="http://127.0.0.1:1", model=MODEL)   # llm:google/gemma-4-31b-it -> OpenRouter (LLM_URL unset)
+def free_text(q, n=30):
+    """The same prompt (as KevClient builds it), but the model may write n tokens: what does it answer in words?"""
+    opts = list(q["criteria"].items()); L = [chr(65 + i) for i in range(len(opts))]
+    prompt = (f"Text:\n{TEXT}\n\nQuestion: {q.get('instructions', '')}\nOptions:\n" +
+              "\n".join(f"{l}) {k}: {d}" for l, (k, d) in zip(L, opts)) +
+              "\n\nAnswer with the single letter of the best option and nothing else.")
+    url = os.environ["LLM_URL"]
+    body = {"model": "llm", "temperature": 0, "max_tokens": n, "messages": [{"role": "user", "content": prompt}],
+            "chat_template_kwargs": {"enable_thinking": False}}
+    req = urllib.request.Request(url, data=json.dumps(body).encode(), headers={"content-type": "application/json",
+                                                                              "authorization": "Bearer EMPTY"})
+    with _open(req, timeout=300) as r:
+        return json.loads(r.read())["choices"][0]["message"]["content"]
+
+
 for name, q in [VARIANTS[v] for v in os.environ.get("VARIANTS", "current,regan_mine").split(",")]:
     print(f"===== {name}", flush=True)
+    if os.environ.get("TEST_FREE") and os.environ.get("LLM_URL"):
+        print(f"  free answer ({os.environ.get('TEST_FREE')} tokens): {free_text(q, int(os.environ['TEST_FREE']))!r}", flush=True)
     for i in range(5):
         raw.clear()
         a = kev.ask(TEXT, {"q": q})["q"]

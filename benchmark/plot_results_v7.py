@@ -38,7 +38,7 @@ def base(run):
 OUT = HERE / STORIES / "results_build"
 SLUG = "gemma-4-31b-it"
 CUTS = [0, 5, 10, 15, 20, 25, 30]
-GENS = {"gemma": "Gemma 4 31B", "qwen": "Qwen 3.5 27B"}
+GENS = {"gemma": "Gemma 4 31B", "qwen": "Qwen 3.5 27B", "llama70": "Llama 3.3 70B"}
 WORLDS = {"homelessness": "Homelessness", "mental_health": "Mental health"}
 POS = {"carries out", "enables", "risk"}
 sys.path.insert(0, str(HERE)); import worlds_random as R
@@ -214,12 +214,14 @@ def main():
     tex.append(r"\clearpage\appendix\section*{Appendix A: Causal Stories with LLM grouping (10\% cut)}")
     for w, wt in WORLDS.items():
         for g, gt in GENS.items():
-            page(w, wt, g, gt, *APPX)
+            if (base(f"{w}__{g}__llm-llmgroup") / f"{w}__{g}__llm-llmgroup").exists():   # LLM grouping: Gemma, Qwen only
+                page(w, wt, g, gt, *APPX)
     tex.append(r"\clearpage\section*{Appendix B: Causal Stories at every other usage cut}")
     for w, wt in WORLDS.items():
         for g, gt in GENS.items():
             cuts(w, wt, g, gt, "Causal Stories", "llm", "B", 10)
-            cuts(w, wt, g, gt, "Causal Stories with LLM grouping", "llm-llmgroup", "A", 10)
+            if (base(f"{w}__{g}__llm-llmgroup") / f"{w}__{g}__llm-llmgroup").exists():
+                cuts(w, wt, g, gt, "Causal Stories with LLM grouping", "llm-llmgroup", "A", 10)
     build("results_aggregated", tex)
 
 

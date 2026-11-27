@@ -8,7 +8,7 @@ shows "not run". Rerun this script as results arrive.
 Main table: individual scores, and aggregated scores at the 10% cut for Causal Stories (competitors at no cut: the
 cut is a step of our method). Appendix: Causal Stories' aggregated score at every cut.
 Usage: python benchmark/results_table_v8.py  ->  benchmark/stories_v8/results_table.pdf"""
-import json, subprocess
+import json, re, subprocess
 from pathlib import Path
 
 HERE = Path(__file__).parent
@@ -20,19 +20,21 @@ WORLDS = {"homelessness": "Homelessness", "mental_health": "Mental health"}
 DECISION = [("Gemini Decision 1", "google_gemini-decision-1"), ("GPT-6 Luna Decisions", "openai_gpt-6-luna-decisions"),
             ("Jev 1.14", "typesafe_jev-1_14")]   # Kev 4B dropped (too slow on OpenRouter)
 OUT = HERE / "stories_v8"
+GENERATORS = [("gemma", "Gemma 4 31B"), ("qwen", "Qwen 3.5 27B"), ("llama70", "Llama 3.3 70B")]
 
 
 def ours_rows(w):
     g9 = P / "grid_v9" / f"{w}__gemma__llm"                     # new causal-edge definition (homelessness so far)
     rows = [("Gemma 4 31B", "Gemma 4 31B", g9 if g9.exists() else P / "grid_v8c" / f"{w}__gemma__llm"),
-            ("Qwen 3.5 27B", "Qwen 3.5 27B", P / "grid_v8" / f"{w}__qwen__llm")]
+            ("Qwen 3.5 27B", "Qwen 3.5 27B", P / "grid_v8" / f"{w}__qwen__llm"),
+            ("Llama 3.3 70B", "Llama 3.3 70B", P / "grid_v8" / f"{w}__llama70__llm")]
     rows += [("Gemma 4 31B", lab, P / "grid_v8_or" / f"{w}__gemma__{s}") for lab, s in DECISION]
     return rows
 
 
 def comp_rows(w):
     rows = []
-    for g, gl in [("gemma", "Gemma 4 31B"), ("qwen", "Qwen 3.5 27B")]:
+    for g, gl in GENERATORS:
         G = P / "grid_v8"
         rows += [("Per-story prompting", gl, G / f"{w}__{g}__C1-llm-llmgroup", None),
                  ("Causal Map", gl, G / f"{w}__{g}__C5-llm-llmgroup", G / f"agg__C5agg__{w}__{g}__C5-llm-llmgroup"),
@@ -61,8 +63,16 @@ def f2(x):
 
 
 def indiv(e):
-    s = (e or {}).get("individual_summary", {}).get("all") or {}
-    return [f2(s.get("node_F1")), f2(s.get("arrows")), f2(s.get("score"))]
+    """Mean $\\pm$ the half-width of the 95% confidence interval (1.96 standard errors) over the scored stories."""
+    rows = [r for r in ((e or {}).get("individual") or {}).values() if isinstance(r, dict) and r.get("score") is not None]
+    out = []
+    for k in ("node_F1", "arrows", "score"):
+        x = [r[k] for r in rows if r.get(k) is not None]
+        if len(x) < 2:
+            out.append("--"); continue
+        m = sum(x) / len(x); sd = (sum((v - m) ** 2 for v in x) / (len(x) - 1)) ** 0.5
+        out.append(f"{m:.2f} $\\pm$ {1.96 * sd / len(x) ** 0.5:.2f}")
+    return out
 
 
 def agg(e, kl):
@@ -79,12 +89,15 @@ SCORE_COLS = (2, 6, 7)                       # individual score, aggregated scor
 def bold_best(rows, cols=SCORE_COLS):
     """rows: [(label, cells)]; in each score column, the highest number is bold (all of them on a tie)."""
     out = [(lab, list(c)) for lab, c in rows]
+    def num(x):                                   # the mean of "0.80 $\pm$ 0.01", or None
+        m = re.match(r"\d+\.\d+", x)
+        return float(m.group(0)) if m else None
     for j in cols:
-        vals = [float(c[j]) for _, c in rows if j < len(c) and c[j].replace(".", "", 1).isdigit()]
+        vals = [num(c[j]) for _, c in rows if j < len(c) and num(c[j]) is not None]
         if not vals:
             continue
         for _, c in out:
-            if j < len(c) and c[j].replace(".", "", 1).isdigit() and float(c[j]) == max(vals):
+            if j < len(c) and num(c[j]) == max(vals):
                 c[j] = r"\textbf{" + c[j] + "}"
     return out
 
@@ -92,7 +105,7 @@ def bold_best(rows, cols=SCORE_COLS):
 def tex():
     L = [r"\documentclass[10pt]{article}", r"\usepackage[margin=1.6cm,landscape]{geometry}", r"\usepackage{booktabs,multirow}",
          r"\pagestyle{empty}", r"\begin{document}", r"\section*{Results (benchmark v8, judge: Gemma 4 31B)}",
-         r"Individual: mean over the stories with at least one true arrow; score: geometric mean of node F1 and arrows. "
+         r"Individual: mean $\pm$ 95\% confidence interval (1.96 standard errors) over the stories with at least one true arrow; score: geometric mean of node F1 and arrows. "
          r"Aggregated: the world graph; Causal Stories at the " + f"{MAIN}" + r"\% usage cut, competing approaches as they output them. "
          r"Score: geometric mean of node F1, arrows and SID, comparable across methods. "
          r"Score with KL: Causal Stories only (the only method with conditional probabilities): geometric mean of node F1, "
@@ -116,7 +129,7 @@ def tex():
     for w, wl in WORLDS.items():
         L += [r"\subsection*{" + wl + "}", r"\begin{tabular}{lcccccccc}"] + [h.format("Method") if "{}" in h else h for h in HEAD1]
         comp = comp_rows(w)
-        for k, (g, gl) in enumerate([("gemma", "Gemma 4 31B"), ("qwen", "Qwen 3.5 27B")]):
+        for k, (g, gl) in enumerate(GENERATORS):
             if k: L.append(r"\midrule")
             L.append(r"\multicolumn{8}{l}{\textit{Generator: " + gl + r"}} \\")
             block = [("Causal Stories", ours_cells(ours_rows(w)[k][2])[:7])]
