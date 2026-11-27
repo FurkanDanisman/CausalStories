@@ -128,7 +128,10 @@ class KevClient:
                             lp[tok] = t["logprob"]
                     if not lp:                                # no logprobs: use the answer letter itself
                         tok = (ch["message"].get("content") or "").strip()[:1].upper()
-                        lp = {tok: 0.0} if tok in letters else {letters[0]: 0.0}
+                        if tok not in letters:                # never a silent default: no answer is an error
+                            raise RuntimeError(f"LLM decision: no option letter in the answer ({model}); "
+                                               f"first token {((ch.get('logprobs') or {}).get('content') or [{}])[0].get('token')!r}")
+                        lp = {tok: 0.0}
                     z = sum(math.exp(v) for v in lp.values())
                     probs = {k: math.exp(lp[L]) / z if L in lp else 0.0 for L, (k, _) in zip(letters, opts)}
                     best = max(probs, key=probs.get)
