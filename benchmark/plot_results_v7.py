@@ -3,7 +3,7 @@
 
 Individual graphs: 10 stories per world (the same stories for every method), each shown as its true graph,
 then Ours, Per-story prompting and Causal Map for each generator, with node F1, arrows and story score.
-Aggregated graphs: per world and generator, the true world graph, Ours A (LLM grouping) and Ours B (Kev
+Aggregated graphs: per world and generator, the true world graph, CausalStories (grouping procedure) and, in the appendix, CausalStories with LLM grouping (Kev
 procedure) at every usage cut, then Causal Map and Whole-corpus prompting as they output them (no usage cut: the cut is a step of our method), with node F1, arrows,
 SID, score, and KL for ours. Every graph is drawn exactly as the method output it (its own names; no renaming). Green arrow: enables; red: blocks.
 Usage: python benchmark/plot_results_v7.py  ->  benchmark/stories_v7/results_individual.pdf, results_aggregated.pdf"""
@@ -76,8 +76,6 @@ def individual(w, sid, run, tag):
              for x in g["edges"] if kinds.get(x["tail"], "event") != "participant"]
     for u, v, *_ in edges:
         nodes.setdefault(u, False); nodes.setdefault(v, False)
-    if base(run) == OURS:                                             # ours: nodes without an arrow are not drawn
-        nodes = {n: x for n, x in nodes.items() if any(n in e[:2] for e in edges)}
     f = dot(f"ind_{tag}_{sid}", nodes, edges)
     if r == "pending":
         return f, "not judged yet (ground truth updated)"
@@ -99,8 +97,6 @@ def aggregated(run, cut, tag, labels=True):
     for x in own["arrows"]:
         nodes.setdefault(x["head"], False); nodes.setdefault(x["tail"], False)
         edges.append((x["head"], x["tail"], "+" if x["rel"] == "enables" else "-", f'{x["estimate"]:.2f}' if labels else ""))
-    if base(run) == OURS:                                             # ours: groups without an arrow are not drawn
-        nodes = {n: x for n, x in nodes.items() if any(n in e[:2] for e in edges)}
     f = dot(f"agg_{tag}_{cut:02d}", nodes, edges)
     cap = (f"{len(own['nodes'])} groups kept $\\cdot$ node F1 {a['node_F1']:.2f} $\\cdot$ arrows {a['arrows']:.2f} "
            f"$\\cdot$ SID {a['sid']:.2f} $\\cdot$ score \\textbf{{{a['score']:.2f}}}")
@@ -150,7 +146,7 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     # ---------------- individual graphs: 2 x 2 per story (true | ours / per-story | Causal Map)
     tex = [HEAD, r"\section*{Individual graphs}", NOTE + r" 10 stories per world, the same for every method. Top left: the "
-           r"story's true graph; top right: ours; bottom left: Per-story prompting; bottom right: Causal Map. Ours A and Ours B share "
+           r"story's true graph; top right: CausalStories; bottom left: Per-story prompting; bottom right: Causal Map. "
            r"their story graphs (they differ only in grouping). Story score = geometric mean of node F1 and arrows."]
     for w, wt in WORLDS.items():
         S = {s["id"]: s for s in json.load(open(HERE / STORIES / f"{w}.json"))}
@@ -160,7 +156,7 @@ def main():
                 s = S[sid]
                 tex.append(r"\clearpage\subsection*{" + wt + " -- " + gt + " -- " + sid + r"}\noindent\textit{``" + esc(s["text"]) + r"''}\par\medskip")
                 cells = [(true_story(w, s), r"\textbf{True graph}")]
-                for lab, run in [("Ours", f"{w}__{g}__llm-llmgroup"), ("Per-story prompting", f"{w}__{g}__C1-llm-llmgroup"),
+                for lab, run in [("CausalStories", f"{w}__{g}__llm"), ("Per-story prompting", f"{w}__{g}__C1-llm-llmgroup"),
                                  ("Causal Map", f"{w}__{g}__C5-llm-llmgroup")]:
                     f, cap = individual(w, sid, run, f"{g}_{lab[:4]}")
                     cells.append((f, f"\\textbf{{{lab}}}\\\\" + cap))
@@ -168,11 +164,11 @@ def main():
     build("results_individual", tex)
     # ---------------- aggregated graphs: 2 x 2 at the 10% cut (ours), appendix: every other cut
     tex = [HEAD, r"\section*{Aggregated graphs}", NOTE + r" Top left: the true world graph (arrow labels: cause strength / protection "
-           r"strength); top right: ours (grouping by the Kev procedure, answered by the LLM) at the 10\% usage cut (a group is kept if at least 10\% of stories use it); bottom left: Causal Map "
-           r"and bottom right: Whole-corpus prompting, as they output them (the usage cut is a step of our method only). Score = geometric mean of node F1, arrows and SID; KL (only ours outputs conditional "
-           r"probabilities) is reported separately. Our arrows are labelled with our estimate; the other methods' arrows carry no number (they output none: Causal Map's link weight is only the share of stories that mention the link, and Whole-corpus prompting gives no weight). Appendix A: ours with LLM grouping; Appendix B: ours at every other cut."]
-    MAIN = ("Ours", "llm", "B", 10)                                    # main text: grouping B (Kev procedure), 10% cut
-    APPX = ("Ours A (LLM grouping)", "llm-llmgroup", "A", 10)          # appendix: grouping A, then every other cut
+           r"strength); top right: CausalStories at the 10\% usage cut (a group is kept if at least 10\% of stories use it); bottom left: Causal Map "
+           r"and bottom right: Whole-corpus prompting, as they output them (the usage cut is a step of our method only). Score = geometric mean of node F1, arrows and SID; KL (only CausalStories outputs conditional "
+           r"probabilities) is reported separately. CausalStories' arrows are labelled with its estimate; the other methods' arrows carry no number (they output none: Causal Map's link weight is only the share of stories that mention the link, and Whole-corpus prompting gives no weight). Appendix A: CausalStories with LLM grouping instead of its grouping procedure (Gemma and Qwen only); Appendix B: CausalStories at every other cut."]
+    MAIN = ("CausalStories", "llm", "B", 10)                                    # main text: grouping B (Kev procedure), 10% cut
+    APPX = ("CausalStories with LLM grouping", "llm-llmgroup", "A", 10)          # appendix: grouping A, then every other cut
 
     def page(w, wt, g, gt, lab, suf, t, mc):
         comp = []
@@ -197,15 +193,15 @@ def main():
     for w, wt in WORLDS.items():
         for g, gt in GENS.items():
             page(w, wt, g, gt, *MAIN)
-    tex.append(r"\clearpage\appendix\section*{Appendix A: Ours with LLM grouping (10\% cut)}")
+    tex.append(r"\clearpage\appendix\section*{Appendix A: CausalStories with LLM grouping (10\% cut)}")
     for w, wt in WORLDS.items():
         for g, gt in GENS.items():
             page(w, wt, g, gt, *APPX)
-    tex.append(r"\clearpage\section*{Appendix B: ours at every other usage cut}")
+    tex.append(r"\clearpage\section*{Appendix B: CausalStories at every other usage cut}")
     for w, wt in WORLDS.items():
         for g, gt in GENS.items():
-            cuts(w, wt, g, gt, "Ours (Kev procedure)", "llm", "B", 10)
-            cuts(w, wt, g, gt, "Ours A (LLM grouping)", "llm-llmgroup", "A", 10)
+            cuts(w, wt, g, gt, "CausalStories", "llm", "B", 10)
+            cuts(w, wt, g, gt, "CausalStories with LLM grouping", "llm-llmgroup", "A", 10)
     build("results_aggregated", tex)
 
 
