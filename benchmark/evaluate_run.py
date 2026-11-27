@@ -286,18 +286,37 @@ def main(world, run, cut=None):
                                             "wordings. Match each group by the name before the brackets.",
                                             TN, desc_), key)["map"]
         json.dump(cache, open(cache_p, "w"), indent=1)
-    if os.environ.get("JUDGE_ONLY"):                      # GPU part only (cluster): judge answers cached, scored later
-        print(f"judged {run.name} at cut {cut:.0%} (cache only)")
-        return
-    net = json.load(open(run / "network.json"))
     gm = {}
     for k, v in cache[ck].items():
         name = k.split("  (e.g.")[0].strip()
         gm[name] = v if v in TN else None
     gm = {c: gm.get(c) for c in kept}
+    kind = {c: d.get("kind", "event") for c, d in abst["concepts"].items()}
+    # polarity: a group matched to a true node may be that event stated the other way round (e.g. 'employment' for
+    # 'job loss'); its arrows are then scored with the sign flipped, as in the individual scores (eval_view). One
+    # judge question per (group, true node), for every method alike; participants have no other side.
+    opposite = set()
+    for c in kept:
+        if not gm[c] or kind.get(c, "event") == "participant":
+            continue
+        pk = f"polarity:{c}=>{gm[c]}"
+        if pk not in cache:
+            ex = "; ".join(sorted({m[1] for m in abst["concepts"][c]["members"]})[:4])
+            cache[pk] = judge_call(
+                f"In first-person stories about {world.replace('_', ' ')}, the group of extracted nodes \"{c}\" "
+                f"(e.g. {ex}) was matched to the reference node \"{gm[c]}\". Is the group the same event as the "
+                f"reference node, or the same event stated the other way round (e.g. 'the car working' and 'the car "
+                f"breaking down')? A different wording of the same event is \"same\". "
+                "Answer only JSON: {\"map\": {\"answer\": \"same\" or \"opposite\"}}", key)["map"]
+            json.dump(cache, open(cache_p, "w"), indent=1)
+        if str(cache[pk].get("answer", "")).strip().lower() == "opposite":
+            opposite.add(c)
+    if os.environ.get("JUDGE_ONLY"):                      # GPU part only (cluster): judge answers cached, scored later
+        print(f"judged {run.name} at cut {cut:.0%} (cache only)")
+        return
+    net = json.load(open(run / "network.json"))
     T, _ = signed([(u, v, "+", 1) for v, (en, bl) in W.MECH.items() for u in en] +
                   [(u, v, "-", 1) for v, (en, bl) in W.MECH.items() for u in bl])
-    kind = {c: d.get("kind", "event") for c, d in abst["concepts"].items()}
     arr = [a for a in net["network"]["arrows"] if a["head"] in kept and a["tail"] in kept
            and kind.get(a["tail"], "event") != "participant"]          # influence arrows are never scored
     knots7 = None
@@ -310,8 +329,11 @@ def main(world, run, cut=None):
     mapped_true = {gm[c] for c in conn if gm[c]}
     est_nodes = {gm[c] or f"x:{c}" for c in conn}
     P = len([c for c in conn if gm[c]]) / len(conn) if conn else 0.0; R = len(mapped_true) / len(TN)
+    def sign(a):                                              # flipped once per opposite end (both ends: unchanged)
+        s_pos = (a["rel"] == "enables") != ((a["head"] in opposite) != (a["tail"] in opposite))
+        return "+" if s_pos else "-"
     E, Ew = signed([(gm[a["head"]] or f"x:{a['head']}", gm[a["tail"]] or f"x:{a['tail']}",
-                     "+" if a["rel"] == "enables" else "-", a["estimate"]) for a in arr])
+                     sign(a), a["estimate"]) for a in arr])
     d = shd(T, E); s_ = sum(d.values())
     arrows_norm = 1 - s_ / (len(T) + len(E))
     # SID on the true node set: extra nodes contracted, cycles broken by dropping the weakest arrow
@@ -364,7 +386,7 @@ def main(world, run, cut=None):
             else: q = Ew[(u, v)]
             kl_nodes[f"{u} -> {v}"] = kl2(p_ref, q)
     kl = sum(kl_nodes.values()) / len(kl_nodes) if kl_nodes else 0.0
-    agg = {"cut": cut, "kept_groups": {c: {"usage": round(usage[c], 3), "match": gm[c], "connected": c in conn} for c in kept},
+    agg = {"cut": cut, "kept_groups": {c: {"usage": round(usage[c], 3), "match": gm[c], "opposite": c in opposite, "connected": c in conn} for c in kept},
            "node_P": P, "node_R": R, "node_F1": f1(P, R), "shd": d, "true_arrows": len(T), "est_arrows": len(E),
            "arrows": arrows_norm, "sid_wrong": len(bad), "sid_pairs": len(TN) * (len(TN) - 1), "sid": sid_norm,
            "kl": kl, "kl_flipped_groups": flipped, "kl_by_arrow": kl_nodes, "kl_score": math.exp(-kl), "kl_model": KL_MODEL, "step7_knots": knots7,

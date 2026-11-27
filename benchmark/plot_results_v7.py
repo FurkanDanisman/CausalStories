@@ -18,8 +18,9 @@ STORIES = os.environ.get("STORIES", "stories_v8")
 SUFFIX = os.environ.get("PDF_SUFFIX", "")
 
 
-# A newer run of ours for one generator: "gemma=grid_v8c" (Gemma's grouping rerun with the new opposite question)
-OURS_BY_GEN = dict(x.split("=") for x in os.environ.get("OURS_BY_GEN", "gemma=grid_v8c").split(",") if x)
+# Newer runs of ours for one generator, first existing wins: gemma=grid_v9 (new causal-edge definition; homelessness
+# only so far), then grid_v8c (Gemma's grouping rerun with the new opposite question)
+OURS_BY_GEN = dict(x.split("=") for x in os.environ.get("OURS_BY_GEN", "gemma=grid_v9:grid_v8c").split(",") if x)
 
 
 def ours(run):
@@ -30,7 +31,9 @@ def base(run):
     """Our runs (<world>__<gen>__llm or __llm-llmgroup) come from OURS (grouping procedure: OURS_BY_GEN's grid for that
     generator); the others from GRID."""
     if run.endswith("__llm") and run.split("__")[1] in OURS_BY_GEN:
-        return HERE.parent / OURS_BY_GEN[run.split("__")[1]]
+        for g in OURS_BY_GEN[run.split("__")[1]].split(":"):
+            if (HERE.parent / g / run).exists():
+                return HERE.parent / g
     return OURS if ours(run) else GRID
 OUT = HERE / STORIES / "results_build"
 SLUG = "gemma-4-31b-it"
@@ -181,7 +184,7 @@ def main():
            r"and bottom right: Whole-corpus prompting, as they output them (the usage cut is a step of our method only). Score = geometric mean of node F1, arrows and SID (comparable across methods); score with KL (Causal Stories "
            r"only, the only method with conditional probabilities) = geometric mean of node F1, arrows, SID and $\\exp(-\\mathrm{KL})$, "
            r"where a group stated the other way round (e.g. `employment' for `job loss') is compared with its true node with the values flipped. "
-           r"Causal Stories with Gemma 4 31B: the grouping rerun with the new opposite question. Causal Stories' arrows are labelled with its estimate; the other methods' arrows carry no number (they output none: Causal Map's link weight is only the share of stories that mention the link, and Whole-corpus prompting gives no weight). Appendix A: Causal Stories with LLM grouping instead of its grouping procedure (Gemma and Qwen only); Appendix B: Causal Stories at every other cut."]
+           r"Causal Stories with Gemma 4 31B: homelessness with the new causal-edge definition (group headers `makes B more likely / less likely \\ldots\\ even when B does not happen in the end / happens anyway' and Regan et al.'s two Without-effect rows); mental health: the grouping rerun with the new opposite question (old definition). Causal Stories' arrows are labelled with its estimate; the other methods' arrows carry no number (they output none: Causal Map's link weight is only the share of stories that mention the link, and Whole-corpus prompting gives no weight). Appendix A: Causal Stories with LLM grouping instead of its grouping procedure (Gemma and Qwen only); Appendix B: Causal Stories at every other cut."]
     MAIN = ("Causal Stories", "llm", "B", 10)                                    # main text: grouping B (Kev procedure), 10% cut
     APPX = ("Causal Stories with LLM grouping", "llm-llmgroup", "A", 10)          # appendix: grouping A, then every other cut
 
