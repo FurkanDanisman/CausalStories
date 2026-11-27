@@ -6,6 +6,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --time=03:00:00
 #SBATCH --output=bench-final-%j.out
+#SBATCH --signal=B:USR1@600
 #
 # Last job, after every bench_run job has finished:
 #   1. A4 (LLM merge, aggregation comparison) with each of the 4 generators, on OUR story graphs and groups of the
@@ -21,6 +22,24 @@ CUTS=${CUTS:-0,5,10,15,20,25,30}; REJUDGE=${REJUDGE:-}   # REJUDGE=1: judge fini
 OUT=$GRID/_logs/final
 mkdir -p "$OUT"
 source bench_lib.sh
+
+# Judge only after this grid's run jobs: a bench_run job resubmits itself under a new id at its time limit, so a
+# dependency on the first ids can be satisfied too early. If a run job of this GRID is still queued or running, this
+# job submits itself again after those jobs and stops. At its own time limit it submits itself again (judged runs are
+# skipped). At the end it packs the results into results_cluster/$GRID.
+ROUND=${ROUND:-1}
+self_again() { (cd "$SLURM_SUBMIT_DIR" && env $(env | grep -o '^SLURM_[A-Z_]*' | sed 's/^/-u /') sbatch --parsable \
+  --exclude=${EXCLUDE:-kn133,kn036} "$@" \
+  --export=ALL,GRID=$GRID,SKIP_ABLATIONS=$SKIP_ABLATIONS,CUTS=$CUTS,REJUDGE=$REJUDGE,ROUND=$(( ROUND + 1 )) bench_final.sbatch); }
+WAIT=""; for j in $(squeue --me -h -n bench-run -o %i); do
+  s=$(sacct -j $j -n -X -o SubmitLine%2000 2>/dev/null)
+  { [ -z "$s" ] || [[ $s == *"GRID=$GRID,"* ]] || [[ $s == *"GRID=$GRID "* ]]; } && WAIT="$WAIT:$j"; done
+if [ -n "$WAIT" ]; then
+  [ "$ROUND" -ge 20 ] && { echo "########## round $ROUND: not resubmitting"; exit 1; }
+  echo "########## run jobs of $GRID still queued or running (${WAIT#:}): judging after them as job $(self_again --dependency=afterany$WAIT)"
+  exit 0
+fi
+trap 'trap - USR1; echo "########## time limit: judging the rest as job $(self_again)"; stop_llm; exit 0' USR1
 
 [ "$SKIP_ABLATIONS" = 1 ] || { echo "########## A4 with each generator"
 for G in ${GENS:-gemma qwen llama gptoss}; do
@@ -64,6 +83,7 @@ for R in $GRID/*; do                                   # every run and aggregati
   name=$(basename "$R" | sed 's/^agg__[^_]*__//')
   world=$(echo "$name" | sed 's/__.*//')
   echo "--- $R ($world)"
-  python benchmark/evaluate_run.py "$world" "$R" $CUTS && touch "$R/.judged"
+  python benchmark/evaluate_run.py "$world" "$R" $CUTS & wait $! && touch "$R/.judged"   # background + wait: the time-limit signal is handled at once
 done
 stop_llm
+GRID=$GRID bash bench_pack.sh | tail -1                # results_cluster/$GRID (commit + push from the login node)
