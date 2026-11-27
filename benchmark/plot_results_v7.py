@@ -177,7 +177,7 @@ def main():
             comp.append((f, f"\\textbf{{{cl}}}\\\\" + cap))
         f, cap = aggregated(f"{w}__{g}__{suf}", mc, f"{w}_{g}_{t}")
         tex.append(r"\clearpage\subsection*{" + wt + " -- " + gt + r"}")
-        tex.append(grid([(true_world(w), r"\textbf{True world graph}"), (f, f"\\textbf{{{lab}, {mc}\\% cut}}\\\\" + cap)] + comp, "0.38"))
+        tex.append(grid([(true_world(w), r"\textbf{True world graph}"), (f, f"\\textbf{{{lab}}}\\\\" + cap)] + comp, "0.38"))
 
     def cuts(w, wt, g, gt, lab, suf, t, skip):
         tex.append(r"\clearpage\subsection*{" + wt + " -- " + gt + " -- " + lab + r"}")
