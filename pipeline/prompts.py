@@ -103,7 +103,7 @@ def kev_arrow_question(head: str, tail: str, node_ids: list[str]) -> dict:
 # Kev choice options for kev_group.md / kev_group_participant.md (Section 2, Step 1).
 KEV_GROUP_OPTIONS = {
     "same": "the event is the same kind of event as the group",
-    "opposite": "the event is the opposite of the group: one happening means the other did not",
+    "opposite": "the event is the same event as the group stated the other way round (e.g. 'the car working' / 'the car breaking down'), not an event that prevents the group's event or is prevented by it",
     "different": "the event is a different event from the group",
 }
 KEV_GROUP_P_OPTIONS = {
