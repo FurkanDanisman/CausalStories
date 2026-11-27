@@ -29,11 +29,15 @@ def ask(text, q):
     prompt = (f"Text:\n{text}\n\nQuestion: {q['instructions']}\nOptions:\n" +
               "\n".join(f"{l}) {k}: {d}" for l, (k, d) in zip(L, opts)) +
               "\n\nAnswer with the single letter of the best option and nothing else.")
-    body = {"model": MODEL, "temperature": 0, "max_tokens": 1, "logprobs": True, "top_logprobs": 10,
+    local = os.environ.get("LLM_URL")              # our vLLM server (cluster job): as KevClient asks it in the benchmark
+    body = {"model": "llm" if local else MODEL, "temperature": 0, "max_tokens": 1, "logprobs": True, "top_logprobs": 10,
             "messages": [{"role": "user", "content": prompt}]}
-    if PROVIDER: body["provider"] = {"order": [PROVIDER], "allow_fallbacks": False}
-    req = urllib.request.Request("https://openrouter.ai/api/v1/chat/completions", data=json.dumps(body).encode(),
-                                 headers={"authorization": "Bearer " + os.environ["OPENROUTER_API_KEY"], "content-type": "application/json"})
+    if local: body["chat_template_kwargs"] = {"enable_thinking": False}
+    elif PROVIDER: body["provider"] = {"order": [PROVIDER], "allow_fallbacks": False}
+    url = local or "https://openrouter.ai/api/v1/chat/completions"
+    key = "EMPTY" if local else os.environ["OPENROUTER_API_KEY"]
+    req = urllib.request.Request(url, data=json.dumps(body).encode(),
+                                 headers={"authorization": "Bearer " + key, "content-type": "application/json"})
     r = json.loads(urllib.request.urlopen(req, timeout=120).read()); ch = r["choices"][0]
     lp = {}
     for t in ((ch.get("logprobs") or {}).get("content") or [{}])[0].get("top_logprobs", []):
