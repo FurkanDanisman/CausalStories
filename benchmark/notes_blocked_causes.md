@@ -55,3 +55,17 @@ Gemma 0.35 (arrow lost) | Gemini Decision 1 0.56 | GPT-6 Luna Decisions 0.64 | J
 After the Llama-3.3-70B results: focus on why eviction -> homelessness fails and experiment with a few prompts
 (the user expected Regan's two rows to fix it; they did not in the one-story test). Plan the experiments with the user
 before running anything.
+
+## Cluster test, 2026-11-27 (test_ho002_arrow.sbatch; our vLLM Gemma 4 31B, the chain walk's exact prompt)
+- current definition, 5x: none 0.997 (blocks 0.003) every time = the chain walk's answer. First token 'C' (= none),
+  alternatives B, A: the logprob reading is correct; our Gemma really answers none.
+- with Regan's two "Without effect" rows, 5x: none 0.966 (blocks 0.033) every time.
+- OpenRouter's Gemma 4 31B gave enables 0.93 on the same prompt: a difference in the served model (provider
+  precision/serving), not in our code. Our results use our own full-weight Gemma.
+
+## OpenRouter test, 2026-11-27 (same script, TEST_MODEL=llm:google/gemma-4-31b-it): the answer depends on the provider
+current definition: DeepInfra none 1.00 (no logprobs: answer letter only) | NextBit none 0.967 | Parasail none 1.00 |
+  CoreWeave enables 0.93 (2x)
+Regan's rows: DeepInfra none 1.00 (3x, no logprobs) | Parasail none 0.962 | CoreWeave blocks 0.75
+-> Gemma 4 31B answers none on every provider except CoreWeave; the earlier "OpenRouter enables 0.93" was CoreWeave.
+   Our cluster Gemma agrees with the majority. The problem is the model's reading of the question, not serving.

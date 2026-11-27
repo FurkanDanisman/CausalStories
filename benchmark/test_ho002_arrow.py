@@ -46,7 +46,9 @@ for old, add in (ROW_ENABLES, ROW_BLOCKS):
     assert regan["instructions"].count(old) == 1, "definition text not found"
     regan["instructions"] = regan["instructions"].replace(old, old + add)
 
-kev = KevClient(base_url="http://127.0.0.1:1", model="llm:llm")    # llm:llm -> LLM_URL (local vLLM), as in the benchmark
+import os
+MODEL = os.environ.get("TEST_MODEL", "llm:llm")     # llm:llm -> LLM_URL (local vLLM), as in the benchmark;
+kev = KevClient(base_url="http://127.0.0.1:1", model=MODEL)   # llm:google/gemma-4-31b-it -> OpenRouter (LLM_URL unset)
 for name, q in [("current definition", current), ("with Regan's two rows", regan)]:
     print(f"===== {name}", flush=True)
     for i in range(5):
@@ -56,4 +58,5 @@ for name, q in [("current definition", current), ("with Regan's two rows", regan
         first = ((ch.get("logprobs") or {}).get("content") or [{}])[0]
         top = [(t["token"], round(t["logprob"], 2)) for t in first.get("top_logprobs", [])[:5]]
         print(f"  {i + 1}: " + " ".join(f"{k}={v:.3f}" for k, v in a["probabilities"].items())
-              + f" | first token {first.get('token')!r} | top {top}", flush=True)
+              + f" | first token {first.get('token')!r} | top {top}"
+              + (f" | provider {raw[-1].get('provider')}" if raw[-1].get("provider") else ""), flush=True)
