@@ -1,0 +1,116 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho162",
+  "text": "My marriage ended, but I still had my job, so money was never really a problem.",
+  "nodes": [
+    "marriage ending",
+    "having a job",
+    "financial problems"
+  ],
+  "edges": [
+    {
+      "head": "having a job",
+      "tail": "financial problems",
+      "rel": "blocks",
+      "prob": 0.88
+    }
+  ],
+  "chains": [
+    [
+      "having a job",
+      "financial problems"
+    ],
+    [
+      "marriage ending"
+    ]
+  ],
+  "kev_requests": 3,
+  "connected": false,
+  "kinds": {
+    "marriage ending": "event",
+    "having a job": "event",
+    "financial problems": "event"
+  },
+  "asked": [
+    {
+      "head": "having a job",
+      "tail": "marriage ending",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0,
+          "none": 0.99
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "financial problems",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.88,
+        "none": 0.12
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0.88,
+          "none": 0.12
+        }
+      ]
+    },
+    {
+      "head": "financial problems",
+      "tail": "marriage ending",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "having a job",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0,
+          "none": 0.99
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "financial problems",
+      "probs": {
+        "enables": 0.06,
+        "blocks": 0.13,
+        "none": 0.81
+      },
+      "reps": [
+        {
+          "enables": 0.06,
+          "blocks": 0.13,
+          "none": 0.81
+        }
+      ]
+    }
+  ]
+}

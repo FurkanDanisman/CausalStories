@@ -1,0 +1,320 @@
+{
+  "new_nodes": {
+    "having savings": {
+      "group": "having savings",
+      "value": 1
+    },
+    "rent arrears (2)": {
+      "group": "rent arrears (2)",
+      "value": 0
+    },
+    "divorce process": {
+      "group": "divorce process",
+      "value": 1
+    }
+  },
+  "edges": [
+    {
+      "head": "covering rent",
+      "tail": "rent arrears (2)",
+      "rel": "blocks",
+      "prob": 0.67
+    },
+    {
+      "head": "having savings",
+      "tail": "covering rent",
+      "rel": "enables",
+      "prob": 1.0
+    }
+  ],
+  "asked": [
+    {
+      "head": "divorce process",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.06,
+        "blocks": 0.0,
+        "none": 0.94
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "money being tight",
+      "probs": {
+        "enables": 0.07,
+        "blocks": 0.02,
+        "none": 0.91
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "covering rent",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "rent arrears (2)",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "I",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.13,
+        "blocks": 0.0,
+        "none": 0.87
+      }
+    },
+    {
+      "head": "I",
+      "tail": "rent arrears (2)",
+      "probs": {
+        "enables": 0.03,
+        "blocks": 0.19,
+        "none": 0.78
+      }
+    },
+    {
+      "head": "I",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "covering rent",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.04,
+        "blocks": 0.09,
+        "none": 0.87
+      }
+    },
+    {
+      "head": "covering rent",
+      "tail": "rent arrears (2)",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.67,
+        "none": 0.32
+      }
+    },
+    {
+      "head": "covering rent",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "rent arrears (2)",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "rent arrears (2)",
+      "tail": "money being tight",
+      "probs": {
+        "enables": 0.03,
+        "blocks": 0.01,
+        "none": 0.96
+      }
+    },
+    {
+      "head": "rent arrears (2)",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "rent arrears (2)",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "money being tight",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "money being tight",
+      "tail": "rent arrears (2)",
+      "probs": {
+        "enables": 0.13,
+        "blocks": 0.01,
+        "none": 0.86
+      }
+    },
+    {
+      "head": "money being tight",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "divorce",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.04,
+        "blocks": 0.03,
+        "none": 0.93
+      }
+    },
+    {
+      "head": "divorce",
+      "tail": "rent arrears (2)",
+      "probs": {
+        "enables": 0.05,
+        "blocks": 0.02,
+        "none": 0.93
+      }
+    },
+    {
+      "head": "divorce",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "money being tight",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.31,
+        "none": 0.68
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "covering rent",
+      "probs": {
+        "enables": 1.0,
+        "blocks": 0.0,
+        "none": 0.0
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "rent arrears (2)",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.21,
+        "none": 0.77
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "I",
+      "probs": {
+        "enables": 0.46,
+        "blocks": 0.04,
+        "none": 0.5
+      }
+    },
+    {
+      "head": "rent arrears (2)",
+      "tail": "I",
+      "probs": {
+        "enables": 0.03,
+        "blocks": 0.12,
+        "none": 0.85
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "I",
+      "probs": {
+        "enables": 0.03,
+        "blocks": 0.17,
+        "none": 0.8
+      }
+    }
+  ],
+  "chains": [
+    [
+      "divorce process"
+    ],
+    [
+      "I",
+      "covering rent",
+      "rent arrears (2)"
+    ],
+    [
+      "money being tight"
+    ]
+  ],
+  "log": [
+    "  start at 'divorce process'",
+    "  ask 'divorce process' (path divorce process): no new arrows",
+    "  start at 'I'",
+    "  ask 'I' (path I): no new arrows",
+    "  ask 'covering rent' (path I > covering rent): rent arrears (2) blocks 0.67",
+    "  ask 'rent arrears (2)' (path I > covering rent > rent arrears (2)): no new arrows",
+    "  start at 'money being tight'",
+    "  ask 'money being tight' (path money being tight): no new arrows",
+    "  start at 'divorce'",
+    "  ask 'divorce' (path divorce): no new arrows",
+    "  start at 'having savings'",
+    "  ask 'having savings' (path having savings): covering rent enables 1.00"
+  ]
+}

@@ -1,0 +1,530 @@
+{
+  "new_nodes": {
+    "employment": {
+      "group": "employment",
+      "value": 1
+    },
+    "having savings": {
+      "group": "having savings",
+      "value": 0
+    },
+    "rent arrears (2)": {
+      "group": "rent arrears (2)",
+      "value": 1
+    }
+  },
+  "edges": [
+    {
+      "head": "company",
+      "tail": "employment",
+      "rel": "blocks",
+      "prob": 0.9
+    },
+    {
+      "head": "job loss",
+      "tail": "employment",
+      "rel": "blocks",
+      "prob": 0.64
+    },
+    {
+      "head": "not paying rent",
+      "tail": "rent arrears (2)",
+      "rel": "enables",
+      "prob": 0.96
+    },
+    {
+      "head": "rent arrears (2)",
+      "tail": "eviction",
+      "rel": "enables",
+      "prob": 0.67
+    },
+    {
+      "head": "employment",
+      "tail": "rent arrears (2)",
+      "rel": "blocks",
+      "prob": 0.48
+    }
+  ],
+  "asked": [
+    {
+      "head": "company",
+      "tail": "employment",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.9,
+        "none": 0.08
+      }
+    },
+    {
+      "head": "company",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.05,
+        "none": 0.95
+      }
+    },
+    {
+      "head": "company",
+      "tail": "rent arrears (2)",
+      "probs": {
+        "enables": 0.09,
+        "blocks": 0.01,
+        "none": 0.9
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "employment",
+      "probs": {
+        "enables": 0.11,
+        "blocks": 0.64,
+        "none": 0.25
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.1,
+        "blocks": 0.17,
+        "none": 0.73
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "rent arrears (2)",
+      "probs": {
+        "enables": 0.05,
+        "blocks": 0.0,
+        "none": 0.95
+      }
+    },
+    {
+      "head": "financial hardship",
+      "tail": "employment",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "financial hardship",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.06,
+        "none": 0.92
+      }
+    },
+    {
+      "head": "financial hardship",
+      "tail": "rent arrears (2)",
+      "probs": {
+        "enables": 0.36,
+        "blocks": 0.01,
+        "none": 0.63
+      }
+    },
+    {
+      "head": "not paying rent",
+      "tail": "employment",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "not paying rent",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.01,
+        "none": 0.97
+      }
+    },
+    {
+      "head": "not paying rent",
+      "tail": "rent arrears (2)",
+      "probs": {
+        "enables": 0.96,
+        "blocks": 0.0,
+        "none": 0.04
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "employment",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "rent arrears (2)",
+      "probs": {
+        "enables": 0.04,
+        "blocks": 0.01,
+        "none": 0.95
+      }
+    },
+    {
+      "head": "moving in with sister",
+      "tail": "employment",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "moving in with sister",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "moving in with sister",
+      "tail": "rent arrears (2)",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "being homeless",
+      "tail": "employment",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "being homeless",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "being homeless",
+      "tail": "rent arrears (2)",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "rent arrears (2)",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.67,
+        "blocks": 0.0,
+        "none": 0.33
+      }
+    },
+    {
+      "head": "rent arrears (2)",
+      "tail": "moving in with sister",
+      "probs": {
+        "enables": 0.26,
+        "blocks": 0.0,
+        "none": 0.74
+      }
+    },
+    {
+      "head": "rent arrears (2)",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.26,
+        "blocks": 0.03,
+        "none": 0.71
+      }
+    },
+    {
+      "head": "rent arrears (2)",
+      "tail": "employment",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "rent arrears (2)",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.13,
+        "none": 0.86
+      }
+    },
+    {
+      "head": "employment",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.03,
+        "blocks": 0.18,
+        "none": 0.79
+      }
+    },
+    {
+      "head": "employment",
+      "tail": "not paying rent",
+      "probs": {
+        "enables": 0.03,
+        "blocks": 0.08,
+        "none": 0.89
+      }
+    },
+    {
+      "head": "employment",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.02,
+        "none": 0.97
+      }
+    },
+    {
+      "head": "employment",
+      "tail": "moving in with sister",
+      "probs": {
+        "enables": 0.04,
+        "blocks": 0.03,
+        "none": 0.93
+      }
+    },
+    {
+      "head": "employment",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.04,
+        "none": 0.96
+      }
+    },
+    {
+      "head": "employment",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.04,
+        "blocks": 0.0,
+        "none": 0.96
+      }
+    },
+    {
+      "head": "employment",
+      "tail": "rent arrears (2)",
+      "probs": {
+        "enables": 0.16,
+        "blocks": 0.48,
+        "none": 0.36
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "job loss",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.15,
+        "none": 0.84
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "not paying rent",
+      "probs": {
+        "enables": 0.1,
+        "blocks": 0.44,
+        "none": 0.46
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.16,
+        "none": 0.83
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "moving in with sister",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.34,
+        "none": 0.66
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "employment",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "rent arrears (2)",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.38,
+        "none": 0.61
+      }
+    },
+    {
+      "head": "sister",
+      "tail": "employment",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "sister",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "sister",
+      "tail": "rent arrears (2)",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "employment",
+      "tail": "company",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.07,
+        "none": 0.91
+      }
+    },
+    {
+      "head": "employment",
+      "tail": "sister",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.01,
+        "none": 0.98
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "company",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.01,
+        "none": 0.98
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "sister",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "rent arrears (2)",
+      "tail": "company",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.03,
+        "none": 0.96
+      }
+    },
+    {
+      "head": "rent arrears (2)",
+      "tail": "sister",
+      "probs": {
+        "enables": 0.05,
+        "blocks": 0.05,
+        "none": 0.9
+      }
+    }
+  ],
+  "chains": [
+    [
+      "company",
+      "job loss",
+      "financial hardship",
+      "not paying rent",
+      "eviction",
+      "moving in with sister",
+      "being homeless"
+    ],
+    [
+      "having savings"
+    ]
+  ],
+  "log": [
+    "  start at 'company'",
+    "  ask 'company' (path company): employment blocks 0.90",
+    "  ask 'job loss' (path company > job loss): employment blocks 0.64",
+    "  ask 'financial hardship' (path company > job loss > financial hardship): no new arrows",
+    "  ask 'not paying rent' (path company > job loss > financial hardship > not paying rent): rent arrears (2) enables 0.96",
+    "  ask 'eviction' (path company > job loss > financial hardship > not paying rent > eviction): no new arrows",
+    "  ask 'moving in with sister' (path company > job loss > financial hardship > not paying rent > eviction > moving in with sister): no new arrows",
+    "  ask 'being homeless' (path company > job loss > financial hardship > not paying rent > eviction > moving in with sister > being homeless): no new arrows",
+    "  ask 'rent arrears (2)' (path company > job loss > financial hardship > not paying rent > rent arrears (2)): eviction enables 0.67",
+    "  ask 'employment' (path company > job loss > employment): rent arrears (2) blocks 0.48",
+    "  start at 'having savings'",
+    "  ask 'having savings' (path having savings): no new arrows",
+    "  start at 'sister'",
+    "  ask 'sister' (path sister): no new arrows"
+  ]
+}

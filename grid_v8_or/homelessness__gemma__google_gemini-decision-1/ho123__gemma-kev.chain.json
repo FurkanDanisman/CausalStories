@@ -1,0 +1,116 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho123",
+  "text": "My marriage ended, but I still had my job, so money never became a real problem.",
+  "nodes": [
+    "marriage ending",
+    "having a job",
+    "financial problems"
+  ],
+  "edges": [
+    {
+      "head": "having a job",
+      "tail": "financial problems",
+      "rel": "blocks",
+      "prob": 0.895
+    }
+  ],
+  "chains": [
+    [
+      "having a job",
+      "financial problems"
+    ],
+    [
+      "marriage ending"
+    ]
+  ],
+  "kev_requests": 3,
+  "connected": false,
+  "kinds": {
+    "marriage ending": "event",
+    "having a job": "event",
+    "financial problems": "event"
+  },
+  "asked": [
+    {
+      "head": "having a job",
+      "tail": "marriage ending",
+      "probs": {
+        "enables": 0.0247,
+        "none": 0.9536,
+        "blocks": 0.0216
+      },
+      "reps": [
+        {
+          "enables": 0.0247,
+          "none": 0.9536,
+          "blocks": 0.0216
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "financial problems",
+      "probs": {
+        "enables": 0.0135,
+        "blocks": 0.8946,
+        "none": 0.0918
+      },
+      "reps": [
+        {
+          "enables": 0.0135,
+          "blocks": 0.8946,
+          "none": 0.0918
+        }
+      ]
+    },
+    {
+      "head": "financial problems",
+      "tail": "marriage ending",
+      "probs": {
+        "enables": 0.0496,
+        "none": 0.921,
+        "blocks": 0.0294
+      },
+      "reps": [
+        {
+          "enables": 0.0496,
+          "none": 0.921,
+          "blocks": 0.0294
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "having a job",
+      "probs": {
+        "none": 0.9636,
+        "blocks": 0.0173,
+        "enables": 0.0191
+      },
+      "reps": [
+        {
+          "none": 0.9636,
+          "blocks": 0.0173,
+          "enables": 0.0191
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "financial problems",
+      "probs": {
+        "none": 0.9129,
+        "enables": 0.0635,
+        "blocks": 0.0235
+      },
+      "reps": [
+        {
+          "none": 0.9129,
+          "enables": 0.0635,
+          "blocks": 0.0235
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,223 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho000",
+  "text": "I got divorced, but I still had my job, so money never became a real problem.",
+  "nodes": [
+    "divorce",
+    "having a job",
+    "financial problems",
+    "I"
+  ],
+  "edges": [
+    {
+      "head": "having a job",
+      "tail": "financial problems",
+      "rel": "blocks",
+      "prob": 0.62
+    },
+    {
+      "head": "having a job",
+      "tail": "I",
+      "rel": "enables",
+      "prob": 0.59
+    }
+  ],
+  "chains": [
+    [
+      "I"
+    ],
+    [
+      "having a job",
+      "financial problems"
+    ],
+    [
+      "divorce"
+    ]
+  ],
+  "kev_requests": 5,
+  "connected": false,
+  "kinds": {
+    "divorce": "event",
+    "having a job": "event",
+    "financial problems": "event",
+    "I": "participant"
+  },
+  "asked": [
+    {
+      "head": "I",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.08,
+        "blocks": 0.0,
+        "none": 0.92
+      },
+      "reps": [
+        {
+          "enables": 0.08,
+          "blocks": 0,
+          "none": 0.92
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "having a job",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.0,
+        "none": 0.98
+      },
+      "reps": [
+        {
+          "enables": 0.02,
+          "blocks": 0,
+          "none": 0.98
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "financial problems",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.03,
+        "none": 0.96
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0.03,
+          "none": 0.96
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "financial problems",
+      "probs": {
+        "enables": 0.21,
+        "blocks": 0.62,
+        "none": 0.17
+      },
+      "reps": [
+        {
+          "enables": 0.21,
+          "blocks": 0.62,
+          "none": 0.17
+        }
+      ]
+    },
+    {
+      "head": "financial problems",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0,
+          "none": 0.99
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "having a job",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "financial problems",
+      "probs": {
+        "enables": 0.03,
+        "blocks": 0.02,
+        "none": 0.95
+      },
+      "reps": [
+        {
+          "enables": 0.03,
+          "blocks": 0.02,
+          "none": 0.95
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "I",
+      "probs": {
+        "enables": 0.17,
+        "blocks": 0.29,
+        "none": 0.54
+      },
+      "reps": [
+        {
+          "enables": 0.17,
+          "blocks": 0.29,
+          "none": 0.54
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "I",
+      "probs": {
+        "enables": 0.59,
+        "blocks": 0.01,
+        "none": 0.4
+      },
+      "reps": [
+        {
+          "enables": 0.59,
+          "blocks": 0.01,
+          "none": 0.4
+        }
+      ]
+    },
+    {
+      "head": "financial problems",
+      "tail": "I",
+      "probs": {
+        "enables": 0.18,
+        "blocks": 0.38,
+        "none": 0.44
+      },
+      "reps": [
+        {
+          "enables": 0.18,
+          "blocks": 0.38,
+          "none": 0.44
+        }
+      ]
+    }
+  ]
+}

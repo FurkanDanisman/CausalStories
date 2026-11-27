@@ -1,0 +1,511 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho012",
+  "text": "I was let go by my company, and my marriage ended. Money got tight, but I had savings, so the rent still got paid.",
+  "nodes": [
+    "job loss",
+    "marriage ending",
+    "financial hardship",
+    "paying rent",
+    "company",
+    "I"
+  ],
+  "edges": [
+    {
+      "head": "company",
+      "tail": "job loss",
+      "rel": "enables",
+      "prob": 0.95
+    },
+    {
+      "head": "job loss",
+      "tail": "financial hardship",
+      "rel": "enables",
+      "prob": 0.78
+    },
+    {
+      "head": "job loss",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.99
+    },
+    {
+      "head": "marriage ending",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.8
+    },
+    {
+      "head": "financial hardship",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.9
+    },
+    {
+      "head": "paying rent",
+      "tail": "I",
+      "rel": "enables",
+      "prob": 0.71
+    }
+  ],
+  "chains": [
+    [
+      "paying rent"
+    ],
+    [
+      "company",
+      "job loss",
+      "financial hardship"
+    ],
+    [
+      "marriage ending"
+    ],
+    [
+      "I"
+    ]
+  ],
+  "kev_requests": 7,
+  "connected": true,
+  "kinds": {
+    "job loss": "event",
+    "marriage ending": "event",
+    "financial hardship": "event",
+    "paying rent": "event",
+    "company": "participant",
+    "I": "participant"
+  },
+  "asked": [
+    {
+      "head": "paying rent",
+      "tail": "job loss",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "paying rent",
+      "tail": "marriage ending",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "paying rent",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.26,
+        "none": 0.73
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0.26,
+          "none": 0.73
+        }
+      ]
+    },
+    {
+      "head": "company",
+      "tail": "job loss",
+      "probs": {
+        "enables": 0.95,
+        "blocks": 0.0,
+        "none": 0.05
+      },
+      "reps": [
+        {
+          "enables": 0.95,
+          "blocks": 0,
+          "none": 0.05
+        }
+      ]
+    },
+    {
+      "head": "company",
+      "tail": "marriage ending",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "company",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0,
+          "none": 0.99
+        }
+      ]
+    },
+    {
+      "head": "company",
+      "tail": "paying rent",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "job loss",
+      "tail": "marriage ending",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0,
+          "none": 0.99
+        }
+      ]
+    },
+    {
+      "head": "job loss",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.78,
+        "blocks": 0.0,
+        "none": 0.22
+      },
+      "reps": [
+        {
+          "enables": 0.78,
+          "blocks": 0,
+          "none": 0.22
+        }
+      ]
+    },
+    {
+      "head": "job loss",
+      "tail": "paying rent",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.05,
+        "none": 0.95
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0.05,
+          "none": 0.95
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "marriage ending",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "paying rent",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.33,
+        "none": 0.66
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0.33,
+          "none": 0.66
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "job loss",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.34,
+        "blocks": 0.0,
+        "none": 0.66
+      },
+      "reps": [
+        {
+          "enables": 0.34,
+          "blocks": 0,
+          "none": 0.66
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "paying rent",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.01,
+        "none": 0.99
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0.01,
+          "none": 0.99
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "job loss",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "marriage ending",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.13,
+        "none": 0.86
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0.13,
+          "none": 0.86
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "paying rent",
+      "probs": {
+        "enables": 0.44,
+        "blocks": 0.01,
+        "none": 0.55
+      },
+      "reps": [
+        {
+          "enables": 0.44,
+          "blocks": 0.01,
+          "none": 0.55
+        }
+      ]
+    },
+    {
+      "head": "job loss",
+      "tail": "company",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.4,
+        "none": 0.59
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0.4,
+          "none": 0.59
+        }
+      ]
+    },
+    {
+      "head": "job loss",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.99,
+        "none": 0.01
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0.99,
+          "none": 0.01
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "company",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.04,
+        "none": 0.96
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0.04,
+          "none": 0.96
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.8,
+        "none": 0.2
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0.8,
+          "none": 0.2
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "company",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.02,
+        "none": 0.98
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0.02,
+          "none": 0.98
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.9,
+        "none": 0.1
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0.9,
+          "none": 0.1
+        }
+      ]
+    },
+    {
+      "head": "paying rent",
+      "tail": "company",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "paying rent",
+      "tail": "I",
+      "probs": {
+        "enables": 0.71,
+        "blocks": 0.01,
+        "none": 0.28
+      },
+      "reps": [
+        {
+          "enables": 0.71,
+          "blocks": 0.01,
+          "none": 0.28
+        }
+      ]
+    }
+  ]
+}

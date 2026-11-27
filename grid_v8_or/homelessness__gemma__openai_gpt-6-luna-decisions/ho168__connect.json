@@ -1,0 +1,249 @@
+{
+  "new_nodes": {
+    "job loss": {
+      "group": "job loss",
+      "value": 0
+    },
+    "divorce process": {
+      "group": "divorce process",
+      "value": 1
+    }
+  },
+  "edges": [],
+  "asked": [
+    {
+      "head": "divorce process",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.25,
+        "blocks": 0.0,
+        "none": 0.75
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "having a job",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "financial stability",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "job loss",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "husband",
+      "tail": "job loss",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "husband",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "I",
+      "tail": "job loss",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "I",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "divorce",
+      "tail": "job loss",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.09,
+        "none": 0.9
+      }
+    },
+    {
+      "head": "divorce",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.0,
+        "none": 0.98
+      }
+    },
+    {
+      "head": "financial stability",
+      "tail": "job loss",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "financial stability",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "having a job",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.18,
+        "none": 0.81
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "financial stability",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.02,
+        "none": 0.97
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "having a job",
+      "tail": "job loss",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "having a job",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.0,
+        "none": 0.98
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.03,
+        "blocks": 0.06,
+        "none": 0.91
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "I",
+      "probs": {
+        "enables": 0.04,
+        "blocks": 0.16,
+        "none": 0.8
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.09,
+        "none": 0.89
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "I",
+      "probs": {
+        "enables": 0.09,
+        "blocks": 0.22,
+        "none": 0.69
+      }
+    }
+  ],
+  "chains": [
+    [
+      "divorce process"
+    ],
+    [
+      "husband"
+    ],
+    [
+      "I"
+    ],
+    [
+      "divorce"
+    ],
+    [
+      "financial stability"
+    ],
+    [
+      "job loss"
+    ]
+  ],
+  "log": [
+    "  start at 'divorce process'",
+    "  ask 'divorce process' (path divorce process): no new arrows",
+    "  start at 'husband'",
+    "  ask 'husband' (path husband): no new arrows",
+    "  start at 'I'",
+    "  ask 'I' (path I): no new arrows",
+    "  start at 'divorce'",
+    "  ask 'divorce' (path divorce): no new arrows",
+    "  start at 'financial stability'",
+    "  ask 'financial stability' (path financial stability): no new arrows",
+    "  start at 'job loss'",
+    "  ask 'job loss' (path job loss): no new arrows",
+    "  start at 'having a job'",
+    "  ask 'having a job' (path having a job): no new arrows"
+  ]
+}

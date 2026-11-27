@@ -1,0 +1,528 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho164",
+  "text": "My boss let me go, and money got tight. Luckily I had savings, so the rent still got paid.",
+  "nodes": [
+    "losing employment",
+    "financial hardship",
+    "having savings",
+    "paying rent",
+    "boss",
+    "I"
+  ],
+  "edges": [
+    {
+      "head": "boss",
+      "tail": "losing employment",
+      "rel": "enables",
+      "prob": 0.887
+    },
+    {
+      "head": "losing employment",
+      "tail": "financial hardship",
+      "rel": "enables",
+      "prob": 0.938
+    },
+    {
+      "head": "having savings",
+      "tail": "financial hardship",
+      "rel": "blocks",
+      "prob": 0.571
+    },
+    {
+      "head": "having savings",
+      "tail": "paying rent",
+      "rel": "enables",
+      "prob": 0.897
+    },
+    {
+      "head": "losing employment",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.928
+    },
+    {
+      "head": "financial hardship",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.672
+    },
+    {
+      "head": "having savings",
+      "tail": "I",
+      "rel": "enables",
+      "prob": 0.972
+    },
+    {
+      "head": "paying rent",
+      "tail": "I",
+      "rel": "enables",
+      "prob": 0.517
+    }
+  ],
+  "chains": [
+    [
+      "paying rent"
+    ],
+    [
+      "boss",
+      "losing employment",
+      "financial hardship"
+    ],
+    [
+      "having savings",
+      "financial hardship"
+    ],
+    [
+      "having savings",
+      "paying rent"
+    ],
+    [
+      "I"
+    ]
+  ],
+  "kev_requests": 7,
+  "connected": true,
+  "kinds": {
+    "losing employment": "event",
+    "financial hardship": "event",
+    "having savings": "event",
+    "paying rent": "event",
+    "boss": "participant",
+    "I": "participant"
+  },
+  "asked": [
+    {
+      "head": "paying rent",
+      "tail": "losing employment",
+      "probs": {
+        "none": 0.9828,
+        "blocks": 0.0103,
+        "enables": 0.0068
+      },
+      "reps": [
+        {
+          "none": 0.9828,
+          "blocks": 0.0103,
+          "enables": 0.0068
+        }
+      ]
+    },
+    {
+      "head": "paying rent",
+      "tail": "financial hardship",
+      "probs": {
+        "none": 0.5519,
+        "blocks": 0.3155,
+        "enables": 0.1327
+      },
+      "reps": [
+        {
+          "none": 0.5519,
+          "blocks": 0.3155,
+          "enables": 0.1327
+        }
+      ]
+    },
+    {
+      "head": "paying rent",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.03,
+        "none": 0.7253,
+        "blocks": 0.2447
+      },
+      "reps": [
+        {
+          "enables": 0.03,
+          "none": 0.7253,
+          "blocks": 0.2447
+        }
+      ]
+    },
+    {
+      "head": "boss",
+      "tail": "losing employment",
+      "probs": {
+        "blocks": 0.0191,
+        "none": 0.0941,
+        "enables": 0.8868
+      },
+      "reps": [
+        {
+          "blocks": 0.0191,
+          "none": 0.0941,
+          "enables": 0.8868
+        }
+      ]
+    },
+    {
+      "head": "boss",
+      "tail": "financial hardship",
+      "probs": {
+        "none": 0.94,
+        "blocks": 0.0039,
+        "enables": 0.0561
+      },
+      "reps": [
+        {
+          "none": 0.94,
+          "blocks": 0.0039,
+          "enables": 0.0561
+        }
+      ]
+    },
+    {
+      "head": "boss",
+      "tail": "having savings",
+      "probs": {
+        "blocks": 0.0815,
+        "enables": 0.0261,
+        "none": 0.8923
+      },
+      "reps": [
+        {
+          "blocks": 0.0815,
+          "enables": 0.0261,
+          "none": 0.8923
+        }
+      ]
+    },
+    {
+      "head": "boss",
+      "tail": "paying rent",
+      "probs": {
+        "enables": 0.0099,
+        "none": 0.9428,
+        "blocks": 0.0473
+      },
+      "reps": [
+        {
+          "enables": 0.0099,
+          "none": 0.9428,
+          "blocks": 0.0473
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.9375,
+        "blocks": 0.004,
+        "none": 0.0585
+      },
+      "reps": [
+        {
+          "enables": 0.9375,
+          "blocks": 0.004,
+          "none": 0.0585
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0319,
+        "none": 0.9273,
+        "blocks": 0.0408
+      },
+      "reps": [
+        {
+          "enables": 0.0319,
+          "none": 0.9273,
+          "blocks": 0.0408
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "paying rent",
+      "probs": {
+        "enables": 0.0058,
+        "none": 0.9525,
+        "blocks": 0.0418
+      },
+      "reps": [
+        {
+          "enables": 0.0058,
+          "none": 0.9525,
+          "blocks": 0.0418
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "having savings",
+      "probs": {
+        "blocks": 0.1065,
+        "enables": 0.046,
+        "none": 0.8475
+      },
+      "reps": [
+        {
+          "blocks": 0.1065,
+          "enables": 0.046,
+          "none": 0.8475
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "paying rent",
+      "probs": {
+        "none": 0.6121,
+        "enables": 0.0252,
+        "blocks": 0.3627
+      },
+      "reps": [
+        {
+          "none": 0.6121,
+          "enables": 0.0252,
+          "blocks": 0.3627
+        }
+      ]
+    },
+    {
+      "head": "having savings",
+      "tail": "losing employment",
+      "probs": {
+        "enables": 0.009,
+        "none": 0.9737,
+        "blocks": 0.0173
+      },
+      "reps": [
+        {
+          "enables": 0.009,
+          "none": 0.9737,
+          "blocks": 0.0173
+        }
+      ]
+    },
+    {
+      "head": "having savings",
+      "tail": "financial hardship",
+      "probs": {
+        "blocks": 0.5711,
+        "enables": 0.0397,
+        "none": 0.3892
+      },
+      "reps": [
+        {
+          "blocks": 0.5711,
+          "enables": 0.0397,
+          "none": 0.3892
+        }
+      ]
+    },
+    {
+      "head": "having savings",
+      "tail": "paying rent",
+      "probs": {
+        "enables": 0.8969,
+        "blocks": 0.0098,
+        "none": 0.0933
+      },
+      "reps": [
+        {
+          "enables": 0.8969,
+          "blocks": 0.0098,
+          "none": 0.0933
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "losing employment",
+      "probs": {
+        "none": 0.914,
+        "enables": 0.047,
+        "blocks": 0.039
+      },
+      "reps": [
+        {
+          "none": 0.914,
+          "enables": 0.047,
+          "blocks": 0.039
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "financial hardship",
+      "probs": {
+        "none": 0.5921,
+        "enables": 0.1268,
+        "blocks": 0.2811
+      },
+      "reps": [
+        {
+          "none": 0.5921,
+          "enables": 0.1268,
+          "blocks": 0.2811
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "having savings",
+      "probs": {
+        "none": 0.502,
+        "enables": 0.4792,
+        "blocks": 0.0188
+      },
+      "reps": [
+        {
+          "none": 0.502,
+          "enables": 0.4792,
+          "blocks": 0.0188
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "paying rent",
+      "probs": {
+        "blocks": 0.0165,
+        "none": 0.5442,
+        "enables": 0.4393
+      },
+      "reps": [
+        {
+          "blocks": 0.0165,
+          "none": 0.5442,
+          "enables": 0.4393
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.0216,
+        "blocks": 0.0231,
+        "none": 0.9553
+      },
+      "reps": [
+        {
+          "enables": 0.0216,
+          "blocks": 0.0231,
+          "none": 0.9553
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0179,
+        "blocks": 0.9276,
+        "none": 0.0545
+      },
+      "reps": [
+        {
+          "enables": 0.0179,
+          "blocks": 0.9276,
+          "none": 0.0545
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.0111,
+        "blocks": 0.0178,
+        "none": 0.9711
+      },
+      "reps": [
+        {
+          "enables": 0.0111,
+          "blocks": 0.0178,
+          "none": 0.9711
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0286,
+        "blocks": 0.6718,
+        "none": 0.2996
+      },
+      "reps": [
+        {
+          "enables": 0.0286,
+          "blocks": 0.6718,
+          "none": 0.2996
+        }
+      ]
+    },
+    {
+      "head": "having savings",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.0111,
+        "blocks": 0.0069,
+        "none": 0.982
+      },
+      "reps": [
+        {
+          "enables": 0.0111,
+          "blocks": 0.0069,
+          "none": 0.982
+        }
+      ]
+    },
+    {
+      "head": "having savings",
+      "tail": "I",
+      "probs": {
+        "enables": 0.9717,
+        "blocks": 0.0077,
+        "none": 0.0206
+      },
+      "reps": [
+        {
+          "enables": 0.9717,
+          "blocks": 0.0077,
+          "none": 0.0206
+        }
+      ]
+    },
+    {
+      "head": "paying rent",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.0053,
+        "blocks": 0.0078,
+        "none": 0.9869
+      },
+      "reps": [
+        {
+          "enables": 0.0053,
+          "blocks": 0.0078,
+          "none": 0.9869
+        }
+      ]
+    },
+    {
+      "head": "paying rent",
+      "tail": "I",
+      "probs": {
+        "enables": 0.5171,
+        "blocks": 0.0726,
+        "none": 0.4103
+      },
+      "reps": [
+        {
+          "enables": 0.5171,
+          "blocks": 0.0726,
+          "none": 0.4103
+        }
+      ]
+    }
+  ]
+}

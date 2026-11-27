@@ -1,0 +1,349 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho172",
+  "text": "My wife and I divorced, but I still had my job, so I got through it fine with money.",
+  "nodes": [
+    "divorce",
+    "having money",
+    "coping with divorce",
+    "wife",
+    "I"
+  ],
+  "edges": [
+    {
+      "head": "having money",
+      "tail": "coping with divorce",
+      "rel": "enables",
+      "prob": 0.85
+    },
+    {
+      "head": "divorce",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.61
+    },
+    {
+      "head": "having money",
+      "tail": "I",
+      "rel": "enables",
+      "prob": 0.83
+    }
+  ],
+  "chains": [
+    [
+      "wife"
+    ],
+    [
+      "I"
+    ],
+    [
+      "divorce"
+    ],
+    [
+      "coping with divorce"
+    ],
+    [
+      "having money",
+      "coping with divorce"
+    ]
+  ],
+  "kev_requests": 6,
+  "connected": false,
+  "kinds": {
+    "divorce": "event",
+    "having money": "event",
+    "coping with divorce": "event",
+    "wife": "participant",
+    "I": "participant"
+  },
+  "asked": [
+    {
+      "head": "wife",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.05,
+        "blocks": 0.0,
+        "none": 0.95
+      },
+      "reps": [
+        {
+          "enables": 0.05,
+          "blocks": 0,
+          "none": 0.95
+        }
+      ]
+    },
+    {
+      "head": "wife",
+      "tail": "having money",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "wife",
+      "tail": "coping with divorce",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0,
+          "none": 0.99
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "having money",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.0,
+        "none": 0.98
+      },
+      "reps": [
+        {
+          "enables": 0.02,
+          "blocks": 0,
+          "none": 0.98
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "coping with divorce",
+      "probs": {
+        "enables": 0.26,
+        "blocks": 0.01,
+        "none": 0.73
+      },
+      "reps": [
+        {
+          "enables": 0.26,
+          "blocks": 0.01,
+          "none": 0.73
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "having money",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "coping with divorce",
+      "probs": {
+        "enables": 0.21,
+        "blocks": 0.01,
+        "none": 0.78
+      },
+      "reps": [
+        {
+          "enables": 0.21,
+          "blocks": 0.01,
+          "none": 0.78
+        }
+      ]
+    },
+    {
+      "head": "coping with divorce",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "coping with divorce",
+      "tail": "having money",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.02,
+        "none": 0.96
+      },
+      "reps": [
+        {
+          "enables": 0.02,
+          "blocks": 0.02,
+          "none": 0.96
+        }
+      ]
+    },
+    {
+      "head": "having money",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "having money",
+      "tail": "coping with divorce",
+      "probs": {
+        "enables": 0.85,
+        "blocks": 0.01,
+        "none": 0.14
+      },
+      "reps": [
+        {
+          "enables": 0.85,
+          "blocks": 0.01,
+          "none": 0.14
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "wife",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.11,
+        "none": 0.87
+      },
+      "reps": [
+        {
+          "enables": 0.02,
+          "blocks": 0.11,
+          "none": 0.87
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "I",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.61,
+        "none": 0.37
+      },
+      "reps": [
+        {
+          "enables": 0.02,
+          "blocks": 0.61,
+          "none": 0.37
+        }
+      ]
+    },
+    {
+      "head": "having money",
+      "tail": "wife",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.01,
+        "none": 0.98
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0.01,
+          "none": 0.98
+        }
+      ]
+    },
+    {
+      "head": "having money",
+      "tail": "I",
+      "probs": {
+        "enables": 0.83,
+        "blocks": 0.0,
+        "none": 0.17
+      },
+      "reps": [
+        {
+          "enables": 0.83,
+          "blocks": 0,
+          "none": 0.17
+        }
+      ]
+    },
+    {
+      "head": "coping with divorce",
+      "tail": "wife",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.03,
+        "none": 0.95
+      },
+      "reps": [
+        {
+          "enables": 0.02,
+          "blocks": 0.03,
+          "none": 0.95
+        }
+      ]
+    },
+    {
+      "head": "coping with divorce",
+      "tail": "I",
+      "probs": {
+        "enables": 0.24,
+        "blocks": 0.05,
+        "none": 0.71
+      },
+      "reps": [
+        {
+          "enables": 0.24,
+          "blocks": 0.05,
+          "none": 0.71
+        }
+      ]
+    }
+  ]
+}

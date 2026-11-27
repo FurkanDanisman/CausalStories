@@ -1,0 +1,703 @@
+{
+  "new_nodes": {
+    "eviction": {
+      "group": "eviction",
+      "value": 0
+    },
+    "homelessness": {
+      "group": "homelessness",
+      "value": 0
+    },
+    "homelessness (2)": {
+      "group": "homelessness (2)",
+      "value": 0
+    },
+    "financial savings": {
+      "group": "financial savings",
+      "value": 1
+    },
+    "providing housing": {
+      "group": "providing housing",
+      "value": 1
+    }
+  },
+  "edges": [
+    {
+      "head": "paying rent",
+      "tail": "eviction",
+      "rel": "blocks",
+      "prob": 0.63
+    },
+    {
+      "head": "paying rent",
+      "tail": "homelessness",
+      "rel": "blocks",
+      "prob": 0.71
+    },
+    {
+      "head": "paying rent",
+      "tail": "homelessness (2)",
+      "rel": "blocks",
+      "prob": 0.58
+    },
+    {
+      "head": "financial savings",
+      "tail": "paying rent",
+      "rel": "enables",
+      "prob": 0.92
+    },
+    {
+      "head": "financial savings",
+      "tail": "I",
+      "rel": "enables",
+      "prob": 0.99
+    },
+    {
+      "head": "providing housing",
+      "tail": "I",
+      "rel": "enables",
+      "prob": 0.65
+    }
+  ],
+  "asked": [
+    {
+      "head": "homelessness",
+      "tail": "laying off",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "homelessness",
+      "tail": "money getting tight",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "homelessness",
+      "tail": "paying rent",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "homelessness",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "homelessness",
+      "tail": "homelessness (2)",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "homelessness",
+      "tail": "financial savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "homelessness",
+      "tail": "providing housing",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "homelessness (2)",
+      "tail": "laying off",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "homelessness (2)",
+      "tail": "money getting tight",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "homelessness (2)",
+      "tail": "paying rent",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "homelessness (2)",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.01,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "homelessness (2)",
+      "tail": "homelessness",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "homelessness (2)",
+      "tail": "financial savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "homelessness (2)",
+      "tail": "providing housing",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "laying off",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "laying off",
+      "tail": "homelessness",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "laying off",
+      "tail": "homelessness (2)",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "laying off",
+      "tail": "financial savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.01,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "laying off",
+      "tail": "providing housing",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "money getting tight",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.06,
+        "blocks": 0.0,
+        "none": 0.94
+      }
+    },
+    {
+      "head": "money getting tight",
+      "tail": "homelessness",
+      "probs": {
+        "enables": 0.11,
+        "blocks": 0.0,
+        "none": 0.89
+      }
+    },
+    {
+      "head": "money getting tight",
+      "tail": "homelessness (2)",
+      "probs": {
+        "enables": 0.13,
+        "blocks": 0.0,
+        "none": 0.87
+      }
+    },
+    {
+      "head": "money getting tight",
+      "tail": "financial savings",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.01,
+        "none": 0.97
+      }
+    },
+    {
+      "head": "money getting tight",
+      "tail": "providing housing",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.05,
+        "none": 0.95
+      }
+    },
+    {
+      "head": "paying rent",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.63,
+        "none": 0.37
+      }
+    },
+    {
+      "head": "paying rent",
+      "tail": "homelessness",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.71,
+        "none": 0.29
+      }
+    },
+    {
+      "head": "paying rent",
+      "tail": "homelessness (2)",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.58,
+        "none": 0.42
+      }
+    },
+    {
+      "head": "paying rent",
+      "tail": "financial savings",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.16,
+        "none": 0.83
+      }
+    },
+    {
+      "head": "paying rent",
+      "tail": "providing housing",
+      "probs": {
+        "enables": 0.37,
+        "blocks": 0.01,
+        "none": 0.62
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "homelessness",
+      "probs": {
+        "enables": 0.14,
+        "blocks": 0.0,
+        "none": 0.86
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "homelessness (2)",
+      "probs": {
+        "enables": 0.1,
+        "blocks": 0.0,
+        "none": 0.9
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "financial savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "providing housing",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "financial savings",
+      "tail": "laying off",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "financial savings",
+      "tail": "money getting tight",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.15,
+        "none": 0.85
+      }
+    },
+    {
+      "head": "financial savings",
+      "tail": "paying rent",
+      "probs": {
+        "enables": 0.92,
+        "blocks": 0.0,
+        "none": 0.08
+      }
+    },
+    {
+      "head": "financial savings",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.05,
+        "none": 0.95
+      }
+    },
+    {
+      "head": "financial savings",
+      "tail": "homelessness",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.03,
+        "none": 0.97
+      }
+    },
+    {
+      "head": "financial savings",
+      "tail": "homelessness (2)",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.05,
+        "none": 0.95
+      }
+    },
+    {
+      "head": "financial savings",
+      "tail": "providing housing",
+      "probs": {
+        "enables": 0.18,
+        "blocks": 0.02,
+        "none": 0.8
+      }
+    },
+    {
+      "head": "providing housing",
+      "tail": "laying off",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "providing housing",
+      "tail": "money getting tight",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.01,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "providing housing",
+      "tail": "paying rent",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "providing housing",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.16,
+        "none": 0.84
+      }
+    },
+    {
+      "head": "providing housing",
+      "tail": "homelessness",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.27,
+        "none": 0.73
+      }
+    },
+    {
+      "head": "providing housing",
+      "tail": "homelessness (2)",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.23,
+        "none": 0.77
+      }
+    },
+    {
+      "head": "providing housing",
+      "tail": "financial savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "I",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.07,
+        "none": 0.93
+      }
+    },
+    {
+      "head": "I",
+      "tail": "homelessness",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.03,
+        "none": 0.97
+      }
+    },
+    {
+      "head": "I",
+      "tail": "homelessness (2)",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.05,
+        "none": 0.95
+      }
+    },
+    {
+      "head": "I",
+      "tail": "financial savings",
+      "probs": {
+        "enables": 0.04,
+        "blocks": 0.0,
+        "none": 0.96
+      }
+    },
+    {
+      "head": "I",
+      "tail": "providing housing",
+      "probs": {
+        "enables": 0.15,
+        "blocks": 0.02,
+        "none": 0.83
+      }
+    },
+    {
+      "head": "company",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "company",
+      "tail": "homelessness",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "company",
+      "tail": "homelessness (2)",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "company",
+      "tail": "financial savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "company",
+      "tail": "providing housing",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "company",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.06,
+        "none": 0.94
+      }
+    },
+    {
+      "head": "homelessness",
+      "tail": "company",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.01,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "homelessness",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.11,
+        "none": 0.89
+      }
+    },
+    {
+      "head": "homelessness (2)",
+      "tail": "company",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.01,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "homelessness (2)",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.09,
+        "none": 0.91
+      }
+    },
+    {
+      "head": "financial savings",
+      "tail": "company",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "financial savings",
+      "tail": "I",
+      "probs": {
+        "enables": 0.99,
+        "blocks": 0.0,
+        "none": 0.01
+      }
+    },
+    {
+      "head": "providing housing",
+      "tail": "company",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "providing housing",
+      "tail": "I",
+      "probs": {
+        "enables": 0.65,
+        "blocks": 0.01,
+        "none": 0.34
+      }
+    }
+  ],
+  "chains": [
+    [
+      "homelessness"
+    ],
+    [
+      "homelessness (2)"
+    ],
+    [
+      "laying off",
+      "money getting tight",
+      "paying rent",
+      "eviction"
+    ],
+    [
+      "providing housing"
+    ]
+  ],
+  "log": [
+    "  start at 'homelessness'",
+    "  ask 'homelessness' (path homelessness): no new arrows",
+    "  start at 'homelessness (2)'",
+    "  ask 'homelessness (2)' (path homelessness (2)): no new arrows",
+    "  start at 'laying off'",
+    "  ask 'laying off' (path laying off): no new arrows",
+    "  ask 'money getting tight' (path laying off > money getting tight): no new arrows",
+    "  ask 'paying rent' (path laying off > money getting tight > paying rent): eviction blocks 0.63, homelessness blocks 0.71, homelessness (2) blocks 0.58",
+    "  ask 'eviction' (path laying off > money getting tight > paying rent > eviction): no new arrows",
+    "  start at 'financial savings'",
+    "  ask 'financial savings' (path financial savings): paying rent enables 0.92",
+    "  start at 'providing housing'",
+    "  ask 'providing housing' (path providing housing): no new arrows",
+    "  start at 'I'",
+    "  ask 'I' (path I): no new arrows",
+    "  start at 'company'",
+    "  ask 'company' (path company): no new arrows"
+  ]
+}

@@ -1,0 +1,343 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho077",
+  "text": "My husband and I got divorced, but I still had my job, so money never got tight.",
+  "nodes": [
+    "divorce",
+    "having a job",
+    "financial hardship",
+    "husband",
+    "I"
+  ],
+  "edges": [
+    {
+      "head": "having a job",
+      "tail": "financial hardship",
+      "rel": "blocks",
+      "prob": 0.879
+    },
+    {
+      "head": "having a job",
+      "tail": "I",
+      "rel": "enables",
+      "prob": 0.915
+    }
+  ],
+  "chains": [
+    [
+      "husband"
+    ],
+    [
+      "I"
+    ],
+    [
+      "divorce"
+    ],
+    [
+      "financial hardship"
+    ],
+    [
+      "having a job",
+      "financial hardship"
+    ]
+  ],
+  "kev_requests": 6,
+  "connected": false,
+  "kinds": {
+    "divorce": "event",
+    "having a job": "event",
+    "financial hardship": "event",
+    "husband": "participant",
+    "I": "participant"
+  },
+  "asked": [
+    {
+      "head": "husband",
+      "tail": "divorce",
+      "probs": {
+        "none": 0.5542,
+        "blocks": 0.0507,
+        "enables": 0.395
+      },
+      "reps": [
+        {
+          "none": 0.5542,
+          "blocks": 0.0507,
+          "enables": 0.395
+        }
+      ]
+    },
+    {
+      "head": "husband",
+      "tail": "having a job",
+      "probs": {
+        "enables": 0.0251,
+        "blocks": 0.0284,
+        "none": 0.9465
+      },
+      "reps": [
+        {
+          "enables": 0.0251,
+          "blocks": 0.0284,
+          "none": 0.9465
+        }
+      ]
+    },
+    {
+      "head": "husband",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.0235,
+        "none": 0.9499,
+        "blocks": 0.0266
+      },
+      "reps": [
+        {
+          "enables": 0.0235,
+          "none": 0.9499,
+          "blocks": 0.0266
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "divorce",
+      "probs": {
+        "blocks": 0.0412,
+        "enables": 0.1006,
+        "none": 0.8582
+      },
+      "reps": [
+        {
+          "blocks": 0.0412,
+          "enables": 0.1006,
+          "none": 0.8582
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "having a job",
+      "probs": {
+        "none": 0.528,
+        "enables": 0.433,
+        "blocks": 0.039
+      },
+      "reps": [
+        {
+          "none": 0.528,
+          "enables": 0.433,
+          "blocks": 0.039
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "financial hardship",
+      "probs": {
+        "blocks": 0.3463,
+        "enables": 0.0174,
+        "none": 0.6364
+      },
+      "reps": [
+        {
+          "blocks": 0.3463,
+          "enables": 0.0174,
+          "none": 0.6364
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "having a job",
+      "probs": {
+        "blocks": 0.0145,
+        "none": 0.9704,
+        "enables": 0.0151
+      },
+      "reps": [
+        {
+          "blocks": 0.0145,
+          "none": 0.9704,
+          "enables": 0.0151
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.0354,
+        "none": 0.9208,
+        "blocks": 0.0438
+      },
+      "reps": [
+        {
+          "enables": 0.0354,
+          "none": 0.9208,
+          "blocks": 0.0438
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "divorce",
+      "probs": {
+        "blocks": 0.0586,
+        "enables": 0.0337,
+        "none": 0.9077
+      },
+      "reps": [
+        {
+          "blocks": 0.0586,
+          "enables": 0.0337,
+          "none": 0.9077
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "having a job",
+      "probs": {
+        "enables": 0.0431,
+        "blocks": 0.0647,
+        "none": 0.8922
+      },
+      "reps": [
+        {
+          "enables": 0.0431,
+          "blocks": 0.0647,
+          "none": 0.8922
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "divorce",
+      "probs": {
+        "none": 0.9085,
+        "blocks": 0.0573,
+        "enables": 0.0342
+      },
+      "reps": [
+        {
+          "none": 0.9085,
+          "blocks": 0.0573,
+          "enables": 0.0342
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "financial hardship",
+      "probs": {
+        "blocks": 0.8787,
+        "none": 0.1045,
+        "enables": 0.0168
+      },
+      "reps": [
+        {
+          "blocks": 0.8787,
+          "none": 0.1045,
+          "enables": 0.0168
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.0161,
+        "blocks": 0.0268,
+        "none": 0.9571
+      },
+      "reps": [
+        {
+          "enables": 0.0161,
+          "blocks": 0.0268,
+          "none": 0.9571
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0176,
+        "blocks": 0.145,
+        "none": 0.8373
+      },
+      "reps": [
+        {
+          "enables": 0.0176,
+          "blocks": 0.145,
+          "none": 0.8373
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.0368,
+        "blocks": 0.0275,
+        "none": 0.9357
+      },
+      "reps": [
+        {
+          "enables": 0.0368,
+          "blocks": 0.0275,
+          "none": 0.9357
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "I",
+      "probs": {
+        "enables": 0.915,
+        "blocks": 0.0165,
+        "none": 0.0684
+      },
+      "reps": [
+        {
+          "enables": 0.915,
+          "blocks": 0.0165,
+          "none": 0.0684
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.0206,
+        "blocks": 0.0483,
+        "none": 0.9311
+      },
+      "reps": [
+        {
+          "enables": 0.0206,
+          "blocks": 0.0483,
+          "none": 0.9311
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0271,
+        "blocks": 0.1058,
+        "none": 0.8671
+      },
+      "reps": [
+        {
+          "enables": 0.0271,
+          "blocks": 0.1058,
+          "none": 0.8671
+        }
+      ]
+    }
+  ]
+}

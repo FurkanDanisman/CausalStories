@@ -1,0 +1,581 @@
+{
+  "new_nodes": {
+    "rent arrears": {
+      "group": "rent arrears",
+      "value": 1
+    },
+    "having savings": {
+      "group": "having savings",
+      "value": 0
+    },
+    "divorce process": {
+      "group": "divorce process",
+      "value": 1
+    }
+  },
+  "edges": [
+    {
+      "head": "not paying rent",
+      "tail": "rent arrears",
+      "rel": "enables",
+      "prob": 0.93
+    },
+    {
+      "head": "rent arrears",
+      "tail": "eviction",
+      "rel": "enables",
+      "prob": 0.7
+    },
+    {
+      "head": "divorce",
+      "tail": "having savings",
+      "rel": "blocks",
+      "prob": 0.64
+    },
+    {
+      "head": "financial hardship",
+      "tail": "having savings",
+      "rel": "blocks",
+      "prob": 0.6
+    },
+    {
+      "head": "divorce process",
+      "tail": "divorce",
+      "rel": "enables",
+      "prob": 0.82
+    }
+  ],
+  "asked": [
+    {
+      "head": "wife",
+      "tail": "rent arrears",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "wife",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.01,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "wife",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "I",
+      "tail": "rent arrears",
+      "probs": {
+        "enables": 0.33,
+        "blocks": 0.0,
+        "none": 0.67
+      }
+    },
+    {
+      "head": "I",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.09,
+        "blocks": 0.07,
+        "none": 0.84
+      }
+    },
+    {
+      "head": "I",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "not paying rent",
+      "tail": "rent arrears",
+      "probs": {
+        "enables": 0.93,
+        "blocks": 0.0,
+        "none": 0.07
+      }
+    },
+    {
+      "head": "not paying rent",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.02,
+        "none": 0.97
+      }
+    },
+    {
+      "head": "not paying rent",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "rent arrears",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.01,
+        "none": 0.98
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "moving in with grandmother",
+      "tail": "rent arrears",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.01,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "moving in with grandmother",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "moving in with grandmother",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "being homeless",
+      "tail": "rent arrears",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "being homeless",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "being homeless",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "rent arrears",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.7,
+        "blocks": 0.0,
+        "none": 0.3
+      }
+    },
+    {
+      "head": "rent arrears",
+      "tail": "moving in with grandmother",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.0,
+        "none": 0.98
+      }
+    },
+    {
+      "head": "rent arrears",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.07,
+        "blocks": 0.01,
+        "none": 0.92
+      }
+    },
+    {
+      "head": "rent arrears",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.03,
+        "blocks": 0.05,
+        "none": 0.92
+      }
+    },
+    {
+      "head": "rent arrears",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "divorce",
+      "tail": "rent arrears",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "divorce",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.03,
+        "blocks": 0.64,
+        "none": 0.33
+      }
+    },
+    {
+      "head": "divorce",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "financial hardship",
+      "tail": "rent arrears",
+      "probs": {
+        "enables": 0.25,
+        "blocks": 0.0,
+        "none": 0.75
+      }
+    },
+    {
+      "head": "financial hardship",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.21,
+        "blocks": 0.6,
+        "none": 0.19
+      }
+    },
+    {
+      "head": "financial hardship",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "not paying rent",
+      "probs": {
+        "enables": 0.1,
+        "blocks": 0.18,
+        "none": 0.72
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.1,
+        "none": 0.88
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "moving in with grandmother",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.03,
+        "none": 0.96
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "rent arrears",
+      "probs": {
+        "enables": 0.06,
+        "blocks": 0.04,
+        "none": 0.9
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.82,
+        "blocks": 0.0,
+        "none": 0.18
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.03,
+        "blocks": 0.0,
+        "none": 0.97
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "not paying rent",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "moving in with grandmother",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "rent arrears",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.01,
+        "none": 0.99
+      }
+    },
+    {
+      "head": "grandmother",
+      "tail": "rent arrears",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "grandmother",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "grandmother",
+      "tail": "divorce process",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      }
+    },
+    {
+      "head": "rent arrears",
+      "tail": "wife",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.1,
+        "none": 0.88
+      }
+    },
+    {
+      "head": "rent arrears",
+      "tail": "I",
+      "probs": {
+        "enables": 0.04,
+        "blocks": 0.42,
+        "none": 0.54
+      }
+    },
+    {
+      "head": "rent arrears",
+      "tail": "grandmother",
+      "probs": {
+        "enables": 0.05,
+        "blocks": 0.13,
+        "none": 0.82
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "wife",
+      "probs": {
+        "enables": 0.07,
+        "blocks": 0.07,
+        "none": 0.86
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "I",
+      "probs": {
+        "enables": 0.26,
+        "blocks": 0.26,
+        "none": 0.48
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "grandmother",
+      "probs": {
+        "enables": 0.06,
+        "blocks": 0.05,
+        "none": 0.89
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "wife",
+      "probs": {
+        "enables": 0.04,
+        "blocks": 0.13,
+        "none": 0.83
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "I",
+      "probs": {
+        "enables": 0.03,
+        "blocks": 0.32,
+        "none": 0.65
+      }
+    },
+    {
+      "head": "divorce process",
+      "tail": "grandmother",
+      "probs": {
+        "enables": 0.03,
+        "blocks": 0.11,
+        "none": 0.86
+      }
+    }
+  ],
+  "chains": [
+    [
+      "wife"
+    ],
+    [
+      "I",
+      "not paying rent",
+      "eviction",
+      "moving in with grandmother",
+      "being homeless"
+    ],
+    [
+      "divorce",
+      "financial hardship",
+      "having savings"
+    ]
+  ],
+  "log": [
+    "  start at 'wife'",
+    "  ask 'wife' (path wife): no new arrows",
+    "  start at 'I'",
+    "  ask 'I' (path I): no new arrows",
+    "  ask 'not paying rent' (path I > not paying rent): rent arrears enables 0.93",
+    "  ask 'eviction' (path I > not paying rent > eviction): no new arrows",
+    "  ask 'moving in with grandmother' (path I > not paying rent > eviction > moving in with grandmother): no new arrows",
+    "  ask 'being homeless' (path I > not paying rent > eviction > moving in with grandmother > being homeless): no new arrows",
+    "  ask 'rent arrears' (path I > not paying rent > rent arrears): eviction enables 0.70",
+    "  start at 'divorce'",
+    "  ask 'divorce' (path divorce): having savings blocks 0.64",
+    "  ask 'financial hardship' (path divorce > financial hardship): having savings blocks 0.60",
+    "  ask 'having savings' (path divorce > financial hardship > having savings): no new arrows",
+    "  start at 'divorce process'",
+    "  ask 'divorce process' (path divorce process): divorce enables 0.82",
+    "  start at 'grandmother'",
+    "  ask 'grandmother' (path grandmother): no new arrows"
+  ]
+}

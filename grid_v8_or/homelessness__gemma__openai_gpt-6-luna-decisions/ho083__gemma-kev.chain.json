@@ -1,0 +1,532 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho083",
+  "text": "I was let go by my employer, and money got tight, but I had savings, so I kept paying my rent.",
+  "nodes": [
+    "being let go",
+    "money getting tight",
+    "having savings",
+    "paying rent",
+    "employer",
+    "I"
+  ],
+  "edges": [
+    {
+      "head": "paying rent",
+      "tail": "money getting tight",
+      "rel": "enables",
+      "prob": 0.63
+    },
+    {
+      "head": "I",
+      "tail": "paying rent",
+      "rel": "enables",
+      "prob": 0.9
+    },
+    {
+      "head": "being let go",
+      "tail": "money getting tight",
+      "rel": "enables",
+      "prob": 0.94
+    },
+    {
+      "head": "employer",
+      "tail": "being let go",
+      "rel": "enables",
+      "prob": 0.74
+    },
+    {
+      "head": "having savings",
+      "tail": "paying rent",
+      "rel": "enables",
+      "prob": 0.91
+    },
+    {
+      "head": "being let go",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.55
+    },
+    {
+      "head": "money getting tight",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.54
+    },
+    {
+      "head": "having savings",
+      "tail": "I",
+      "rel": "enables",
+      "prob": 0.61
+    }
+  ],
+  "chains": [
+    [
+      "paying rent",
+      "money getting tight"
+    ],
+    [
+      "I",
+      "paying rent",
+      "money getting tight"
+    ],
+    [
+      "being let go",
+      "money getting tight"
+    ],
+    [
+      "employer",
+      "being let go",
+      "money getting tight"
+    ],
+    [
+      "having savings",
+      "paying rent",
+      "money getting tight"
+    ]
+  ],
+  "kev_requests": 7,
+  "connected": true,
+  "kinds": {
+    "being let go": "event",
+    "money getting tight": "event",
+    "having savings": "event",
+    "paying rent": "event",
+    "employer": "participant",
+    "I": "participant"
+  },
+  "asked": [
+    {
+      "head": "paying rent",
+      "tail": "being let go",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0,
+          "none": 0.99
+        }
+      ]
+    },
+    {
+      "head": "paying rent",
+      "tail": "money getting tight",
+      "probs": {
+        "enables": 0.63,
+        "blocks": 0.0,
+        "none": 0.37
+      },
+      "reps": [
+        {
+          "enables": 0.63,
+          "blocks": 0,
+          "none": 0.37
+        }
+      ]
+    },
+    {
+      "head": "paying rent",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.23,
+        "blocks": 0.08,
+        "none": 0.69
+      },
+      "reps": [
+        {
+          "enables": 0.23,
+          "blocks": 0.08,
+          "none": 0.69
+        }
+      ]
+    },
+    {
+      "head": "money getting tight",
+      "tail": "being let go",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "money getting tight",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "being let go",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "money getting tight",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "paying rent",
+      "probs": {
+        "enables": 0.9,
+        "blocks": 0.0,
+        "none": 0.1
+      },
+      "reps": [
+        {
+          "enables": 0.9,
+          "blocks": 0,
+          "none": 0.1
+        }
+      ]
+    },
+    {
+      "head": "being let go",
+      "tail": "money getting tight",
+      "probs": {
+        "enables": 0.94,
+        "blocks": 0.0,
+        "none": 0.06
+      },
+      "reps": [
+        {
+          "enables": 0.94,
+          "blocks": 0,
+          "none": 0.06
+        }
+      ]
+    },
+    {
+      "head": "being let go",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "being let go",
+      "tail": "paying rent",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.03,
+        "none": 0.97
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0.03,
+          "none": 0.97
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "being let go",
+      "probs": {
+        "enables": 0.74,
+        "blocks": 0.0,
+        "none": 0.26
+      },
+      "reps": [
+        {
+          "enables": 0.74,
+          "blocks": 0,
+          "none": 0.26
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "money getting tight",
+      "probs": {
+        "enables": 0.27,
+        "blocks": 0.02,
+        "none": 0.71
+      },
+      "reps": [
+        {
+          "enables": 0.27,
+          "blocks": 0.02,
+          "none": 0.71
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "paying rent",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0,
+          "none": 0.99
+        }
+      ]
+    },
+    {
+      "head": "having savings",
+      "tail": "being let go",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "having savings",
+      "tail": "money getting tight",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.34,
+        "none": 0.66
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0.34,
+          "none": 0.66
+        }
+      ]
+    },
+    {
+      "head": "having savings",
+      "tail": "paying rent",
+      "probs": {
+        "enables": 0.91,
+        "blocks": 0.0,
+        "none": 0.09
+      },
+      "reps": [
+        {
+          "enables": 0.91,
+          "blocks": 0,
+          "none": 0.09
+        }
+      ]
+    },
+    {
+      "head": "being let go",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.03,
+        "blocks": 0.11,
+        "none": 0.86
+      },
+      "reps": [
+        {
+          "enables": 0.03,
+          "blocks": 0.11,
+          "none": 0.86
+        }
+      ]
+    },
+    {
+      "head": "being let go",
+      "tail": "I",
+      "probs": {
+        "enables": 0.07,
+        "blocks": 0.55,
+        "none": 0.38
+      },
+      "reps": [
+        {
+          "enables": 0.07,
+          "blocks": 0.55,
+          "none": 0.38
+        }
+      ]
+    },
+    {
+      "head": "money getting tight",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.09,
+        "none": 0.9
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0.09,
+          "none": 0.9
+        }
+      ]
+    },
+    {
+      "head": "money getting tight",
+      "tail": "I",
+      "probs": {
+        "enables": 0.07,
+        "blocks": 0.54,
+        "none": 0.39
+      },
+      "reps": [
+        {
+          "enables": 0.07,
+          "blocks": 0.54,
+          "none": 0.39
+        }
+      ]
+    },
+    {
+      "head": "having savings",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.04,
+        "blocks": 0.03,
+        "none": 0.93
+      },
+      "reps": [
+        {
+          "enables": 0.04,
+          "blocks": 0.03,
+          "none": 0.93
+        }
+      ]
+    },
+    {
+      "head": "having savings",
+      "tail": "I",
+      "probs": {
+        "enables": 0.61,
+        "blocks": 0.02,
+        "none": 0.37
+      },
+      "reps": [
+        {
+          "enables": 0.61,
+          "blocks": 0.02,
+          "none": 0.37
+        }
+      ]
+    },
+    {
+      "head": "paying rent",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.02,
+        "none": 0.96
+      },
+      "reps": [
+        {
+          "enables": 0.02,
+          "blocks": 0.02,
+          "none": 0.96
+        }
+      ]
+    },
+    {
+      "head": "paying rent",
+      "tail": "I",
+      "probs": {
+        "enables": 0.22,
+        "blocks": 0.06,
+        "none": 0.72
+      },
+      "reps": [
+        {
+          "enables": 0.22,
+          "blocks": 0.06,
+          "none": 0.72
+        }
+      ]
+    }
+  ]
+}

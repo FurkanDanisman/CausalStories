@@ -1,0 +1,592 @@
+{
+  "new_nodes": {
+    "providing shelter": {
+      "group": "providing shelter",
+      "value": 0
+    },
+    "family housing support": {
+      "group": "family housing support",
+      "value": 0
+    },
+    "having savings": {
+      "group": "having savings",
+      "value": 0
+    },
+    "job loss": {
+      "group": "job loss",
+      "value": 1
+    }
+  },
+  "edges": [
+    {
+      "head": "providing shelter",
+      "tail": "eviction",
+      "rel": "blocks",
+      "prob": 0.564
+    },
+    {
+      "head": "providing shelter",
+      "tail": "being homeless",
+      "rel": "blocks",
+      "prob": 0.632
+    },
+    {
+      "head": "job loss",
+      "tail": "financial hardship",
+      "rel": "enables",
+      "prob": 0.701
+    },
+    {
+      "head": "having savings",
+      "tail": "financial hardship",
+      "rel": "blocks",
+      "prob": 0.67
+    },
+    {
+      "head": "having savings",
+      "tail": "not paying rent",
+      "rel": "blocks",
+      "prob": 0.517
+    },
+    {
+      "head": "employer",
+      "tail": "job loss",
+      "rel": "enables",
+      "prob": 0.642
+    }
+  ],
+  "asked": [
+    {
+      "head": "providing shelter",
+      "tail": "losing employment",
+      "probs": {
+        "blocks": 0.0312,
+        "enables": 0.0117,
+        "none": 0.9571
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.0193,
+        "blocks": 0.0581,
+        "none": 0.9227
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "not paying rent",
+      "probs": {
+        "none": 0.6973,
+        "enables": 0.0185,
+        "blocks": 0.2842
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0086,
+        "none": 0.4269,
+        "blocks": 0.5645
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "being homeless",
+      "probs": {
+        "none": 0.3621,
+        "enables": 0.0058,
+        "blocks": 0.6321
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "family housing support",
+      "probs": {
+        "none": 0.856,
+        "enables": 0.0892,
+        "blocks": 0.0548
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0431,
+        "blocks": 0.02,
+        "none": 0.9369
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "job loss",
+      "probs": {
+        "enables": 0.0177,
+        "none": 0.9575,
+        "blocks": 0.0248
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "family housing support",
+      "probs": {
+        "none": 0.9255,
+        "blocks": 0.0306,
+        "enables": 0.0439
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "having savings",
+      "probs": {
+        "none": 0.9246,
+        "enables": 0.0177,
+        "blocks": 0.0577
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "job loss",
+      "probs": {
+        "blocks": 0.0112,
+        "enables": 0.0161,
+        "none": 0.9728
+      }
+    },
+    {
+      "head": "being homeless",
+      "tail": "family housing support",
+      "probs": {
+        "enables": 0.0845,
+        "none": 0.8924,
+        "blocks": 0.0231
+      }
+    },
+    {
+      "head": "being homeless",
+      "tail": "having savings",
+      "probs": {
+        "blocks": 0.0593,
+        "none": 0.9218,
+        "enables": 0.0189
+      }
+    },
+    {
+      "head": "being homeless",
+      "tail": "job loss",
+      "probs": {
+        "enables": 0.0268,
+        "none": 0.9549,
+        "blocks": 0.0183
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "losing employment",
+      "probs": {
+        "blocks": 0.0382,
+        "enables": 0.2795,
+        "none": 0.6822
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.7013,
+        "blocks": 0.0121,
+        "none": 0.2865
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "not paying rent",
+      "probs": {
+        "none": 0.8769,
+        "blocks": 0.0063,
+        "enables": 0.1168
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "eviction",
+      "probs": {
+        "blocks": 0.0055,
+        "enables": 0.0671,
+        "none": 0.9274
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.067,
+        "none": 0.9263,
+        "blocks": 0.0067
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "providing shelter",
+      "probs": {
+        "none": 0.8501,
+        "enables": 0.0197,
+        "blocks": 0.1302
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "family housing support",
+      "probs": {
+        "none": 0.9131,
+        "blocks": 0.0592,
+        "enables": 0.0277
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0188,
+        "blocks": 0.2729,
+        "none": 0.7084
+      }
+    },
+    {
+      "head": "financial hardship",
+      "tail": "providing shelter",
+      "probs": {
+        "enables": 0.027,
+        "none": 0.7686,
+        "blocks": 0.2044
+      }
+    },
+    {
+      "head": "financial hardship",
+      "tail": "family housing support",
+      "probs": {
+        "enables": 0.0558,
+        "blocks": 0.0551,
+        "none": 0.8891
+      }
+    },
+    {
+      "head": "financial hardship",
+      "tail": "having savings",
+      "probs": {
+        "none": 0.6242,
+        "blocks": 0.359,
+        "enables": 0.0167
+      }
+    },
+    {
+      "head": "not paying rent",
+      "tail": "providing shelter",
+      "probs": {
+        "enables": 0.0413,
+        "none": 0.8446,
+        "blocks": 0.114
+      }
+    },
+    {
+      "head": "not paying rent",
+      "tail": "family housing support",
+      "probs": {
+        "blocks": 0.043,
+        "none": 0.9329,
+        "enables": 0.0242
+      }
+    },
+    {
+      "head": "not paying rent",
+      "tail": "having savings",
+      "probs": {
+        "none": 0.9289,
+        "enables": 0.0272,
+        "blocks": 0.044
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "losing employment",
+      "probs": {
+        "none": 0.895,
+        "blocks": 0.0928,
+        "enables": 0.0122
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "financial hardship",
+      "probs": {
+        "none": 0.3154,
+        "enables": 0.0146,
+        "blocks": 0.6701
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "not paying rent",
+      "probs": {
+        "none": 0.4781,
+        "enables": 0.0047,
+        "blocks": 0.5172
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "eviction",
+      "probs": {
+        "blocks": 0.331,
+        "none": 0.6626,
+        "enables": 0.0064
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "being homeless",
+      "probs": {
+        "blocks": 0.2886,
+        "enables": 0.0122,
+        "none": 0.6992
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "providing shelter",
+      "probs": {
+        "enables": 0.4079,
+        "none": 0.5576,
+        "blocks": 0.0345
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "family housing support",
+      "probs": {
+        "none": 0.7434,
+        "blocks": 0.1759,
+        "enables": 0.0807
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "job loss",
+      "probs": {
+        "enables": 0.0268,
+        "blocks": 0.0755,
+        "none": 0.8977
+      }
+    },
+    {
+      "head": "losing employment",
+      "tail": "providing shelter",
+      "probs": {
+        "blocks": 0.0789,
+        "enables": 0.015,
+        "none": 0.9062
+      }
+    },
+    {
+      "head": "losing employment",
+      "tail": "family housing support",
+      "probs": {
+        "blocks": 0.0739,
+        "none": 0.9027,
+        "enables": 0.0234
+      }
+    },
+    {
+      "head": "losing employment",
+      "tail": "having savings",
+      "probs": {
+        "blocks": 0.2556,
+        "none": 0.7282,
+        "enables": 0.0162
+      }
+    },
+    {
+      "head": "losing employment",
+      "tail": "job loss",
+      "probs": {
+        "none": 0.7137,
+        "blocks": 0.0429,
+        "enables": 0.2434
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "losing employment",
+      "probs": {
+        "blocks": 0.0277,
+        "none": 0.9576,
+        "enables": 0.0147
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "financial hardship",
+      "probs": {
+        "blocks": 0.1992,
+        "enables": 0.0153,
+        "none": 0.7855
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "not paying rent",
+      "probs": {
+        "enables": 0.0088,
+        "none": 0.6353,
+        "blocks": 0.3559
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "eviction",
+      "probs": {
+        "none": 0.6041,
+        "blocks": 0.3884,
+        "enables": 0.0075
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "being homeless",
+      "probs": {
+        "blocks": 0.4908,
+        "enables": 0.0068,
+        "none": 0.5024
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "providing shelter",
+      "probs": {
+        "none": 0.5863,
+        "blocks": 0.0115,
+        "enables": 0.4022
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0455,
+        "blocks": 0.0282,
+        "none": 0.9263
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "job loss",
+      "probs": {
+        "blocks": 0.0108,
+        "enables": 0.008,
+        "none": 0.9812
+      }
+    },
+    {
+      "head": "employer",
+      "tail": "providing shelter",
+      "probs": {
+        "none": 0.7186,
+        "blocks": 0.2397,
+        "enables": 0.0417
+      }
+    },
+    {
+      "head": "employer",
+      "tail": "family housing support",
+      "probs": {
+        "blocks": 0.0438,
+        "enables": 0.0163,
+        "none": 0.9399
+      }
+    },
+    {
+      "head": "employer",
+      "tail": "having savings",
+      "probs": {
+        "none": 0.8184,
+        "blocks": 0.1231,
+        "enables": 0.0585
+      }
+    },
+    {
+      "head": "employer",
+      "tail": "job loss",
+      "probs": {
+        "blocks": 0.0627,
+        "enables": 0.6418,
+        "none": 0.2955
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.0117,
+        "blocks": 0.0166,
+        "none": 0.9717
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.0084,
+        "blocks": 0.0071,
+        "none": 0.9845
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.0106,
+        "blocks": 0.0159,
+        "none": 0.9735
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.0128,
+        "blocks": 0.1774,
+        "none": 0.8098
+      }
+    }
+  ],
+  "chains": [
+    [
+      "providing shelter",
+      "eviction",
+      "being homeless"
+    ],
+    [
+      "family housing support"
+    ]
+  ],
+  "log": [
+    "  start at 'providing shelter'",
+    "  ask 'providing shelter' (path providing shelter): eviction blocks 0.56, being homeless blocks 0.63",
+    "  ask 'eviction' (path providing shelter > eviction): no new arrows",
+    "  ask 'being homeless' (path providing shelter > eviction > being homeless): no new arrows",
+    "  start at 'job loss'",
+    "  ask 'job loss' (path job loss): financial hardship enables 0.70",
+    "  ask 'financial hardship' (path job loss > financial hardship): no new arrows",
+    "  ask 'not paying rent' (path job loss > financial hardship > not paying rent): no new arrows",
+    "  start at 'having savings'",
+    "  ask 'having savings' (path having savings): financial hardship blocks 0.67, not paying rent blocks 0.52",
+    "  start at 'losing employment'",
+    "  ask 'losing employment' (path losing employment): no new arrows",
+    "  start at 'family housing support'",
+    "  ask 'family housing support' (path family housing support): no new arrows",
+    "  start at 'employer'",
+    "  ask 'employer' (path employer): job loss enables 0.64"
+  ]
+}

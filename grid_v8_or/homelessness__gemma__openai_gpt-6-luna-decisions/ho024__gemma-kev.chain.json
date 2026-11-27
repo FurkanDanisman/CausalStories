@@ -1,0 +1,798 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho024",
+  "text": "My employer let me go, and money got tight. I couldn't keep up with the rent, and I had no savings. None of my family offered to take me in. I got evicted and ended up homeless.",
+  "nodes": [
+    "losing employment",
+    "financial hardship",
+    "not paying rent",
+    "lack of family support",
+    "eviction",
+    "being homeless",
+    "employer",
+    "family"
+  ],
+  "edges": [
+    {
+      "head": "employer",
+      "tail": "losing employment",
+      "rel": "enables",
+      "prob": 0.94
+    },
+    {
+      "head": "losing employment",
+      "tail": "financial hardship",
+      "rel": "enables",
+      "prob": 1.0
+    },
+    {
+      "head": "financial hardship",
+      "tail": "not paying rent",
+      "rel": "enables",
+      "prob": 1.0
+    },
+    {
+      "head": "not paying rent",
+      "tail": "eviction",
+      "rel": "enables",
+      "prob": 1.0
+    },
+    {
+      "head": "not paying rent",
+      "tail": "being homeless",
+      "rel": "enables",
+      "prob": 0.66
+    },
+    {
+      "head": "eviction",
+      "tail": "being homeless",
+      "rel": "enables",
+      "prob": 0.99
+    },
+    {
+      "head": "family",
+      "tail": "lack of family support",
+      "rel": "enables",
+      "prob": 0.97
+    }
+  ],
+  "chains": [
+    [
+      "employer",
+      "losing employment",
+      "financial hardship",
+      "not paying rent",
+      "eviction",
+      "being homeless"
+    ],
+    [
+      "employer",
+      "losing employment",
+      "financial hardship",
+      "not paying rent",
+      "being homeless"
+    ],
+    [
+      "family",
+      "lack of family support"
+    ]
+  ],
+  "kev_requests": 9,
+  "connected": false,
+  "kinds": {
+    "losing employment": "event",
+    "financial hardship": "event",
+    "not paying rent": "event",
+    "lack of family support": "event",
+    "eviction": "event",
+    "being homeless": "event",
+    "employer": "participant",
+    "family": "participant"
+  },
+  "asked": [
+    {
+      "head": "employer",
+      "tail": "losing employment",
+      "probs": {
+        "enables": 0.94,
+        "blocks": 0.0,
+        "none": 0.06
+      },
+      "reps": [
+        {
+          "enables": 0.94,
+          "blocks": 0,
+          "none": 0.06
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.23,
+        "blocks": 0.01,
+        "none": 0.76
+      },
+      "reps": [
+        {
+          "enables": 0.23,
+          "blocks": 0.01,
+          "none": 0.76
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "not paying rent",
+      "probs": {
+        "enables": 0.18,
+        "blocks": 0.01,
+        "none": 0.81
+      },
+      "reps": [
+        {
+          "enables": 0.18,
+          "blocks": 0.01,
+          "none": 0.81
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "lack of family support",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 1.0,
+        "blocks": 0.0,
+        "none": 0.0
+      },
+      "reps": [
+        {
+          "enables": 1,
+          "blocks": 0,
+          "none": 0
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "not paying rent",
+      "probs": {
+        "enables": 0.29,
+        "blocks": 0.01,
+        "none": 0.7
+      },
+      "reps": [
+        {
+          "enables": 0.29,
+          "blocks": 0.01,
+          "none": 0.7
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "lack of family support",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.0,
+        "none": 0.98
+      },
+      "reps": [
+        {
+          "enables": 0.02,
+          "blocks": 0,
+          "none": 0.98
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.03,
+        "blocks": 0.01,
+        "none": 0.96
+      },
+      "reps": [
+        {
+          "enables": 0.03,
+          "blocks": 0.01,
+          "none": 0.96
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "not paying rent",
+      "probs": {
+        "enables": 1.0,
+        "blocks": 0.0,
+        "none": 0.0
+      },
+      "reps": [
+        {
+          "enables": 1,
+          "blocks": 0,
+          "none": 0
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "lack of family support",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.01,
+        "none": 0.97
+      },
+      "reps": [
+        {
+          "enables": 0.02,
+          "blocks": 0.01,
+          "none": 0.97
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0,
+          "none": 0.99
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "lack of family support",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "eviction",
+      "probs": {
+        "enables": 1.0,
+        "blocks": 0.0,
+        "none": 0.0
+      },
+      "reps": [
+        {
+          "enables": 1,
+          "blocks": 0,
+          "none": 0
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.66,
+        "blocks": 0.0,
+        "none": 0.34
+      },
+      "reps": [
+        {
+          "enables": 0.66,
+          "blocks": 0,
+          "none": 0.34
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "lack of family support",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.99,
+        "blocks": 0.0,
+        "none": 0.01
+      },
+      "reps": [
+        {
+          "enables": 0.99,
+          "blocks": 0,
+          "none": 0.01
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "lack of family support",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "family",
+      "tail": "losing employment",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "family",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "family",
+      "tail": "not paying rent",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.01,
+        "none": 0.97
+      },
+      "reps": [
+        {
+          "enables": 0.02,
+          "blocks": 0.01,
+          "none": 0.97
+        }
+      ]
+    },
+    {
+      "head": "family",
+      "tail": "lack of family support",
+      "probs": {
+        "enables": 0.97,
+        "blocks": 0.0,
+        "none": 0.03
+      },
+      "reps": [
+        {
+          "enables": 0.97,
+          "blocks": 0,
+          "none": 0.03
+        }
+      ]
+    },
+    {
+      "head": "family",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "family",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.09,
+        "blocks": 0.01,
+        "none": 0.9
+      },
+      "reps": [
+        {
+          "enables": 0.09,
+          "blocks": 0.01,
+          "none": 0.9
+        }
+      ]
+    },
+    {
+      "head": "lack of family support",
+      "tail": "losing employment",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "lack of family support",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.19,
+        "blocks": 0.0,
+        "none": 0.81
+      },
+      "reps": [
+        {
+          "enables": 0.19,
+          "blocks": 0,
+          "none": 0.81
+        }
+      ]
+    },
+    {
+      "head": "lack of family support",
+      "tail": "not paying rent",
+      "probs": {
+        "enables": 0.11,
+        "blocks": 0.0,
+        "none": 0.89
+      },
+      "reps": [
+        {
+          "enables": 0.11,
+          "blocks": 0,
+          "none": 0.89
+        }
+      ]
+    },
+    {
+      "head": "lack of family support",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.0,
+        "none": 0.98
+      },
+      "reps": [
+        {
+          "enables": 0.02,
+          "blocks": 0,
+          "none": 0.98
+        }
+      ]
+    },
+    {
+      "head": "lack of family support",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.32,
+        "blocks": 0.0,
+        "none": 0.68
+      },
+      "reps": [
+        {
+          "enables": 0.32,
+          "blocks": 0,
+          "none": 0.68
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.05,
+        "blocks": 0.11,
+        "none": 0.84
+      },
+      "reps": [
+        {
+          "enables": 0.05,
+          "blocks": 0.11,
+          "none": 0.84
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "family",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.04,
+        "none": 0.94
+      },
+      "reps": [
+        {
+          "enables": 0.02,
+          "blocks": 0.04,
+          "none": 0.94
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.07,
+        "none": 0.92
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0.07,
+          "none": 0.92
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "family",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.1,
+        "none": 0.88
+      },
+      "reps": [
+        {
+          "enables": 0.02,
+          "blocks": 0.1,
+          "none": 0.88
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.06,
+        "none": 0.93
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0.06,
+          "none": 0.93
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "family",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.05,
+        "none": 0.93
+      },
+      "reps": [
+        {
+          "enables": 0.02,
+          "blocks": 0.05,
+          "none": 0.93
+        }
+      ]
+    },
+    {
+      "head": "lack of family support",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.04,
+        "none": 0.95
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0.04,
+          "none": 0.95
+        }
+      ]
+    },
+    {
+      "head": "lack of family support",
+      "tail": "family",
+      "probs": {
+        "enables": 0.06,
+        "blocks": 0.38,
+        "none": 0.56
+      },
+      "reps": [
+        {
+          "enables": 0.06,
+          "blocks": 0.38,
+          "none": 0.56
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.03,
+        "none": 0.96
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0.03,
+          "none": 0.96
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "family",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.09,
+        "none": 0.89
+      },
+      "reps": [
+        {
+          "enables": 0.02,
+          "blocks": 0.09,
+          "none": 0.89
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.05,
+        "none": 0.94
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0.05,
+          "none": 0.94
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "family",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.05,
+        "none": 0.93
+      },
+      "reps": [
+        {
+          "enables": 0.02,
+          "blocks": 0.05,
+          "none": 0.93
+        }
+      ]
+    }
+  ]
+}

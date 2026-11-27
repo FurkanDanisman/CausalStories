@@ -1,0 +1,608 @@
+{
+  "new_nodes": {
+    "employment": {
+      "group": "employment",
+      "value": 1
+    },
+    "eviction": {
+      "group": "eviction",
+      "value": 0
+    },
+    "homelessness": {
+      "group": "homelessness",
+      "value": 0
+    },
+    "providing shelter": {
+      "group": "providing shelter",
+      "value": 1
+    }
+  },
+  "edges": [
+    {
+      "head": "employment",
+      "tail": "laying off",
+      "rel": "blocks",
+      "prob": 0.624
+    },
+    {
+      "head": "providing shelter",
+      "tail": "homelessness",
+      "rel": "blocks",
+      "prob": 0.561
+    },
+    {
+      "head": "I",
+      "tail": "providing shelter",
+      "rel": "enables",
+      "prob": 0.554
+    },
+    {
+      "head": "paying rent",
+      "tail": "eviction",
+      "rel": "blocks",
+      "prob": 0.718
+    },
+    {
+      "head": "paying rent",
+      "tail": "homelessness",
+      "rel": "blocks",
+      "prob": 0.581
+    },
+    {
+      "head": "paying rent",
+      "tail": "providing shelter",
+      "rel": "enables",
+      "prob": 0.658
+    },
+    {
+      "head": "boss",
+      "tail": "employment",
+      "rel": "blocks",
+      "prob": 0.614
+    },
+    {
+      "head": "providing shelter",
+      "tail": "I",
+      "rel": "enables",
+      "prob": 0.567
+    }
+  ],
+  "asked": [
+    {
+      "head": "employment",
+      "tail": "laying off",
+      "probs": {
+        "blocks": 0.6238,
+        "enables": 0.0311,
+        "none": 0.3451
+      }
+    },
+    {
+      "head": "employment",
+      "tail": "money getting tight",
+      "probs": {
+        "none": 0.6713,
+        "enables": 0.0041,
+        "blocks": 0.3245
+      }
+    },
+    {
+      "head": "employment",
+      "tail": "having savings",
+      "probs": {
+        "blocks": 0.0305,
+        "none": 0.5641,
+        "enables": 0.4054
+      }
+    },
+    {
+      "head": "employment",
+      "tail": "paying rent",
+      "probs": {
+        "enables": 0.2799,
+        "none": 0.7039,
+        "blocks": 0.0162
+      }
+    },
+    {
+      "head": "employment",
+      "tail": "eviction",
+      "probs": {
+        "blocks": 0.2035,
+        "none": 0.7917,
+        "enables": 0.0049
+      }
+    },
+    {
+      "head": "employment",
+      "tail": "homelessness",
+      "probs": {
+        "none": 0.8047,
+        "blocks": 0.1895,
+        "enables": 0.0059
+      }
+    },
+    {
+      "head": "employment",
+      "tail": "providing shelter",
+      "probs": {
+        "blocks": 0.0174,
+        "none": 0.757,
+        "enables": 0.2256
+      }
+    },
+    {
+      "head": "laying off",
+      "tail": "eviction",
+      "probs": {
+        "blocks": 0.0103,
+        "enables": 0.1162,
+        "none": 0.8736
+      }
+    },
+    {
+      "head": "laying off",
+      "tail": "homelessness",
+      "probs": {
+        "enables": 0.0577,
+        "blocks": 0.0055,
+        "none": 0.9368
+      }
+    },
+    {
+      "head": "laying off",
+      "tail": "providing shelter",
+      "probs": {
+        "blocks": 0.2123,
+        "none": 0.7626,
+        "enables": 0.0251
+      }
+    },
+    {
+      "head": "money getting tight",
+      "tail": "eviction",
+      "probs": {
+        "none": 0.7972,
+        "blocks": 0.0176,
+        "enables": 0.1851
+      }
+    },
+    {
+      "head": "money getting tight",
+      "tail": "homelessness",
+      "probs": {
+        "enables": 0.3259,
+        "none": 0.6595,
+        "blocks": 0.0146
+      }
+    },
+    {
+      "head": "money getting tight",
+      "tail": "providing shelter",
+      "probs": {
+        "blocks": 0.2274,
+        "enables": 0.0364,
+        "none": 0.7363
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "laying off",
+      "probs": {
+        "enables": 0.0171,
+        "none": 0.9605,
+        "blocks": 0.0223
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "money getting tight",
+      "probs": {
+        "none": 0.7405,
+        "blocks": 0.0578,
+        "enables": 0.2017
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0333,
+        "blocks": 0.3292,
+        "none": 0.6375
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "paying rent",
+      "probs": {
+        "enables": 0.1364,
+        "blocks": 0.026,
+        "none": 0.8376
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "employment",
+      "probs": {
+        "enables": 0.1325,
+        "blocks": 0.0287,
+        "none": 0.8388
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "eviction",
+      "probs": {
+        "none": 0.5381,
+        "blocks": 0.4514,
+        "enables": 0.0105
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "homelessness",
+      "probs": {
+        "none": 0.4326,
+        "enables": 0.0066,
+        "blocks": 0.5608
+      }
+    },
+    {
+      "head": "homelessness",
+      "tail": "laying off",
+      "probs": {
+        "blocks": 0.0195,
+        "none": 0.9658,
+        "enables": 0.0147
+      }
+    },
+    {
+      "head": "homelessness",
+      "tail": "money getting tight",
+      "probs": {
+        "blocks": 0.0427,
+        "none": 0.911,
+        "enables": 0.0463
+      }
+    },
+    {
+      "head": "homelessness",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0338,
+        "none": 0.9021,
+        "blocks": 0.064
+      }
+    },
+    {
+      "head": "homelessness",
+      "tail": "paying rent",
+      "probs": {
+        "none": 0.9185,
+        "enables": 0.0282,
+        "blocks": 0.0534
+      }
+    },
+    {
+      "head": "homelessness",
+      "tail": "employment",
+      "probs": {
+        "blocks": 0.1675,
+        "none": 0.8093,
+        "enables": 0.0231
+      }
+    },
+    {
+      "head": "homelessness",
+      "tail": "eviction",
+      "probs": {
+        "blocks": 0.0389,
+        "enables": 0.0537,
+        "none": 0.9074
+      }
+    },
+    {
+      "head": "I",
+      "tail": "employment",
+      "probs": {
+        "blocks": 0.0437,
+        "enables": 0.1223,
+        "none": 0.8339
+      }
+    },
+    {
+      "head": "I",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0258,
+        "blocks": 0.4727,
+        "none": 0.5014
+      }
+    },
+    {
+      "head": "I",
+      "tail": "homelessness",
+      "probs": {
+        "blocks": 0.4783,
+        "none": 0.5081,
+        "enables": 0.0135
+      }
+    },
+    {
+      "head": "I",
+      "tail": "providing shelter",
+      "probs": {
+        "enables": 0.5541,
+        "blocks": 0.0306,
+        "none": 0.4152
+      }
+    },
+    {
+      "head": "paying rent",
+      "tail": "employment",
+      "probs": {
+        "blocks": 0.0208,
+        "enables": 0.033,
+        "none": 0.9462
+      }
+    },
+    {
+      "head": "paying rent",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0181,
+        "blocks": 0.7183,
+        "none": 0.2636
+      }
+    },
+    {
+      "head": "paying rent",
+      "tail": "homelessness",
+      "probs": {
+        "enables": 0.0098,
+        "blocks": 0.5809,
+        "none": 0.4093
+      }
+    },
+    {
+      "head": "paying rent",
+      "tail": "providing shelter",
+      "probs": {
+        "none": 0.33,
+        "blocks": 0.0123,
+        "enables": 0.6577
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "employment",
+      "probs": {
+        "blocks": 0.0182,
+        "none": 0.9379,
+        "enables": 0.0439
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "eviction",
+      "probs": {
+        "none": 0.6457,
+        "blocks": 0.3493,
+        "enables": 0.0049
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "homelessness",
+      "probs": {
+        "enables": 0.006,
+        "blocks": 0.3131,
+        "none": 0.6809
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "providing shelter",
+      "probs": {
+        "blocks": 0.015,
+        "none": 0.5651,
+        "enables": 0.4199
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "laying off",
+      "probs": {
+        "enables": 0.0075,
+        "none": 0.9796,
+        "blocks": 0.0129
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "money getting tight",
+      "probs": {
+        "blocks": 0.0206,
+        "enables": 0.0293,
+        "none": 0.9501
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "having savings",
+      "probs": {
+        "none": 0.936,
+        "enables": 0.0204,
+        "blocks": 0.0437
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "employment",
+      "probs": {
+        "blocks": 0.2342,
+        "enables": 0.0348,
+        "none": 0.731
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "homelessness",
+      "probs": {
+        "none": 0.8012,
+        "blocks": 0.0029,
+        "enables": 0.1959
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "providing shelter",
+      "probs": {
+        "none": 0.7555,
+        "blocks": 0.2013,
+        "enables": 0.0432
+      }
+    },
+    {
+      "head": "boss",
+      "tail": "employment",
+      "probs": {
+        "enables": 0.0125,
+        "none": 0.3738,
+        "blocks": 0.6138
+      }
+    },
+    {
+      "head": "boss",
+      "tail": "eviction",
+      "probs": {
+        "blocks": 0.0125,
+        "enables": 0.059,
+        "none": 0.9285
+      }
+    },
+    {
+      "head": "boss",
+      "tail": "homelessness",
+      "probs": {
+        "blocks": 0.0099,
+        "enables": 0.0472,
+        "none": 0.9429
+      }
+    },
+    {
+      "head": "boss",
+      "tail": "providing shelter",
+      "probs": {
+        "none": 0.7867,
+        "enables": 0.0606,
+        "blocks": 0.1528
+      }
+    },
+    {
+      "head": "employment",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.1321,
+        "blocks": 0.0485,
+        "none": 0.8194
+      }
+    },
+    {
+      "head": "employment",
+      "tail": "I",
+      "probs": {
+        "enables": 0.3396,
+        "blocks": 0.1424,
+        "none": 0.5181
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.0089,
+        "blocks": 0.0152,
+        "none": 0.9759
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "I",
+      "probs": {
+        "enables": 0.008,
+        "blocks": 0.1052,
+        "none": 0.8868
+      }
+    },
+    {
+      "head": "homelessness",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.0081,
+        "blocks": 0.0321,
+        "none": 0.9598
+      }
+    },
+    {
+      "head": "homelessness",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0039,
+        "blocks": 0.1675,
+        "none": 0.8286
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.0328,
+        "blocks": 0.0182,
+        "none": 0.9491
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "I",
+      "probs": {
+        "enables": 0.5667,
+        "blocks": 0.0536,
+        "none": 0.3797
+      }
+    }
+  ],
+  "chains": [
+    [
+      "employment",
+      "laying off",
+      "money getting tight"
+    ],
+    [
+      "providing shelter",
+      "homelessness"
+    ],
+    [
+      "I",
+      "paying rent",
+      "eviction"
+    ]
+  ],
+  "log": [
+    "  start at 'employment'",
+    "  ask 'employment' (path employment): laying off blocks 0.62",
+    "  ask 'laying off' (path employment > laying off): no new arrows",
+    "  ask 'money getting tight' (path employment > laying off > money getting tight): no new arrows",
+    "  start at 'providing shelter'",
+    "  ask 'providing shelter' (path providing shelter): homelessness blocks 0.56",
+    "  ask 'homelessness' (path providing shelter > homelessness): no new arrows",
+    "  start at 'I'",
+    "  ask 'I' (path I): providing shelter enables 0.55",
+    "  ask 'paying rent' (path I > paying rent): eviction blocks 0.72, homelessness blocks 0.58, providing shelter enables 0.66",
+    "  ask 'having savings' (path I > paying rent > having savings): no new arrows",
+    "  ask 'eviction' (path I > paying rent > eviction): no new arrows",
+    "  start at 'boss'",
+    "  ask 'boss' (path boss): employment blocks 0.61"
+  ]
+}

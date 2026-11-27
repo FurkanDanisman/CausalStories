@@ -1,0 +1,252 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho099",
+  "text": "After my divorce money got tight, but I had savings, so I kept paying my rent.",
+  "nodes": [
+    "divorce",
+    "money getting tight",
+    "paying rent",
+    "I"
+  ],
+  "edges": [
+    {
+      "head": "I",
+      "tail": "paying rent",
+      "rel": "enables",
+      "prob": 0.823
+    },
+    {
+      "head": "divorce",
+      "tail": "money getting tight",
+      "rel": "enables",
+      "prob": 0.821
+    },
+    {
+      "head": "divorce",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.763
+    },
+    {
+      "head": "money getting tight",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.678
+    }
+  ],
+  "chains": [
+    [
+      "I",
+      "paying rent"
+    ],
+    [
+      "money getting tight"
+    ],
+    [
+      "divorce",
+      "money getting tight"
+    ]
+  ],
+  "kev_requests": 5,
+  "connected": true,
+  "kinds": {
+    "divorce": "event",
+    "money getting tight": "event",
+    "paying rent": "event",
+    "I": "participant"
+  },
+  "asked": [
+    {
+      "head": "I",
+      "tail": "divorce",
+      "probs": {
+        "none": 0.96,
+        "blocks": 0.0188,
+        "enables": 0.0212
+      },
+      "reps": [
+        {
+          "none": 0.96,
+          "blocks": 0.0188,
+          "enables": 0.0212
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "money getting tight",
+      "probs": {
+        "blocks": 0.1199,
+        "none": 0.7702,
+        "enables": 0.11
+      },
+      "reps": [
+        {
+          "blocks": 0.1199,
+          "none": 0.7702,
+          "enables": 0.11
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "paying rent",
+      "probs": {
+        "blocks": 0.0174,
+        "enables": 0.8233,
+        "none": 0.1593
+      },
+      "reps": [
+        {
+          "blocks": 0.0174,
+          "enables": 0.8233,
+          "none": 0.1593
+        }
+      ]
+    },
+    {
+      "head": "paying rent",
+      "tail": "divorce",
+      "probs": {
+        "none": 0.9717,
+        "blocks": 0.0169,
+        "enables": 0.0114
+      },
+      "reps": [
+        {
+          "none": 0.9717,
+          "blocks": 0.0169,
+          "enables": 0.0114
+        }
+      ]
+    },
+    {
+      "head": "paying rent",
+      "tail": "money getting tight",
+      "probs": {
+        "blocks": 0.2496,
+        "enables": 0.3422,
+        "none": 0.4082
+      },
+      "reps": [
+        {
+          "blocks": 0.2496,
+          "enables": 0.3422,
+          "none": 0.4082
+        }
+      ]
+    },
+    {
+      "head": "money getting tight",
+      "tail": "divorce",
+      "probs": {
+        "blocks": 0.0186,
+        "enables": 0.0202,
+        "none": 0.9613
+      },
+      "reps": [
+        {
+          "blocks": 0.0186,
+          "enables": 0.0202,
+          "none": 0.9613
+        }
+      ]
+    },
+    {
+      "head": "money getting tight",
+      "tail": "paying rent",
+      "probs": {
+        "enables": 0.05,
+        "none": 0.6818,
+        "blocks": 0.2683
+      },
+      "reps": [
+        {
+          "enables": 0.05,
+          "none": 0.6818,
+          "blocks": 0.2683
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "money getting tight",
+      "probs": {
+        "enables": 0.8207,
+        "none": 0.1705,
+        "blocks": 0.0088
+      },
+      "reps": [
+        {
+          "enables": 0.8207,
+          "none": 0.1705,
+          "blocks": 0.0088
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "paying rent",
+      "probs": {
+        "blocks": 0.0577,
+        "none": 0.9279,
+        "enables": 0.0144
+      },
+      "reps": [
+        {
+          "blocks": 0.0577,
+          "none": 0.9279,
+          "enables": 0.0144
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0051,
+        "blocks": 0.7629,
+        "none": 0.232
+      },
+      "reps": [
+        {
+          "enables": 0.0051,
+          "blocks": 0.7629,
+          "none": 0.232
+        }
+      ]
+    },
+    {
+      "head": "money getting tight",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0082,
+        "blocks": 0.6781,
+        "none": 0.3137
+      },
+      "reps": [
+        {
+          "enables": 0.0082,
+          "blocks": 0.6781,
+          "none": 0.3137
+        }
+      ]
+    },
+    {
+      "head": "paying rent",
+      "tail": "I",
+      "probs": {
+        "enables": 0.1075,
+        "blocks": 0.2302,
+        "none": 0.6623
+      },
+      "reps": [
+        {
+          "enables": 0.1075,
+          "blocks": 0.2302,
+          "none": 0.6623
+        }
+      ]
+    }
+  ]
+}

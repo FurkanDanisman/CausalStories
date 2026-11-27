@@ -1,0 +1,1367 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho076",
+  "text": "My boss let me go, and I got divorced. Money got really tight, and I had no savings. I couldn't pay my rent anymore, and I got evicted, but my brother let me move in with him, so I never ended up homeless.",
+  "nodes": [
+    "losing employment",
+    "divorce",
+    "financial hardship",
+    "not paying rent",
+    "eviction",
+    "moving in with brother",
+    "being homeless",
+    "boss",
+    "I",
+    "brother"
+  ],
+  "edges": [
+    {
+      "head": "boss",
+      "tail": "losing employment",
+      "rel": "enables",
+      "prob": 0.834
+    },
+    {
+      "head": "losing employment",
+      "tail": "financial hardship",
+      "rel": "enables",
+      "prob": 0.806
+    },
+    {
+      "head": "financial hardship",
+      "tail": "not paying rent",
+      "rel": "enables",
+      "prob": 0.864
+    },
+    {
+      "head": "not paying rent",
+      "tail": "eviction",
+      "rel": "enables",
+      "prob": 0.867
+    },
+    {
+      "head": "eviction",
+      "tail": "moving in with brother",
+      "rel": "enables",
+      "prob": 0.784
+    },
+    {
+      "head": "moving in with brother",
+      "tail": "being homeless",
+      "rel": "blocks",
+      "prob": 0.926
+    },
+    {
+      "head": "divorce",
+      "tail": "financial hardship",
+      "rel": "enables",
+      "prob": 0.707
+    },
+    {
+      "head": "brother",
+      "tail": "moving in with brother",
+      "rel": "enables",
+      "prob": 0.908
+    },
+    {
+      "head": "brother",
+      "tail": "being homeless",
+      "rel": "blocks",
+      "prob": 0.588
+    },
+    {
+      "head": "losing employment",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.937
+    },
+    {
+      "head": "losing employment",
+      "tail": "brother",
+      "rel": "blocks",
+      "prob": 0.525
+    },
+    {
+      "head": "divorce",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.939
+    },
+    {
+      "head": "divorce",
+      "tail": "brother",
+      "rel": "blocks",
+      "prob": 0.521
+    },
+    {
+      "head": "financial hardship",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.867
+    },
+    {
+      "head": "financial hardship",
+      "tail": "brother",
+      "rel": "blocks",
+      "prob": 0.584
+    },
+    {
+      "head": "not paying rent",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.731
+    },
+    {
+      "head": "eviction",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.583
+    },
+    {
+      "head": "eviction",
+      "tail": "brother",
+      "rel": "blocks",
+      "prob": 0.484
+    },
+    {
+      "head": "moving in with brother",
+      "tail": "I",
+      "rel": "enables",
+      "prob": 0.952
+    }
+  ],
+  "chains": [
+    [
+      "being homeless"
+    ],
+    [
+      "boss",
+      "losing employment",
+      "financial hardship",
+      "not paying rent",
+      "eviction",
+      "moving in with brother",
+      "being homeless"
+    ],
+    [
+      "divorce",
+      "financial hardship",
+      "not paying rent",
+      "eviction",
+      "moving in with brother",
+      "being homeless"
+    ],
+    [
+      "brother",
+      "moving in with brother",
+      "being homeless"
+    ],
+    [
+      "brother",
+      "being homeless"
+    ],
+    [
+      "I"
+    ]
+  ],
+  "kev_requests": 11,
+  "connected": true,
+  "kinds": {
+    "losing employment": "event",
+    "divorce": "event",
+    "financial hardship": "event",
+    "not paying rent": "event",
+    "eviction": "event",
+    "moving in with brother": "event",
+    "being homeless": "event",
+    "boss": "participant",
+    "I": "participant",
+    "brother": "participant"
+  },
+  "asked": [
+    {
+      "head": "being homeless",
+      "tail": "losing employment",
+      "probs": {
+        "enables": 0.0188,
+        "none": 0.9658,
+        "blocks": 0.0154
+      },
+      "reps": [
+        {
+          "enables": 0.0188,
+          "none": 0.9658,
+          "blocks": 0.0154
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.0228,
+        "none": 0.9555,
+        "blocks": 0.0217
+      },
+      "reps": [
+        {
+          "enables": 0.0228,
+          "none": 0.9555,
+          "blocks": 0.0217
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.0217,
+        "none": 0.9565,
+        "blocks": 0.0218
+      },
+      "reps": [
+        {
+          "enables": 0.0217,
+          "none": 0.9565,
+          "blocks": 0.0218
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "not paying rent",
+      "probs": {
+        "blocks": 0.0342,
+        "enables": 0.0271,
+        "none": 0.9387
+      },
+      "reps": [
+        {
+          "blocks": 0.0342,
+          "enables": 0.0271,
+          "none": 0.9387
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "eviction",
+      "probs": {
+        "blocks": 0.0412,
+        "enables": 0.0224,
+        "none": 0.9364
+      },
+      "reps": [
+        {
+          "blocks": 0.0412,
+          "enables": 0.0224,
+          "none": 0.9364
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "moving in with brother",
+      "probs": {
+        "enables": 0.1129,
+        "none": 0.6198,
+        "blocks": 0.2673
+      },
+      "reps": [
+        {
+          "enables": 0.1129,
+          "none": 0.6198,
+          "blocks": 0.2673
+        }
+      ]
+    },
+    {
+      "head": "boss",
+      "tail": "losing employment",
+      "probs": {
+        "blocks": 0.0211,
+        "enables": 0.8337,
+        "none": 0.1452
+      },
+      "reps": [
+        {
+          "blocks": 0.0211,
+          "enables": 0.8337,
+          "none": 0.1452
+        }
+      ]
+    },
+    {
+      "head": "boss",
+      "tail": "divorce",
+      "probs": {
+        "blocks": 0.0068,
+        "enables": 0.0303,
+        "none": 0.9629
+      },
+      "reps": [
+        {
+          "blocks": 0.0068,
+          "enables": 0.0303,
+          "none": 0.9629
+        }
+      ]
+    },
+    {
+      "head": "boss",
+      "tail": "financial hardship",
+      "probs": {
+        "none": 0.8738,
+        "enables": 0.1195,
+        "blocks": 0.0067
+      },
+      "reps": [
+        {
+          "none": 0.8738,
+          "enables": 0.1195,
+          "blocks": 0.0067
+        }
+      ]
+    },
+    {
+      "head": "boss",
+      "tail": "not paying rent",
+      "probs": {
+        "blocks": 0.0049,
+        "none": 0.9571,
+        "enables": 0.038
+      },
+      "reps": [
+        {
+          "blocks": 0.0049,
+          "none": 0.9571,
+          "enables": 0.038
+        }
+      ]
+    },
+    {
+      "head": "boss",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0339,
+        "none": 0.9612,
+        "blocks": 0.0049
+      },
+      "reps": [
+        {
+          "enables": 0.0339,
+          "none": 0.9612,
+          "blocks": 0.0049
+        }
+      ]
+    },
+    {
+      "head": "boss",
+      "tail": "moving in with brother",
+      "probs": {
+        "blocks": 0.0284,
+        "enables": 0.0396,
+        "none": 0.932
+      },
+      "reps": [
+        {
+          "blocks": 0.0284,
+          "enables": 0.0396,
+          "none": 0.932
+        }
+      ]
+    },
+    {
+      "head": "boss",
+      "tail": "being homeless",
+      "probs": {
+        "none": 0.9431,
+        "enables": 0.0369,
+        "blocks": 0.02
+      },
+      "reps": [
+        {
+          "none": 0.9431,
+          "enables": 0.0369,
+          "blocks": 0.02
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "divorce",
+      "probs": {
+        "blocks": 0.0082,
+        "none": 0.9672,
+        "enables": 0.0246
+      },
+      "reps": [
+        {
+          "blocks": 0.0082,
+          "none": 0.9672,
+          "enables": 0.0246
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "financial hardship",
+      "probs": {
+        "none": 0.1856,
+        "blocks": 0.0081,
+        "enables": 0.8064
+      },
+      "reps": [
+        {
+          "none": 0.1856,
+          "blocks": 0.0081,
+          "enables": 0.8064
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "not paying rent",
+      "probs": {
+        "blocks": 0.0022,
+        "none": 0.9347,
+        "enables": 0.0631
+      },
+      "reps": [
+        {
+          "blocks": 0.0022,
+          "none": 0.9347,
+          "enables": 0.0631
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0282,
+        "none": 0.9686,
+        "blocks": 0.0032
+      },
+      "reps": [
+        {
+          "enables": 0.0282,
+          "none": 0.9686,
+          "blocks": 0.0032
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "moving in with brother",
+      "probs": {
+        "none": 0.9453,
+        "blocks": 0.0138,
+        "enables": 0.0409
+      },
+      "reps": [
+        {
+          "none": 0.9453,
+          "blocks": 0.0138,
+          "enables": 0.0409
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "being homeless",
+      "probs": {
+        "blocks": 0.02,
+        "enables": 0.0396,
+        "none": 0.9403
+      },
+      "reps": [
+        {
+          "blocks": 0.02,
+          "enables": 0.0396,
+          "none": 0.9403
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "divorce",
+      "probs": {
+        "none": 0.9307,
+        "enables": 0.0499,
+        "blocks": 0.0195
+      },
+      "reps": [
+        {
+          "none": 0.9307,
+          "enables": 0.0499,
+          "blocks": 0.0195
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "not paying rent",
+      "probs": {
+        "enables": 0.8645,
+        "none": 0.1274,
+        "blocks": 0.0081
+      },
+      "reps": [
+        {
+          "enables": 0.8645,
+          "none": 0.1274,
+          "blocks": 0.0081
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "eviction",
+      "probs": {
+        "blocks": 0.004,
+        "none": 0.8876,
+        "enables": 0.1084
+      },
+      "reps": [
+        {
+          "blocks": 0.004,
+          "none": 0.8876,
+          "enables": 0.1084
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "moving in with brother",
+      "probs": {
+        "blocks": 0.0156,
+        "enables": 0.2875,
+        "none": 0.6969
+      },
+      "reps": [
+        {
+          "blocks": 0.0156,
+          "enables": 0.2875,
+          "none": 0.6969
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "being homeless",
+      "probs": {
+        "none": 0.8399,
+        "enables": 0.1445,
+        "blocks": 0.0156
+      },
+      "reps": [
+        {
+          "none": 0.8399,
+          "enables": 0.1445,
+          "blocks": 0.0156
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "divorce",
+      "probs": {
+        "blocks": 0.0045,
+        "enables": 0.0063,
+        "none": 0.9892
+      },
+      "reps": [
+        {
+          "blocks": 0.0045,
+          "enables": 0.0063,
+          "none": 0.9892
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "eviction",
+      "probs": {
+        "none": 0.1254,
+        "enables": 0.8671,
+        "blocks": 0.0075
+      },
+      "reps": [
+        {
+          "none": 0.1254,
+          "enables": 0.8671,
+          "blocks": 0.0075
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "moving in with brother",
+      "probs": {
+        "none": 0.9109,
+        "enables": 0.0735,
+        "blocks": 0.0155
+      },
+      "reps": [
+        {
+          "none": 0.9109,
+          "enables": 0.0735,
+          "blocks": 0.0155
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "being homeless",
+      "probs": {
+        "blocks": 0.0123,
+        "enables": 0.062,
+        "none": 0.9258
+      },
+      "reps": [
+        {
+          "blocks": 0.0123,
+          "enables": 0.062,
+          "none": 0.9258
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "divorce",
+      "probs": {
+        "none": 0.9932,
+        "enables": 0.0037,
+        "blocks": 0.0031
+      },
+      "reps": [
+        {
+          "none": 0.9932,
+          "enables": 0.0037,
+          "blocks": 0.0031
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "moving in with brother",
+      "probs": {
+        "none": 0.178,
+        "enables": 0.7836,
+        "blocks": 0.0384
+      },
+      "reps": [
+        {
+          "none": 0.178,
+          "enables": 0.7836,
+          "blocks": 0.0384
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "being homeless",
+      "probs": {
+        "none": 0.5186,
+        "enables": 0.4147,
+        "blocks": 0.0667
+      },
+      "reps": [
+        {
+          "none": 0.5186,
+          "enables": 0.4147,
+          "blocks": 0.0667
+        }
+      ]
+    },
+    {
+      "head": "moving in with brother",
+      "tail": "divorce",
+      "probs": {
+        "none": 0.9897,
+        "enables": 0.0043,
+        "blocks": 0.006
+      },
+      "reps": [
+        {
+          "none": 0.9897,
+          "enables": 0.0043,
+          "blocks": 0.006
+        }
+      ]
+    },
+    {
+      "head": "moving in with brother",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.0145,
+        "none": 0.0596,
+        "blocks": 0.9259
+      },
+      "reps": [
+        {
+          "enables": 0.0145,
+          "none": 0.0596,
+          "blocks": 0.9259
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "losing employment",
+      "probs": {
+        "none": 0.9901,
+        "blocks": 0.0041,
+        "enables": 0.0058
+      },
+      "reps": [
+        {
+          "none": 0.9901,
+          "blocks": 0.0041,
+          "enables": 0.0058
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "financial hardship",
+      "probs": {
+        "blocks": 0.0031,
+        "none": 0.2894,
+        "enables": 0.7075
+      },
+      "reps": [
+        {
+          "blocks": 0.0031,
+          "none": 0.2894,
+          "enables": 0.7075
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "not paying rent",
+      "probs": {
+        "blocks": 0.0036,
+        "enables": 0.0756,
+        "none": 0.9207
+      },
+      "reps": [
+        {
+          "blocks": 0.0036,
+          "enables": 0.0756,
+          "none": 0.9207
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "eviction",
+      "probs": {
+        "blocks": 0.0033,
+        "none": 0.967,
+        "enables": 0.0297
+      },
+      "reps": [
+        {
+          "blocks": 0.0033,
+          "none": 0.967,
+          "enables": 0.0297
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "moving in with brother",
+      "probs": {
+        "blocks": 0.0075,
+        "none": 0.9405,
+        "enables": 0.052
+      },
+      "reps": [
+        {
+          "blocks": 0.0075,
+          "none": 0.9405,
+          "enables": 0.052
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "being homeless",
+      "probs": {
+        "none": 0.9348,
+        "blocks": 0.0285,
+        "enables": 0.0366
+      },
+      "reps": [
+        {
+          "none": 0.9348,
+          "blocks": 0.0285,
+          "enables": 0.0366
+        }
+      ]
+    },
+    {
+      "head": "brother",
+      "tail": "losing employment",
+      "probs": {
+        "enables": 0.0038,
+        "blocks": 0.0093,
+        "none": 0.9869
+      },
+      "reps": [
+        {
+          "enables": 0.0038,
+          "blocks": 0.0093,
+          "none": 0.9869
+        }
+      ]
+    },
+    {
+      "head": "brother",
+      "tail": "divorce",
+      "probs": {
+        "blocks": 0.0046,
+        "none": 0.9922,
+        "enables": 0.0032
+      },
+      "reps": [
+        {
+          "blocks": 0.0046,
+          "none": 0.9922,
+          "enables": 0.0032
+        }
+      ]
+    },
+    {
+      "head": "brother",
+      "tail": "financial hardship",
+      "probs": {
+        "blocks": 0.0871,
+        "enables": 0.0431,
+        "none": 0.8698
+      },
+      "reps": [
+        {
+          "blocks": 0.0871,
+          "enables": 0.0431,
+          "none": 0.8698
+        }
+      ]
+    },
+    {
+      "head": "brother",
+      "tail": "not paying rent",
+      "probs": {
+        "blocks": 0.0124,
+        "none": 0.9806,
+        "enables": 0.0071
+      },
+      "reps": [
+        {
+          "blocks": 0.0124,
+          "none": 0.9806,
+          "enables": 0.0071
+        }
+      ]
+    },
+    {
+      "head": "brother",
+      "tail": "eviction",
+      "probs": {
+        "blocks": 0.0346,
+        "enables": 0.0218,
+        "none": 0.9436
+      },
+      "reps": [
+        {
+          "blocks": 0.0346,
+          "enables": 0.0218,
+          "none": 0.9436
+        }
+      ]
+    },
+    {
+      "head": "brother",
+      "tail": "moving in with brother",
+      "probs": {
+        "blocks": 0.014,
+        "none": 0.0778,
+        "enables": 0.9082
+      },
+      "reps": [
+        {
+          "blocks": 0.014,
+          "none": 0.0778,
+          "enables": 0.9082
+        }
+      ]
+    },
+    {
+      "head": "brother",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.0126,
+        "none": 0.399,
+        "blocks": 0.5884
+      },
+      "reps": [
+        {
+          "enables": 0.0126,
+          "none": 0.399,
+          "blocks": 0.5884
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "losing employment",
+      "probs": {
+        "blocks": 0.0337,
+        "none": 0.896,
+        "enables": 0.0703
+      },
+      "reps": [
+        {
+          "blocks": 0.0337,
+          "none": 0.896,
+          "enables": 0.0703
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "divorce",
+      "probs": {
+        "none": 0.7863,
+        "blocks": 0.0324,
+        "enables": 0.1813
+      },
+      "reps": [
+        {
+          "none": 0.7863,
+          "blocks": 0.0324,
+          "enables": 0.1813
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.1144,
+        "blocks": 0.0428,
+        "none": 0.8429
+      },
+      "reps": [
+        {
+          "enables": 0.1144,
+          "blocks": 0.0428,
+          "none": 0.8429
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "not paying rent",
+      "probs": {
+        "enables": 0.137,
+        "none": 0.8339,
+        "blocks": 0.0291
+      },
+      "reps": [
+        {
+          "enables": 0.137,
+          "none": 0.8339,
+          "blocks": 0.0291
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "eviction",
+      "probs": {
+        "none": 0.816,
+        "blocks": 0.0401,
+        "enables": 0.1439
+      },
+      "reps": [
+        {
+          "none": 0.816,
+          "blocks": 0.0401,
+          "enables": 0.1439
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "moving in with brother",
+      "probs": {
+        "none": 0.5813,
+        "blocks": 0.0483,
+        "enables": 0.3705
+      },
+      "reps": [
+        {
+          "none": 0.5813,
+          "blocks": 0.0483,
+          "enables": 0.3705
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.0873,
+        "none": 0.7423,
+        "blocks": 0.1704
+      },
+      "reps": [
+        {
+          "enables": 0.0873,
+          "none": 0.7423,
+          "blocks": 0.1704
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.0106,
+        "blocks": 0.0881,
+        "none": 0.9014
+      },
+      "reps": [
+        {
+          "enables": 0.0106,
+          "blocks": 0.0881,
+          "none": 0.9014
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0068,
+        "blocks": 0.9369,
+        "none": 0.0563
+      },
+      "reps": [
+        {
+          "enables": 0.0068,
+          "blocks": 0.9369,
+          "none": 0.0563
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "brother",
+      "probs": {
+        "enables": 0.0242,
+        "blocks": 0.525,
+        "none": 0.4508
+      },
+      "reps": [
+        {
+          "enables": 0.0242,
+          "blocks": 0.525,
+          "none": 0.4508
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.0027,
+        "blocks": 0.0082,
+        "none": 0.9891
+      },
+      "reps": [
+        {
+          "enables": 0.0027,
+          "blocks": 0.0082,
+          "none": 0.9891
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0081,
+        "blocks": 0.9391,
+        "none": 0.0528
+      },
+      "reps": [
+        {
+          "enables": 0.0081,
+          "blocks": 0.9391,
+          "none": 0.0528
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "brother",
+      "probs": {
+        "enables": 0.0474,
+        "blocks": 0.5213,
+        "none": 0.4313
+      },
+      "reps": [
+        {
+          "enables": 0.0474,
+          "blocks": 0.5213,
+          "none": 0.4313
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.002,
+        "blocks": 0.007,
+        "none": 0.9909
+      },
+      "reps": [
+        {
+          "enables": 0.002,
+          "blocks": 0.007,
+          "none": 0.9909
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "I",
+      "probs": {
+        "enables": 0.018,
+        "blocks": 0.8672,
+        "none": 0.1148
+      },
+      "reps": [
+        {
+          "enables": 0.018,
+          "blocks": 0.8672,
+          "none": 0.1148
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "brother",
+      "probs": {
+        "enables": 0.047,
+        "blocks": 0.5845,
+        "none": 0.3685
+      },
+      "reps": [
+        {
+          "enables": 0.047,
+          "blocks": 0.5845,
+          "none": 0.3685
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.0035,
+        "blocks": 0.0112,
+        "none": 0.9853
+      },
+      "reps": [
+        {
+          "enables": 0.0035,
+          "blocks": 0.0112,
+          "none": 0.9853
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0222,
+        "blocks": 0.7309,
+        "none": 0.2469
+      },
+      "reps": [
+        {
+          "enables": 0.0222,
+          "blocks": 0.7309,
+          "none": 0.2469
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "brother",
+      "probs": {
+        "enables": 0.047,
+        "blocks": 0.4013,
+        "none": 0.5517
+      },
+      "reps": [
+        {
+          "enables": 0.047,
+          "blocks": 0.4013,
+          "none": 0.5517
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.0176,
+        "blocks": 0.0192,
+        "none": 0.9632
+      },
+      "reps": [
+        {
+          "enables": 0.0176,
+          "blocks": 0.0192,
+          "none": 0.9632
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0648,
+        "blocks": 0.5833,
+        "none": 0.3518
+      },
+      "reps": [
+        {
+          "enables": 0.0648,
+          "blocks": 0.5833,
+          "none": 0.3518
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "brother",
+      "probs": {
+        "enables": 0.1211,
+        "blocks": 0.4836,
+        "none": 0.3953
+      },
+      "reps": [
+        {
+          "enables": 0.1211,
+          "blocks": 0.4836,
+          "none": 0.3953
+        }
+      ]
+    },
+    {
+      "head": "moving in with brother",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.0144,
+        "blocks": 0.0091,
+        "none": 0.9766
+      },
+      "reps": [
+        {
+          "enables": 0.0144,
+          "blocks": 0.0091,
+          "none": 0.9766
+        }
+      ]
+    },
+    {
+      "head": "moving in with brother",
+      "tail": "I",
+      "probs": {
+        "enables": 0.952,
+        "blocks": 0.0149,
+        "none": 0.0331
+      },
+      "reps": [
+        {
+          "enables": 0.952,
+          "blocks": 0.0149,
+          "none": 0.0331
+        }
+      ]
+    },
+    {
+      "head": "moving in with brother",
+      "tail": "brother",
+      "probs": {
+        "enables": 0.0865,
+        "blocks": 0.1655,
+        "none": 0.748
+      },
+      "reps": [
+        {
+          "enables": 0.0865,
+          "blocks": 0.1655,
+          "none": 0.748
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.0067,
+        "blocks": 0.0244,
+        "none": 0.9689
+      },
+      "reps": [
+        {
+          "enables": 0.0067,
+          "blocks": 0.0244,
+          "none": 0.9689
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0152,
+        "blocks": 0.054,
+        "none": 0.9308
+      },
+      "reps": [
+        {
+          "enables": 0.0152,
+          "blocks": 0.054,
+          "none": 0.9308
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "brother",
+      "probs": {
+        "enables": 0.0286,
+        "blocks": 0.1066,
+        "none": 0.8648
+      },
+      "reps": [
+        {
+          "enables": 0.0286,
+          "blocks": 0.1066,
+          "none": 0.8648
+        }
+      ]
+    }
+  ]
+}

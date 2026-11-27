@@ -1,0 +1,334 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho168",
+  "text": "My husband and I got divorced, but I still had my job, so money was fine.",
+  "nodes": [
+    "divorce",
+    "having a job",
+    "financial stability",
+    "husband",
+    "I"
+  ],
+  "edges": [
+    {
+      "head": "I",
+      "tail": "having a job",
+      "rel": "enables",
+      "prob": 0.539
+    },
+    {
+      "head": "having a job",
+      "tail": "financial stability",
+      "rel": "enables",
+      "prob": 0.958
+    },
+    {
+      "head": "having a job",
+      "tail": "I",
+      "rel": "enables",
+      "prob": 0.907
+    },
+    {
+      "head": "financial stability",
+      "tail": "I",
+      "rel": "enables",
+      "prob": 0.92
+    }
+  ],
+  "chains": [
+    [
+      "husband"
+    ],
+    [
+      "I",
+      "having a job",
+      "financial stability"
+    ],
+    [
+      "divorce"
+    ]
+  ],
+  "kev_requests": 6,
+  "connected": false,
+  "kinds": {
+    "divorce": "event",
+    "having a job": "event",
+    "financial stability": "event",
+    "husband": "participant",
+    "I": "participant"
+  },
+  "asked": [
+    {
+      "head": "husband",
+      "tail": "divorce",
+      "probs": {
+        "none": 0.7377,
+        "enables": 0.2214,
+        "blocks": 0.0408
+      },
+      "reps": [
+        {
+          "none": 0.7377,
+          "enables": 0.2214,
+          "blocks": 0.0408
+        }
+      ]
+    },
+    {
+      "head": "husband",
+      "tail": "having a job",
+      "probs": {
+        "none": 0.9392,
+        "enables": 0.0237,
+        "blocks": 0.037
+      },
+      "reps": [
+        {
+          "none": 0.9392,
+          "enables": 0.0237,
+          "blocks": 0.037
+        }
+      ]
+    },
+    {
+      "head": "husband",
+      "tail": "financial stability",
+      "probs": {
+        "none": 0.9166,
+        "enables": 0.0228,
+        "blocks": 0.0605
+      },
+      "reps": [
+        {
+          "none": 0.9166,
+          "enables": 0.0228,
+          "blocks": 0.0605
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.127,
+        "none": 0.8126,
+        "blocks": 0.0604
+      },
+      "reps": [
+        {
+          "enables": 0.127,
+          "none": 0.8126,
+          "blocks": 0.0604
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "having a job",
+      "probs": {
+        "none": 0.4382,
+        "enables": 0.5393,
+        "blocks": 0.0225
+      },
+      "reps": [
+        {
+          "none": 0.4382,
+          "enables": 0.5393,
+          "blocks": 0.0225
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "financial stability",
+      "probs": {
+        "none": 0.6554,
+        "enables": 0.3313,
+        "blocks": 0.0133
+      },
+      "reps": [
+        {
+          "none": 0.6554,
+          "enables": 0.3313,
+          "blocks": 0.0133
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "divorce",
+      "probs": {
+        "none": 0.9066,
+        "blocks": 0.0629,
+        "enables": 0.0305
+      },
+      "reps": [
+        {
+          "none": 0.9066,
+          "blocks": 0.0629,
+          "enables": 0.0305
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "financial stability",
+      "probs": {
+        "blocks": 0.0039,
+        "none": 0.0384,
+        "enables": 0.9577
+      },
+      "reps": [
+        {
+          "blocks": 0.0039,
+          "none": 0.0384,
+          "enables": 0.9577
+        }
+      ]
+    },
+    {
+      "head": "financial stability",
+      "tail": "divorce",
+      "probs": {
+        "blocks": 0.0901,
+        "enables": 0.024,
+        "none": 0.886
+      },
+      "reps": [
+        {
+          "blocks": 0.0901,
+          "enables": 0.024,
+          "none": 0.886
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "having a job",
+      "probs": {
+        "enables": 0.0318,
+        "blocks": 0.0343,
+        "none": 0.9339
+      },
+      "reps": [
+        {
+          "enables": 0.0318,
+          "blocks": 0.0343,
+          "none": 0.9339
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "financial stability",
+      "probs": {
+        "enables": 0.0222,
+        "blocks": 0.0394,
+        "none": 0.9385
+      },
+      "reps": [
+        {
+          "enables": 0.0222,
+          "blocks": 0.0394,
+          "none": 0.9385
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.0084,
+        "blocks": 0.0236,
+        "none": 0.968
+      },
+      "reps": [
+        {
+          "enables": 0.0084,
+          "blocks": 0.0236,
+          "none": 0.968
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0112,
+        "blocks": 0.1957,
+        "none": 0.7931
+      },
+      "reps": [
+        {
+          "enables": 0.0112,
+          "blocks": 0.1957,
+          "none": 0.7931
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.0118,
+        "blocks": 0.0242,
+        "none": 0.964
+      },
+      "reps": [
+        {
+          "enables": 0.0118,
+          "blocks": 0.0242,
+          "none": 0.964
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "I",
+      "probs": {
+        "enables": 0.9071,
+        "blocks": 0.0158,
+        "none": 0.077
+      },
+      "reps": [
+        {
+          "enables": 0.9071,
+          "blocks": 0.0158,
+          "none": 0.077
+        }
+      ]
+    },
+    {
+      "head": "financial stability",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.0232,
+        "blocks": 0.0169,
+        "none": 0.9599
+      },
+      "reps": [
+        {
+          "enables": 0.0232,
+          "blocks": 0.0169,
+          "none": 0.9599
+        }
+      ]
+    },
+    {
+      "head": "financial stability",
+      "tail": "I",
+      "probs": {
+        "enables": 0.9196,
+        "blocks": 0.0131,
+        "none": 0.0672
+      },
+      "reps": [
+        {
+          "enables": 0.9196,
+          "blocks": 0.0131,
+          "none": 0.0672
+        }
+      ]
+    }
+  ]
+}

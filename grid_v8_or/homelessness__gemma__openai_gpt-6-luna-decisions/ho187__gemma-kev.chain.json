@@ -1,0 +1,348 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho187",
+  "text": "I was let go by my boss, and money got tight. I had savings, though, so the rent still got paid.",
+  "nodes": [
+    "being let go",
+    "money getting tight",
+    "paying the rent",
+    "boss",
+    "I"
+  ],
+  "edges": [
+    {
+      "head": "boss",
+      "tail": "being let go",
+      "rel": "enables",
+      "prob": 0.9
+    },
+    {
+      "head": "boss",
+      "tail": "money getting tight",
+      "rel": "enables",
+      "prob": 0.64
+    },
+    {
+      "head": "being let go",
+      "tail": "money getting tight",
+      "rel": "enables",
+      "prob": 0.98
+    },
+    {
+      "head": "I",
+      "tail": "paying the rent",
+      "rel": "enables",
+      "prob": 0.86
+    },
+    {
+      "head": "being let go",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.5
+    },
+    {
+      "head": "money getting tight",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.48
+    }
+  ],
+  "chains": [
+    [
+      "boss",
+      "being let go",
+      "money getting tight"
+    ],
+    [
+      "boss",
+      "money getting tight"
+    ],
+    [
+      "I",
+      "paying the rent"
+    ]
+  ],
+  "kev_requests": 6,
+  "connected": true,
+  "kinds": {
+    "being let go": "event",
+    "money getting tight": "event",
+    "paying the rent": "event",
+    "boss": "participant",
+    "I": "participant"
+  },
+  "asked": [
+    {
+      "head": "boss",
+      "tail": "being let go",
+      "probs": {
+        "enables": 0.9,
+        "blocks": 0.0,
+        "none": 0.1
+      },
+      "reps": [
+        {
+          "enables": 0.9,
+          "blocks": 0,
+          "none": 0.1
+        }
+      ]
+    },
+    {
+      "head": "boss",
+      "tail": "money getting tight",
+      "probs": {
+        "enables": 0.64,
+        "blocks": 0.0,
+        "none": 0.36
+      },
+      "reps": [
+        {
+          "enables": 0.64,
+          "blocks": 0,
+          "none": 0.36
+        }
+      ]
+    },
+    {
+      "head": "boss",
+      "tail": "paying the rent",
+      "probs": {
+        "enables": 0.04,
+        "blocks": 0.01,
+        "none": 0.95
+      },
+      "reps": [
+        {
+          "enables": 0.04,
+          "blocks": 0.01,
+          "none": 0.95
+        }
+      ]
+    },
+    {
+      "head": "being let go",
+      "tail": "money getting tight",
+      "probs": {
+        "enables": 0.98,
+        "blocks": 0.0,
+        "none": 0.02
+      },
+      "reps": [
+        {
+          "enables": 0.98,
+          "blocks": 0,
+          "none": 0.02
+        }
+      ]
+    },
+    {
+      "head": "being let go",
+      "tail": "paying the rent",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.12,
+        "none": 0.86
+      },
+      "reps": [
+        {
+          "enables": 0.02,
+          "blocks": 0.12,
+          "none": 0.86
+        }
+      ]
+    },
+    {
+      "head": "money getting tight",
+      "tail": "paying the rent",
+      "probs": {
+        "enables": 0.16,
+        "blocks": 0.11,
+        "none": 0.73
+      },
+      "reps": [
+        {
+          "enables": 0.16,
+          "blocks": 0.11,
+          "none": 0.73
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "being let go",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "money getting tight",
+      "probs": {
+        "enables": 0.04,
+        "blocks": 0.01,
+        "none": 0.95
+      },
+      "reps": [
+        {
+          "enables": 0.04,
+          "blocks": 0.01,
+          "none": 0.95
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "paying the rent",
+      "probs": {
+        "enables": 0.86,
+        "blocks": 0.0,
+        "none": 0.14
+      },
+      "reps": [
+        {
+          "enables": 0.86,
+          "blocks": 0,
+          "none": 0.14
+        }
+      ]
+    },
+    {
+      "head": "paying the rent",
+      "tail": "being let go",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "paying the rent",
+      "tail": "money getting tight",
+      "probs": {
+        "enables": 0.48,
+        "blocks": 0.03,
+        "none": 0.49
+      },
+      "reps": [
+        {
+          "enables": 0.48,
+          "blocks": 0.03,
+          "none": 0.49
+        }
+      ]
+    },
+    {
+      "head": "being let go",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.04,
+        "blocks": 0.18,
+        "none": 0.78
+      },
+      "reps": [
+        {
+          "enables": 0.04,
+          "blocks": 0.18,
+          "none": 0.78
+        }
+      ]
+    },
+    {
+      "head": "being let go",
+      "tail": "I",
+      "probs": {
+        "enables": 0.06,
+        "blocks": 0.5,
+        "none": 0.44
+      },
+      "reps": [
+        {
+          "enables": 0.06,
+          "blocks": 0.5,
+          "none": 0.44
+        }
+      ]
+    },
+    {
+      "head": "money getting tight",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.04,
+        "none": 0.95
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0.04,
+          "none": 0.95
+        }
+      ]
+    },
+    {
+      "head": "money getting tight",
+      "tail": "I",
+      "probs": {
+        "enables": 0.06,
+        "blocks": 0.48,
+        "none": 0.46
+      },
+      "reps": [
+        {
+          "enables": 0.06,
+          "blocks": 0.48,
+          "none": 0.46
+        }
+      ]
+    },
+    {
+      "head": "paying the rent",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.02,
+        "blocks": 0.02,
+        "none": 0.96
+      },
+      "reps": [
+        {
+          "enables": 0.02,
+          "blocks": 0.02,
+          "none": 0.96
+        }
+      ]
+    },
+    {
+      "head": "paying the rent",
+      "tail": "I",
+      "probs": {
+        "enables": 0.36,
+        "blocks": 0.04,
+        "none": 0.6
+      },
+      "reps": [
+        {
+          "enables": 0.36,
+          "blocks": 0.04,
+          "none": 0.6
+        }
+      ]
+    }
+  ]
+}

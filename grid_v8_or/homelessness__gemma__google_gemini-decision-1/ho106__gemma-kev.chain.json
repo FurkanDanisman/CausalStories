@@ -1,0 +1,369 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho106",
+  "text": "My company laid me off, and my marriage ended. Money got very tight, but my savings kept the rent paid.",
+  "nodes": [
+    "laying off",
+    "marriage ending",
+    "financial hardship",
+    "paying the rent",
+    "company"
+  ],
+  "edges": [
+    {
+      "head": "company",
+      "tail": "laying off",
+      "rel": "enables",
+      "prob": 0.821
+    },
+    {
+      "head": "laying off",
+      "tail": "financial hardship",
+      "rel": "enables",
+      "prob": 0.808
+    },
+    {
+      "head": "financial hardship",
+      "tail": "paying the rent",
+      "rel": "blocks",
+      "prob": 0.51
+    },
+    {
+      "head": "marriage ending",
+      "tail": "financial hardship",
+      "rel": "enables",
+      "prob": 0.581
+    }
+  ],
+  "chains": [
+    [
+      "paying the rent"
+    ],
+    [
+      "company",
+      "laying off",
+      "financial hardship",
+      "paying the rent"
+    ],
+    [
+      "marriage ending",
+      "financial hardship",
+      "paying the rent"
+    ]
+  ],
+  "kev_requests": 6,
+  "connected": true,
+  "kinds": {
+    "laying off": "event",
+    "marriage ending": "event",
+    "financial hardship": "event",
+    "paying the rent": "event",
+    "company": "participant"
+  },
+  "asked": [
+    {
+      "head": "paying the rent",
+      "tail": "laying off",
+      "probs": {
+        "none": 0.9682,
+        "blocks": 0.0195,
+        "enables": 0.0123
+      },
+      "reps": [
+        {
+          "none": 0.9682,
+          "blocks": 0.0195,
+          "enables": 0.0123
+        }
+      ]
+    },
+    {
+      "head": "paying the rent",
+      "tail": "marriage ending",
+      "probs": {
+        "enables": 0.0226,
+        "blocks": 0.0309,
+        "none": 0.9465
+      },
+      "reps": [
+        {
+          "enables": 0.0226,
+          "blocks": 0.0309,
+          "none": 0.9465
+        }
+      ]
+    },
+    {
+      "head": "paying the rent",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.0731,
+        "blocks": 0.3948,
+        "none": 0.532
+      },
+      "reps": [
+        {
+          "enables": 0.0731,
+          "blocks": 0.3948,
+          "none": 0.532
+        }
+      ]
+    },
+    {
+      "head": "company",
+      "tail": "laying off",
+      "probs": {
+        "enables": 0.8207,
+        "blocks": 0.0241,
+        "none": 0.1553
+      },
+      "reps": [
+        {
+          "enables": 0.8207,
+          "blocks": 0.0241,
+          "none": 0.1553
+        }
+      ]
+    },
+    {
+      "head": "company",
+      "tail": "marriage ending",
+      "probs": {
+        "blocks": 0.0121,
+        "none": 0.9479,
+        "enables": 0.04
+      },
+      "reps": [
+        {
+          "blocks": 0.0121,
+          "none": 0.9479,
+          "enables": 0.04
+        }
+      ]
+    },
+    {
+      "head": "company",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.0695,
+        "blocks": 0.0097,
+        "none": 0.9207
+      },
+      "reps": [
+        {
+          "enables": 0.0695,
+          "blocks": 0.0097,
+          "none": 0.9207
+        }
+      ]
+    },
+    {
+      "head": "company",
+      "tail": "paying the rent",
+      "probs": {
+        "none": 0.8832,
+        "enables": 0.0168,
+        "blocks": 0.0999
+      },
+      "reps": [
+        {
+          "none": 0.8832,
+          "enables": 0.0168,
+          "blocks": 0.0999
+        }
+      ]
+    },
+    {
+      "head": "laying off",
+      "tail": "marriage ending",
+      "probs": {
+        "enables": 0.0652,
+        "blocks": 0.0052,
+        "none": 0.9296
+      },
+      "reps": [
+        {
+          "enables": 0.0652,
+          "blocks": 0.0052,
+          "none": 0.9296
+        }
+      ]
+    },
+    {
+      "head": "laying off",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.8083,
+        "blocks": 0.007,
+        "none": 0.1847
+      },
+      "reps": [
+        {
+          "enables": 0.8083,
+          "blocks": 0.007,
+          "none": 0.1847
+        }
+      ]
+    },
+    {
+      "head": "laying off",
+      "tail": "paying the rent",
+      "probs": {
+        "none": 0.8723,
+        "blocks": 0.1228,
+        "enables": 0.0049
+      },
+      "reps": [
+        {
+          "none": 0.8723,
+          "blocks": 0.1228,
+          "enables": 0.0049
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "marriage ending",
+      "probs": {
+        "blocks": 0.0156,
+        "none": 0.9177,
+        "enables": 0.0667
+      },
+      "reps": [
+        {
+          "blocks": 0.0156,
+          "none": 0.9177,
+          "enables": 0.0667
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "paying the rent",
+      "probs": {
+        "blocks": 0.5096,
+        "none": 0.4393,
+        "enables": 0.051
+      },
+      "reps": [
+        {
+          "blocks": 0.5096,
+          "none": 0.4393,
+          "enables": 0.051
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "laying off",
+      "probs": {
+        "enables": 0.0096,
+        "blocks": 0.0075,
+        "none": 0.9829
+      },
+      "reps": [
+        {
+          "enables": 0.0096,
+          "blocks": 0.0075,
+          "none": 0.9829
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "financial hardship",
+      "probs": {
+        "none": 0.4137,
+        "blocks": 0.0053,
+        "enables": 0.5811
+      },
+      "reps": [
+        {
+          "none": 0.4137,
+          "blocks": 0.0053,
+          "enables": 0.5811
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "paying the rent",
+      "probs": {
+        "enables": 0.0172,
+        "none": 0.8857,
+        "blocks": 0.0971
+      },
+      "reps": [
+        {
+          "enables": 0.0172,
+          "none": 0.8857,
+          "blocks": 0.0971
+        }
+      ]
+    },
+    {
+      "head": "laying off",
+      "tail": "company",
+      "probs": {
+        "enables": 0.0999,
+        "blocks": 0.0264,
+        "none": 0.8738
+      },
+      "reps": [
+        {
+          "enables": 0.0999,
+          "blocks": 0.0264,
+          "none": 0.8738
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "company",
+      "probs": {
+        "enables": 0.0049,
+        "blocks": 0.0081,
+        "none": 0.987
+      },
+      "reps": [
+        {
+          "enables": 0.0049,
+          "blocks": 0.0081,
+          "none": 0.987
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "company",
+      "probs": {
+        "enables": 0.0068,
+        "blocks": 0.0386,
+        "none": 0.9545
+      },
+      "reps": [
+        {
+          "enables": 0.0068,
+          "blocks": 0.0386,
+          "none": 0.9545
+        }
+      ]
+    },
+    {
+      "head": "paying the rent",
+      "tail": "company",
+      "probs": {
+        "enables": 0.0148,
+        "blocks": 0.014,
+        "none": 0.9712
+      },
+      "reps": [
+        {
+          "enables": 0.0148,
+          "blocks": 0.014,
+          "none": 0.9712
+        }
+      ]
+    }
+  ]
+}

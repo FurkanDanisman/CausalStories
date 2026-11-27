@@ -1,0 +1,235 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho051",
+  "text": "My marriage ended, but I still had my job, so I never ran short of money.",
+  "nodes": [
+    "marriage ending",
+    "having a job",
+    "running short of money",
+    "I"
+  ],
+  "edges": [
+    {
+      "head": "having a job",
+      "tail": "running short of money",
+      "rel": "blocks",
+      "prob": 0.92
+    },
+    {
+      "head": "marriage ending",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.63
+    },
+    {
+      "head": "having a job",
+      "tail": "I",
+      "rel": "enables",
+      "prob": 0.98
+    },
+    {
+      "head": "running short of money",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.57
+    }
+  ],
+  "chains": [
+    [
+      "I"
+    ],
+    [
+      "having a job",
+      "running short of money"
+    ],
+    [
+      "marriage ending"
+    ]
+  ],
+  "kev_requests": 5,
+  "connected": true,
+  "kinds": {
+    "marriage ending": "event",
+    "having a job": "event",
+    "running short of money": "event",
+    "I": "participant"
+  },
+  "asked": [
+    {
+      "head": "I",
+      "tail": "marriage ending",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "having a job",
+      "probs": {
+        "enables": 0.07,
+        "blocks": 0.0,
+        "none": 0.93
+      },
+      "reps": [
+        {
+          "enables": 0.07,
+          "blocks": 0,
+          "none": 0.93
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "running short of money",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.02,
+        "none": 0.98
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0.02,
+          "none": 0.98
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "marriage ending",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "running short of money",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.92,
+        "none": 0.08
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0.92,
+          "none": 0.08
+        }
+      ]
+    },
+    {
+      "head": "running short of money",
+      "tail": "marriage ending",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "having a job",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0,
+          "none": 0.99
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "running short of money",
+      "probs": {
+        "enables": 0.04,
+        "blocks": 0.01,
+        "none": 0.95
+      },
+      "reps": [
+        {
+          "enables": 0.04,
+          "blocks": 0.01,
+          "none": 0.95
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.63,
+        "none": 0.37
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0.63,
+          "none": 0.37
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "I",
+      "probs": {
+        "enables": 0.98,
+        "blocks": 0.0,
+        "none": 0.02
+      },
+      "reps": [
+        {
+          "enables": 0.98,
+          "blocks": 0,
+          "none": 0.02
+        }
+      ]
+    },
+    {
+      "head": "running short of money",
+      "tail": "I",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.57,
+        "none": 0.42
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0.57,
+          "none": 0.42
+        }
+      ]
+    }
+  ]
+}

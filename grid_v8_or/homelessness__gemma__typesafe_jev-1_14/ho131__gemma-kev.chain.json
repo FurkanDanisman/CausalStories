@@ -1,0 +1,349 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho131",
+  "text": "My husband and I divorced, but I still had my job, so money stayed okay.",
+  "nodes": [
+    "divorce",
+    "maintaining employment",
+    "financial stability",
+    "husband",
+    "I"
+  ],
+  "edges": [
+    {
+      "head": "maintaining employment",
+      "tail": "financial stability",
+      "rel": "enables",
+      "prob": 0.97
+    },
+    {
+      "head": "maintaining employment",
+      "tail": "I",
+      "rel": "enables",
+      "prob": 0.9
+    },
+    {
+      "head": "financial stability",
+      "tail": "I",
+      "rel": "enables",
+      "prob": 0.8
+    }
+  ],
+  "chains": [
+    [
+      "husband"
+    ],
+    [
+      "I"
+    ],
+    [
+      "divorce"
+    ],
+    [
+      "financial stability"
+    ],
+    [
+      "maintaining employment",
+      "financial stability"
+    ]
+  ],
+  "kev_requests": 6,
+  "connected": false,
+  "kinds": {
+    "divorce": "event",
+    "maintaining employment": "event",
+    "financial stability": "event",
+    "husband": "participant",
+    "I": "participant"
+  },
+  "asked": [
+    {
+      "head": "husband",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.08,
+        "blocks": 0.0,
+        "none": 0.92
+      },
+      "reps": [
+        {
+          "enables": 0.08,
+          "blocks": 0,
+          "none": 0.92
+        }
+      ]
+    },
+    {
+      "head": "husband",
+      "tail": "maintaining employment",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "husband",
+      "tail": "financial stability",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.02,
+        "none": 0.98
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0.02,
+          "none": 0.98
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0,
+          "none": 0.99
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "maintaining employment",
+      "probs": {
+        "enables": 0.33,
+        "blocks": 0.0,
+        "none": 0.67
+      },
+      "reps": [
+        {
+          "enables": 0.33,
+          "blocks": 0,
+          "none": 0.67
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "financial stability",
+      "probs": {
+        "enables": 0.09,
+        "blocks": 0.0,
+        "none": 0.91
+      },
+      "reps": [
+        {
+          "enables": 0.09,
+          "blocks": 0,
+          "none": 0.91
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "maintaining employment",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.0,
+        "none": 0.99
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0,
+          "none": 0.99
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "financial stability",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.03,
+        "none": 0.97
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0.03,
+          "none": 0.97
+        }
+      ]
+    },
+    {
+      "head": "financial stability",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "financial stability",
+      "tail": "maintaining employment",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "maintaining employment",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "maintaining employment",
+      "tail": "financial stability",
+      "probs": {
+        "enables": 0.97,
+        "blocks": 0.01,
+        "none": 0.02
+      },
+      "reps": [
+        {
+          "enables": 0.97,
+          "blocks": 0.01,
+          "none": 0.02
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.05,
+        "none": 0.95
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0.05,
+          "none": 0.95
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "I",
+      "probs": {
+        "enables": 0.01,
+        "blocks": 0.27,
+        "none": 0.72
+      },
+      "reps": [
+        {
+          "enables": 0.01,
+          "blocks": 0.27,
+          "none": 0.72
+        }
+      ]
+    },
+    {
+      "head": "maintaining employment",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "maintaining employment",
+      "tail": "I",
+      "probs": {
+        "enables": 0.9,
+        "blocks": 0.0,
+        "none": 0.1
+      },
+      "reps": [
+        {
+          "enables": 0.9,
+          "blocks": 0,
+          "none": 0.1
+        }
+      ]
+    },
+    {
+      "head": "financial stability",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.0,
+        "blocks": 0.0,
+        "none": 1.0
+      },
+      "reps": [
+        {
+          "enables": 0,
+          "blocks": 0,
+          "none": 1
+        }
+      ]
+    },
+    {
+      "head": "financial stability",
+      "tail": "I",
+      "probs": {
+        "enables": 0.8,
+        "blocks": 0.0,
+        "none": 0.2
+      },
+      "reps": [
+        {
+          "enables": 0.8,
+          "blocks": 0,
+          "none": 0.2
+        }
+      ]
+    }
+  ]
+}

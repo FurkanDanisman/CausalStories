@@ -1,0 +1,1668 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho069",
+  "text": "My employer let me go, and my husband and I got divorced. Money got really tight, and I couldn't pay my rent anymore. I had no savings to fall back on. I got evicted, but my mom took me in, so I never ended up on the street.",
+  "nodes": [
+    "losing employment",
+    "divorce",
+    "financial hardship",
+    "not paying rent",
+    "eviction",
+    "being taken in by mother",
+    "being homeless",
+    "employer",
+    "husband",
+    "I",
+    "mom"
+  ],
+  "edges": [
+    {
+      "head": "being homeless",
+      "tail": "being taken in by mother",
+      "rel": "blocks",
+      "prob": 0.49
+    },
+    {
+      "head": "husband",
+      "tail": "divorce",
+      "rel": "enables",
+      "prob": 0.583
+    },
+    {
+      "head": "divorce",
+      "tail": "financial hardship",
+      "rel": "enables",
+      "prob": 0.68
+    },
+    {
+      "head": "financial hardship",
+      "tail": "not paying rent",
+      "rel": "enables",
+      "prob": 0.886
+    },
+    {
+      "head": "not paying rent",
+      "tail": "eviction",
+      "rel": "enables",
+      "prob": 0.897
+    },
+    {
+      "head": "eviction",
+      "tail": "being taken in by mother",
+      "rel": "enables",
+      "prob": 0.602
+    },
+    {
+      "head": "eviction",
+      "tail": "being homeless",
+      "rel": "enables",
+      "prob": 0.623
+    },
+    {
+      "head": "losing employment",
+      "tail": "financial hardship",
+      "rel": "enables",
+      "prob": 0.658
+    },
+    {
+      "head": "mom",
+      "tail": "being taken in by mother",
+      "rel": "enables",
+      "prob": 0.96
+    },
+    {
+      "head": "mom",
+      "tail": "being homeless",
+      "rel": "blocks",
+      "prob": 0.599
+    },
+    {
+      "head": "employer",
+      "tail": "losing employment",
+      "rel": "enables",
+      "prob": 0.745
+    },
+    {
+      "head": "losing employment",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.953
+    },
+    {
+      "head": "losing employment",
+      "tail": "mom",
+      "rel": "blocks",
+      "prob": 0.533
+    },
+    {
+      "head": "divorce",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.918
+    },
+    {
+      "head": "financial hardship",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.865
+    },
+    {
+      "head": "not paying rent",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.776
+    },
+    {
+      "head": "eviction",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.685
+    },
+    {
+      "head": "being taken in by mother",
+      "tail": "I",
+      "rel": "enables",
+      "prob": 0.943
+    }
+  ],
+  "chains": [
+    [
+      "being homeless",
+      "being taken in by mother"
+    ],
+    [
+      "husband",
+      "divorce",
+      "financial hardship",
+      "not paying rent",
+      "eviction",
+      "being taken in by mother"
+    ],
+    [
+      "husband",
+      "divorce",
+      "financial hardship",
+      "not paying rent",
+      "eviction",
+      "being homeless",
+      "being taken in by mother"
+    ],
+    [
+      "losing employment",
+      "financial hardship",
+      "not paying rent",
+      "eviction",
+      "being taken in by mother"
+    ],
+    [
+      "losing employment",
+      "financial hardship",
+      "not paying rent",
+      "eviction",
+      "being homeless",
+      "being taken in by mother"
+    ],
+    [
+      "I"
+    ],
+    [
+      "mom",
+      "being taken in by mother"
+    ],
+    [
+      "mom",
+      "being homeless",
+      "being taken in by mother"
+    ],
+    [
+      "employer",
+      "losing employment",
+      "financial hardship",
+      "not paying rent",
+      "eviction",
+      "being taken in by mother"
+    ],
+    [
+      "employer",
+      "losing employment",
+      "financial hardship",
+      "not paying rent",
+      "eviction",
+      "being homeless",
+      "being taken in by mother"
+    ]
+  ],
+  "kev_requests": 12,
+  "connected": true,
+  "kinds": {
+    "losing employment": "event",
+    "divorce": "event",
+    "financial hardship": "event",
+    "not paying rent": "event",
+    "eviction": "event",
+    "being taken in by mother": "event",
+    "being homeless": "event",
+    "employer": "participant",
+    "husband": "participant",
+    "I": "participant",
+    "mom": "participant"
+  },
+  "asked": [
+    {
+      "head": "being homeless",
+      "tail": "losing employment",
+      "probs": {
+        "enables": 0.0128,
+        "blocks": 0.0148,
+        "none": 0.9725
+      },
+      "reps": [
+        {
+          "enables": 0.0128,
+          "blocks": 0.0148,
+          "none": 0.9725
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.013,
+        "blocks": 0.0147,
+        "none": 0.9723
+      },
+      "reps": [
+        {
+          "enables": 0.013,
+          "blocks": 0.0147,
+          "none": 0.9723
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.0474,
+        "blocks": 0.0348,
+        "none": 0.9178
+      },
+      "reps": [
+        {
+          "enables": 0.0474,
+          "blocks": 0.0348,
+          "none": 0.9178
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "not paying rent",
+      "probs": {
+        "enables": 0.0352,
+        "none": 0.9316,
+        "blocks": 0.0332
+      },
+      "reps": [
+        {
+          "enables": 0.0352,
+          "none": 0.9316,
+          "blocks": 0.0332
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "eviction",
+      "probs": {
+        "none": 0.9055,
+        "blocks": 0.0733,
+        "enables": 0.0212
+      },
+      "reps": [
+        {
+          "none": 0.9055,
+          "blocks": 0.0733,
+          "enables": 0.0212
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "being taken in by mother",
+      "probs": {
+        "blocks": 0.4899,
+        "none": 0.3948,
+        "enables": 0.1154
+      },
+      "reps": [
+        {
+          "blocks": 0.4899,
+          "none": 0.3948,
+          "enables": 0.1154
+        }
+      ]
+    },
+    {
+      "head": "being taken in by mother",
+      "tail": "losing employment",
+      "probs": {
+        "enables": 0.0045,
+        "blocks": 0.0063,
+        "none": 0.9892
+      },
+      "reps": [
+        {
+          "enables": 0.0045,
+          "blocks": 0.0063,
+          "none": 0.9892
+        }
+      ]
+    },
+    {
+      "head": "being taken in by mother",
+      "tail": "divorce",
+      "probs": {
+        "blocks": 0.006,
+        "none": 0.9897,
+        "enables": 0.0044
+      },
+      "reps": [
+        {
+          "blocks": 0.006,
+          "none": 0.9897,
+          "enables": 0.0044
+        }
+      ]
+    },
+    {
+      "head": "being taken in by mother",
+      "tail": "financial hardship",
+      "probs": {
+        "none": 0.864,
+        "blocks": 0.0882,
+        "enables": 0.0478
+      },
+      "reps": [
+        {
+          "none": 0.864,
+          "blocks": 0.0882,
+          "enables": 0.0478
+        }
+      ]
+    },
+    {
+      "head": "being taken in by mother",
+      "tail": "not paying rent",
+      "probs": {
+        "enables": 0.0415,
+        "none": 0.8953,
+        "blocks": 0.0631
+      },
+      "reps": [
+        {
+          "enables": 0.0415,
+          "none": 0.8953,
+          "blocks": 0.0631
+        }
+      ]
+    },
+    {
+      "head": "being taken in by mother",
+      "tail": "eviction",
+      "probs": {
+        "none": 0.9253,
+        "enables": 0.0227,
+        "blocks": 0.0519
+      },
+      "reps": [
+        {
+          "none": 0.9253,
+          "enables": 0.0227,
+          "blocks": 0.0519
+        }
+      ]
+    },
+    {
+      "head": "husband",
+      "tail": "losing employment",
+      "probs": {
+        "none": 0.9851,
+        "enables": 0.0071,
+        "blocks": 0.0078
+      },
+      "reps": [
+        {
+          "none": 0.9851,
+          "enables": 0.0071,
+          "blocks": 0.0078
+        }
+      ]
+    },
+    {
+      "head": "husband",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.5834,
+        "none": 0.4005,
+        "blocks": 0.0161
+      },
+      "reps": [
+        {
+          "enables": 0.5834,
+          "none": 0.4005,
+          "blocks": 0.0161
+        }
+      ]
+    },
+    {
+      "head": "husband",
+      "tail": "financial hardship",
+      "probs": {
+        "none": 0.9628,
+        "enables": 0.0304,
+        "blocks": 0.0068
+      },
+      "reps": [
+        {
+          "none": 0.9628,
+          "enables": 0.0304,
+          "blocks": 0.0068
+        }
+      ]
+    },
+    {
+      "head": "husband",
+      "tail": "not paying rent",
+      "probs": {
+        "none": 0.957,
+        "blocks": 0.0064,
+        "enables": 0.0366
+      },
+      "reps": [
+        {
+          "none": 0.957,
+          "blocks": 0.0064,
+          "enables": 0.0366
+        }
+      ]
+    },
+    {
+      "head": "husband",
+      "tail": "eviction",
+      "probs": {
+        "blocks": 0.0088,
+        "none": 0.9537,
+        "enables": 0.0375
+      },
+      "reps": [
+        {
+          "blocks": 0.0088,
+          "none": 0.9537,
+          "enables": 0.0375
+        }
+      ]
+    },
+    {
+      "head": "husband",
+      "tail": "being taken in by mother",
+      "probs": {
+        "blocks": 0.0315,
+        "none": 0.936,
+        "enables": 0.0324
+      },
+      "reps": [
+        {
+          "blocks": 0.0315,
+          "none": 0.936,
+          "enables": 0.0324
+        }
+      ]
+    },
+    {
+      "head": "husband",
+      "tail": "being homeless",
+      "probs": {
+        "none": 0.9496,
+        "blocks": 0.0195,
+        "enables": 0.0309
+      },
+      "reps": [
+        {
+          "none": 0.9496,
+          "blocks": 0.0195,
+          "enables": 0.0309
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "losing employment",
+      "probs": {
+        "blocks": 0.0058,
+        "enables": 0.0157,
+        "none": 0.9785
+      },
+      "reps": [
+        {
+          "blocks": 0.0058,
+          "enables": 0.0157,
+          "none": 0.9785
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "financial hardship",
+      "probs": {
+        "none": 0.3109,
+        "enables": 0.6802,
+        "blocks": 0.0089
+      },
+      "reps": [
+        {
+          "none": 0.3109,
+          "enables": 0.6802,
+          "blocks": 0.0089
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "not paying rent",
+      "probs": {
+        "blocks": 0.0034,
+        "enables": 0.0711,
+        "none": 0.9255
+      },
+      "reps": [
+        {
+          "blocks": 0.0034,
+          "enables": 0.0711,
+          "none": 0.9255
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "eviction",
+      "probs": {
+        "none": 0.9626,
+        "enables": 0.0347,
+        "blocks": 0.0026
+      },
+      "reps": [
+        {
+          "none": 0.9626,
+          "enables": 0.0347,
+          "blocks": 0.0026
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "being taken in by mother",
+      "probs": {
+        "blocks": 0.0138,
+        "enables": 0.0612,
+        "none": 0.925
+      },
+      "reps": [
+        {
+          "blocks": 0.0138,
+          "enables": 0.0612,
+          "none": 0.925
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.0365,
+        "none": 0.9359,
+        "blocks": 0.0276
+      },
+      "reps": [
+        {
+          "enables": 0.0365,
+          "none": 0.9359,
+          "blocks": 0.0276
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "losing employment",
+      "probs": {
+        "none": 0.9575,
+        "blocks": 0.0231,
+        "enables": 0.0194
+      },
+      "reps": [
+        {
+          "none": 0.9575,
+          "blocks": 0.0231,
+          "enables": 0.0194
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "not paying rent",
+      "probs": {
+        "none": 0.099,
+        "enables": 0.8864,
+        "blocks": 0.0146
+      },
+      "reps": [
+        {
+          "none": 0.099,
+          "enables": 0.8864,
+          "blocks": 0.0146
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "eviction",
+      "probs": {
+        "blocks": 0.0036,
+        "none": 0.8869,
+        "enables": 0.1094
+      },
+      "reps": [
+        {
+          "blocks": 0.0036,
+          "none": 0.8869,
+          "enables": 0.1094
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "being taken in by mother",
+      "probs": {
+        "blocks": 0.0177,
+        "none": 0.6363,
+        "enables": 0.3461
+      },
+      "reps": [
+        {
+          "blocks": 0.0177,
+          "none": 0.6363,
+          "enables": 0.3461
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "being homeless",
+      "probs": {
+        "none": 0.8107,
+        "blocks": 0.0222,
+        "enables": 0.1671
+      },
+      "reps": [
+        {
+          "none": 0.8107,
+          "blocks": 0.0222,
+          "enables": 0.1671
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "losing employment",
+      "probs": {
+        "none": 0.9872,
+        "enables": 0.0055,
+        "blocks": 0.0073
+      },
+      "reps": [
+        {
+          "none": 0.9872,
+          "enables": 0.0055,
+          "blocks": 0.0073
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "eviction",
+      "probs": {
+        "none": 0.0925,
+        "enables": 0.8965,
+        "blocks": 0.011
+      },
+      "reps": [
+        {
+          "none": 0.0925,
+          "enables": 0.8965,
+          "blocks": 0.011
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "being taken in by mother",
+      "probs": {
+        "enables": 0.1194,
+        "none": 0.8627,
+        "blocks": 0.0179
+      },
+      "reps": [
+        {
+          "enables": 0.1194,
+          "none": 0.8627,
+          "blocks": 0.0179
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "being homeless",
+      "probs": {
+        "none": 0.9332,
+        "enables": 0.0589,
+        "blocks": 0.0079
+      },
+      "reps": [
+        {
+          "none": 0.9332,
+          "enables": 0.0589,
+          "blocks": 0.0079
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "losing employment",
+      "probs": {
+        "blocks": 0.0037,
+        "none": 0.9927,
+        "enables": 0.0036
+      },
+      "reps": [
+        {
+          "blocks": 0.0037,
+          "none": 0.9927,
+          "enables": 0.0036
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "being taken in by mother",
+      "probs": {
+        "blocks": 0.057,
+        "none": 0.3411,
+        "enables": 0.6019
+      },
+      "reps": [
+        {
+          "blocks": 0.057,
+          "none": 0.3411,
+          "enables": 0.6019
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "being homeless",
+      "probs": {
+        "blocks": 0.0877,
+        "none": 0.2895,
+        "enables": 0.6228
+      },
+      "reps": [
+        {
+          "blocks": 0.0877,
+          "none": 0.2895,
+          "enables": 0.6228
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "divorce",
+      "probs": {
+        "none": 0.9648,
+        "blocks": 0.0113,
+        "enables": 0.0239
+      },
+      "reps": [
+        {
+          "none": 0.9648,
+          "blocks": 0.0113,
+          "enables": 0.0239
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "financial hardship",
+      "probs": {
+        "none": 0.3313,
+        "enables": 0.6584,
+        "blocks": 0.0102
+      },
+      "reps": [
+        {
+          "none": 0.3313,
+          "enables": 0.6584,
+          "blocks": 0.0102
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "not paying rent",
+      "probs": {
+        "none": 0.9243,
+        "blocks": 0.0025,
+        "enables": 0.0732
+      },
+      "reps": [
+        {
+          "none": 0.9243,
+          "blocks": 0.0025,
+          "enables": 0.0732
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0499,
+        "none": 0.9464,
+        "blocks": 0.0037
+      },
+      "reps": [
+        {
+          "enables": 0.0499,
+          "none": 0.9464,
+          "blocks": 0.0037
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "being taken in by mother",
+      "probs": {
+        "blocks": 0.0089,
+        "none": 0.9089,
+        "enables": 0.0823
+      },
+      "reps": [
+        {
+          "blocks": 0.0089,
+          "none": 0.9089,
+          "enables": 0.0823
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "being homeless",
+      "probs": {
+        "blocks": 0.0211,
+        "enables": 0.0296,
+        "none": 0.9493
+      },
+      "reps": [
+        {
+          "blocks": 0.0211,
+          "enables": 0.0296,
+          "none": 0.9493
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "losing employment",
+      "probs": {
+        "blocks": 0.0327,
+        "enables": 0.0735,
+        "none": 0.8939
+      },
+      "reps": [
+        {
+          "blocks": 0.0327,
+          "enables": 0.0735,
+          "none": 0.8939
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "divorce",
+      "probs": {
+        "blocks": 0.0237,
+        "none": 0.8199,
+        "enables": 0.1565
+      },
+      "reps": [
+        {
+          "blocks": 0.0237,
+          "none": 0.8199,
+          "enables": 0.1565
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "financial hardship",
+      "probs": {
+        "blocks": 0.0257,
+        "none": 0.9035,
+        "enables": 0.0707
+      },
+      "reps": [
+        {
+          "blocks": 0.0257,
+          "none": 0.9035,
+          "enables": 0.0707
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "not paying rent",
+      "probs": {
+        "blocks": 0.0436,
+        "enables": 0.1175,
+        "none": 0.8389
+      },
+      "reps": [
+        {
+          "blocks": 0.0436,
+          "enables": 0.1175,
+          "none": 0.8389
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.1337,
+        "none": 0.841,
+        "blocks": 0.0253
+      },
+      "reps": [
+        {
+          "enables": 0.1337,
+          "none": 0.841,
+          "blocks": 0.0253
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "being taken in by mother",
+      "probs": {
+        "none": 0.6024,
+        "enables": 0.3713,
+        "blocks": 0.0263
+      },
+      "reps": [
+        {
+          "none": 0.6024,
+          "enables": 0.3713,
+          "blocks": 0.0263
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "being homeless",
+      "probs": {
+        "none": 0.8385,
+        "enables": 0.0832,
+        "blocks": 0.0782
+      },
+      "reps": [
+        {
+          "none": 0.8385,
+          "enables": 0.0832,
+          "blocks": 0.0782
+        }
+      ]
+    },
+    {
+      "head": "mom",
+      "tail": "losing employment",
+      "probs": {
+        "none": 0.9863,
+        "enables": 0.0056,
+        "blocks": 0.008
+      },
+      "reps": [
+        {
+          "none": 0.9863,
+          "enables": 0.0056,
+          "blocks": 0.008
+        }
+      ]
+    },
+    {
+      "head": "mom",
+      "tail": "divorce",
+      "probs": {
+        "blocks": 0.0058,
+        "none": 0.9899,
+        "enables": 0.0043
+      },
+      "reps": [
+        {
+          "blocks": 0.0058,
+          "none": 0.9899,
+          "enables": 0.0043
+        }
+      ]
+    },
+    {
+      "head": "mom",
+      "tail": "financial hardship",
+      "probs": {
+        "blocks": 0.0705,
+        "enables": 0.0381,
+        "none": 0.8914
+      },
+      "reps": [
+        {
+          "blocks": 0.0705,
+          "enables": 0.0381,
+          "none": 0.8914
+        }
+      ]
+    },
+    {
+      "head": "mom",
+      "tail": "not paying rent",
+      "probs": {
+        "blocks": 0.0173,
+        "enables": 0.0086,
+        "none": 0.9741
+      },
+      "reps": [
+        {
+          "blocks": 0.0173,
+          "enables": 0.0086,
+          "none": 0.9741
+        }
+      ]
+    },
+    {
+      "head": "mom",
+      "tail": "eviction",
+      "probs": {
+        "none": 0.8765,
+        "enables": 0.0302,
+        "blocks": 0.0933
+      },
+      "reps": [
+        {
+          "none": 0.8765,
+          "enables": 0.0302,
+          "blocks": 0.0933
+        }
+      ]
+    },
+    {
+      "head": "mom",
+      "tail": "being taken in by mother",
+      "probs": {
+        "none": 0.0341,
+        "blocks": 0.0054,
+        "enables": 0.9605
+      },
+      "reps": [
+        {
+          "none": 0.0341,
+          "blocks": 0.0054,
+          "enables": 0.9605
+        }
+      ]
+    },
+    {
+      "head": "mom",
+      "tail": "being homeless",
+      "probs": {
+        "none": 0.3914,
+        "blocks": 0.5995,
+        "enables": 0.0092
+      },
+      "reps": [
+        {
+          "none": 0.3914,
+          "blocks": 0.5995,
+          "enables": 0.0092
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "losing employment",
+      "probs": {
+        "enables": 0.7453,
+        "blocks": 0.0316,
+        "none": 0.223
+      },
+      "reps": [
+        {
+          "enables": 0.7453,
+          "blocks": 0.0316,
+          "none": 0.223
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "divorce",
+      "probs": {
+        "blocks": 0.011,
+        "enables": 0.0262,
+        "none": 0.9628
+      },
+      "reps": [
+        {
+          "blocks": 0.011,
+          "enables": 0.0262,
+          "none": 0.9628
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "financial hardship",
+      "probs": {
+        "none": 0.8744,
+        "enables": 0.1145,
+        "blocks": 0.0111
+      },
+      "reps": [
+        {
+          "none": 0.8744,
+          "enables": 0.1145,
+          "blocks": 0.0111
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "not paying rent",
+      "probs": {
+        "none": 0.9635,
+        "blocks": 0.0073,
+        "enables": 0.0292
+      },
+      "reps": [
+        {
+          "none": 0.9635,
+          "blocks": 0.0073,
+          "enables": 0.0292
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "eviction",
+      "probs": {
+        "blocks": 0.0062,
+        "none": 0.9707,
+        "enables": 0.0231
+      },
+      "reps": [
+        {
+          "blocks": 0.0062,
+          "none": 0.9707,
+          "enables": 0.0231
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "being taken in by mother",
+      "probs": {
+        "none": 0.9105,
+        "blocks": 0.0205,
+        "enables": 0.069
+      },
+      "reps": [
+        {
+          "none": 0.9105,
+          "blocks": 0.0205,
+          "enables": 0.069
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "being homeless",
+      "probs": {
+        "none": 0.916,
+        "enables": 0.0525,
+        "blocks": 0.0316
+      },
+      "reps": [
+        {
+          "none": 0.916,
+          "enables": 0.0525,
+          "blocks": 0.0316
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.0121,
+        "blocks": 0.1577,
+        "none": 0.8302
+      },
+      "reps": [
+        {
+          "enables": 0.0121,
+          "blocks": 0.1577,
+          "none": 0.8302
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.0051,
+        "blocks": 0.0273,
+        "none": 0.9677
+      },
+      "reps": [
+        {
+          "enables": 0.0051,
+          "blocks": 0.0273,
+          "none": 0.9677
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0033,
+        "blocks": 0.953,
+        "none": 0.0437
+      },
+      "reps": [
+        {
+          "enables": 0.0033,
+          "blocks": 0.953,
+          "none": 0.0437
+        }
+      ]
+    },
+    {
+      "head": "losing employment",
+      "tail": "mom",
+      "probs": {
+        "enables": 0.0175,
+        "blocks": 0.5329,
+        "none": 0.4496
+      },
+      "reps": [
+        {
+          "enables": 0.0175,
+          "blocks": 0.5329,
+          "none": 0.4496
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.0023,
+        "blocks": 0.0114,
+        "none": 0.9863
+      },
+      "reps": [
+        {
+          "enables": 0.0023,
+          "blocks": 0.0114,
+          "none": 0.9863
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.0239,
+        "blocks": 0.0458,
+        "none": 0.9303
+      },
+      "reps": [
+        {
+          "enables": 0.0239,
+          "blocks": 0.0458,
+          "none": 0.9303
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0048,
+        "blocks": 0.9185,
+        "none": 0.0767
+      },
+      "reps": [
+        {
+          "enables": 0.0048,
+          "blocks": 0.9185,
+          "none": 0.0767
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "mom",
+      "probs": {
+        "enables": 0.0417,
+        "blocks": 0.395,
+        "none": 0.5633
+      },
+      "reps": [
+        {
+          "enables": 0.0417,
+          "blocks": 0.395,
+          "none": 0.5633
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.0069,
+        "blocks": 0.0242,
+        "none": 0.9688
+      },
+      "reps": [
+        {
+          "enables": 0.0069,
+          "blocks": 0.0242,
+          "none": 0.9688
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.0077,
+        "blocks": 0.033,
+        "none": 0.9593
+      },
+      "reps": [
+        {
+          "enables": 0.0077,
+          "blocks": 0.033,
+          "none": 0.9593
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0076,
+        "blocks": 0.8648,
+        "none": 0.1276
+      },
+      "reps": [
+        {
+          "enables": 0.0076,
+          "blocks": 0.8648,
+          "none": 0.1276
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "mom",
+      "probs": {
+        "enables": 0.028,
+        "blocks": 0.4804,
+        "none": 0.4917
+      },
+      "reps": [
+        {
+          "enables": 0.028,
+          "blocks": 0.4804,
+          "none": 0.4917
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.0051,
+        "blocks": 0.0187,
+        "none": 0.9762
+      },
+      "reps": [
+        {
+          "enables": 0.0051,
+          "blocks": 0.0187,
+          "none": 0.9762
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.0084,
+        "blocks": 0.0149,
+        "none": 0.9767
+      },
+      "reps": [
+        {
+          "enables": 0.0084,
+          "blocks": 0.0149,
+          "none": 0.9767
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0664,
+        "blocks": 0.7761,
+        "none": 0.1575
+      },
+      "reps": [
+        {
+          "enables": 0.0664,
+          "blocks": 0.7761,
+          "none": 0.1575
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "mom",
+      "probs": {
+        "enables": 0.15,
+        "blocks": 0.3328,
+        "none": 0.5172
+      },
+      "reps": [
+        {
+          "enables": 0.15,
+          "blocks": 0.3328,
+          "none": 0.5172
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.0075,
+        "blocks": 0.0067,
+        "none": 0.9858
+      },
+      "reps": [
+        {
+          "enables": 0.0075,
+          "blocks": 0.0067,
+          "none": 0.9858
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.0071,
+        "blocks": 0.016,
+        "none": 0.9769
+      },
+      "reps": [
+        {
+          "enables": 0.0071,
+          "blocks": 0.016,
+          "none": 0.9769
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "I",
+      "probs": {
+        "enables": 0.062,
+        "blocks": 0.6849,
+        "none": 0.2532
+      },
+      "reps": [
+        {
+          "enables": 0.062,
+          "blocks": 0.6849,
+          "none": 0.2532
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "mom",
+      "probs": {
+        "enables": 0.1636,
+        "blocks": 0.282,
+        "none": 0.5544
+      },
+      "reps": [
+        {
+          "enables": 0.1636,
+          "blocks": 0.282,
+          "none": 0.5544
+        }
+      ]
+    },
+    {
+      "head": "being taken in by mother",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.011,
+        "blocks": 0.0076,
+        "none": 0.9814
+      },
+      "reps": [
+        {
+          "enables": 0.011,
+          "blocks": 0.0076,
+          "none": 0.9814
+        }
+      ]
+    },
+    {
+      "head": "being taken in by mother",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.016,
+        "blocks": 0.0103,
+        "none": 0.9737
+      },
+      "reps": [
+        {
+          "enables": 0.016,
+          "blocks": 0.0103,
+          "none": 0.9737
+        }
+      ]
+    },
+    {
+      "head": "being taken in by mother",
+      "tail": "I",
+      "probs": {
+        "enables": 0.9435,
+        "blocks": 0.0221,
+        "none": 0.0344
+      },
+      "reps": [
+        {
+          "enables": 0.9435,
+          "blocks": 0.0221,
+          "none": 0.0344
+        }
+      ]
+    },
+    {
+      "head": "being taken in by mother",
+      "tail": "mom",
+      "probs": {
+        "enables": 0.0959,
+        "blocks": 0.1169,
+        "none": 0.7872
+      },
+      "reps": [
+        {
+          "enables": 0.0959,
+          "blocks": 0.1169,
+          "none": 0.7872
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.0097,
+        "blocks": 0.0319,
+        "none": 0.9584
+      },
+      "reps": [
+        {
+          "enables": 0.0097,
+          "blocks": 0.0319,
+          "none": 0.9584
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.0181,
+        "blocks": 0.0439,
+        "none": 0.9381
+      },
+      "reps": [
+        {
+          "enables": 0.0181,
+          "blocks": 0.0439,
+          "none": 0.9381
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0103,
+        "blocks": 0.072,
+        "none": 0.9177
+      },
+      "reps": [
+        {
+          "enables": 0.0103,
+          "blocks": 0.072,
+          "none": 0.9177
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "mom",
+      "probs": {
+        "enables": 0.0434,
+        "blocks": 0.1383,
+        "none": 0.8182
+      },
+      "reps": [
+        {
+          "enables": 0.0434,
+          "blocks": 0.1383,
+          "none": 0.8182
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1068 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho087",
+  "text": "My employer laid me off, and I got divorced. Money got really tight, and I couldn't pay my rent. I had nothing saved. I got evicted, but my grandmother let me stay with her, so I never ended up homeless.",
+  "nodes": [
+    "being laid off",
+    "getting divorced",
+    "financial hardship",
+    "not paying rent",
+    "eviction",
+    "staying with grandmother",
+    "being homeless",
+    "employer",
+    "grandmother"
+  ],
+  "edges": [
+    {
+      "head": "employer",
+      "tail": "being laid off",
+      "rel": "enables",
+      "prob": 0.801
+    },
+    {
+      "head": "being laid off",
+      "tail": "financial hardship",
+      "rel": "enables",
+      "prob": 0.755
+    },
+    {
+      "head": "financial hardship",
+      "tail": "not paying rent",
+      "rel": "enables",
+      "prob": 0.835
+    },
+    {
+      "head": "not paying rent",
+      "tail": "eviction",
+      "rel": "enables",
+      "prob": 0.915
+    },
+    {
+      "head": "eviction",
+      "tail": "staying with grandmother",
+      "rel": "enables",
+      "prob": 0.521
+    },
+    {
+      "head": "staying with grandmother",
+      "tail": "being homeless",
+      "rel": "blocks",
+      "prob": 0.928
+    },
+    {
+      "head": "getting divorced",
+      "tail": "financial hardship",
+      "rel": "enables",
+      "prob": 0.734
+    },
+    {
+      "head": "grandmother",
+      "tail": "staying with grandmother",
+      "rel": "enables",
+      "prob": 0.94
+    }
+  ],
+  "chains": [
+    [
+      "being homeless"
+    ],
+    [
+      "employer",
+      "being laid off",
+      "financial hardship",
+      "not paying rent",
+      "eviction",
+      "staying with grandmother",
+      "being homeless"
+    ],
+    [
+      "getting divorced",
+      "financial hardship",
+      "not paying rent",
+      "eviction",
+      "staying with grandmother",
+      "being homeless"
+    ],
+    [
+      "grandmother",
+      "staying with grandmother",
+      "being homeless"
+    ]
+  ],
+  "kev_requests": 10,
+  "connected": true,
+  "kinds": {
+    "being laid off": "event",
+    "getting divorced": "event",
+    "financial hardship": "event",
+    "not paying rent": "event",
+    "eviction": "event",
+    "staying with grandmother": "event",
+    "being homeless": "event",
+    "employer": "participant",
+    "grandmother": "participant"
+  },
+  "asked": [
+    {
+      "head": "being homeless",
+      "tail": "being laid off",
+      "probs": {
+        "blocks": 0.0205,
+        "none": 0.9668,
+        "enables": 0.0127
+      },
+      "reps": [
+        {
+          "blocks": 0.0205,
+          "none": 0.9668,
+          "enables": 0.0127
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "getting divorced",
+      "probs": {
+        "none": 0.9822,
+        "enables": 0.009,
+        "blocks": 0.0088
+      },
+      "reps": [
+        {
+          "none": 0.9822,
+          "enables": 0.009,
+          "blocks": 0.0088
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.021,
+        "blocks": 0.0172,
+        "none": 0.9618
+      },
+      "reps": [
+        {
+          "enables": 0.021,
+          "blocks": 0.0172,
+          "none": 0.9618
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "not paying rent",
+      "probs": {
+        "blocks": 0.024,
+        "none": 0.9543,
+        "enables": 0.0218
+      },
+      "reps": [
+        {
+          "blocks": 0.024,
+          "none": 0.9543,
+          "enables": 0.0218
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "eviction",
+      "probs": {
+        "blocks": 0.0396,
+        "enables": 0.0165,
+        "none": 0.9439
+      },
+      "reps": [
+        {
+          "blocks": 0.0396,
+          "enables": 0.0165,
+          "none": 0.9439
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "staying with grandmother",
+      "probs": {
+        "enables": 0.0629,
+        "none": 0.7621,
+        "blocks": 0.175
+      },
+      "reps": [
+        {
+          "enables": 0.0629,
+          "none": 0.7621,
+          "blocks": 0.175
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "being laid off",
+      "probs": {
+        "none": 0.1693,
+        "enables": 0.801,
+        "blocks": 0.0298
+      },
+      "reps": [
+        {
+          "none": 0.1693,
+          "enables": 0.801,
+          "blocks": 0.0298
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "getting divorced",
+      "probs": {
+        "enables": 0.0105,
+        "blocks": 0.008,
+        "none": 0.9815
+      },
+      "reps": [
+        {
+          "enables": 0.0105,
+          "blocks": 0.008,
+          "none": 0.9815
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.059,
+        "blocks": 0.0151,
+        "none": 0.9259
+      },
+      "reps": [
+        {
+          "enables": 0.059,
+          "blocks": 0.0151,
+          "none": 0.9259
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "not paying rent",
+      "probs": {
+        "blocks": 0.0059,
+        "enables": 0.0287,
+        "none": 0.9653
+      },
+      "reps": [
+        {
+          "blocks": 0.0059,
+          "enables": 0.0287,
+          "none": 0.9653
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "eviction",
+      "probs": {
+        "none": 0.9702,
+        "enables": 0.0228,
+        "blocks": 0.007
+      },
+      "reps": [
+        {
+          "none": 0.9702,
+          "enables": 0.0228,
+          "blocks": 0.007
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "staying with grandmother",
+      "probs": {
+        "enables": 0.0442,
+        "none": 0.9328,
+        "blocks": 0.023
+      },
+      "reps": [
+        {
+          "enables": 0.0442,
+          "none": 0.9328,
+          "blocks": 0.023
+        }
+      ]
+    },
+    {
+      "head": "employer",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.0242,
+        "blocks": 0.0189,
+        "none": 0.9569
+      },
+      "reps": [
+        {
+          "enables": 0.0242,
+          "blocks": 0.0189,
+          "none": 0.9569
+        }
+      ]
+    },
+    {
+      "head": "being laid off",
+      "tail": "getting divorced",
+      "probs": {
+        "enables": 0.0418,
+        "blocks": 0.008,
+        "none": 0.9503
+      },
+      "reps": [
+        {
+          "enables": 0.0418,
+          "blocks": 0.008,
+          "none": 0.9503
+        }
+      ]
+    },
+    {
+      "head": "being laid off",
+      "tail": "financial hardship",
+      "probs": {
+        "blocks": 0.0097,
+        "enables": 0.7551,
+        "none": 0.2352
+      },
+      "reps": [
+        {
+          "blocks": 0.0097,
+          "enables": 0.7551,
+          "none": 0.2352
+        }
+      ]
+    },
+    {
+      "head": "being laid off",
+      "tail": "not paying rent",
+      "probs": {
+        "blocks": 0.0043,
+        "none": 0.8964,
+        "enables": 0.0994
+      },
+      "reps": [
+        {
+          "blocks": 0.0043,
+          "none": 0.8964,
+          "enables": 0.0994
+        }
+      ]
+    },
+    {
+      "head": "being laid off",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0282,
+        "blocks": 0.0048,
+        "none": 0.9669
+      },
+      "reps": [
+        {
+          "enables": 0.0282,
+          "blocks": 0.0048,
+          "none": 0.9669
+        }
+      ]
+    },
+    {
+      "head": "being laid off",
+      "tail": "staying with grandmother",
+      "probs": {
+        "none": 0.9172,
+        "enables": 0.0644,
+        "blocks": 0.0183
+      },
+      "reps": [
+        {
+          "none": 0.9172,
+          "enables": 0.0644,
+          "blocks": 0.0183
+        }
+      ]
+    },
+    {
+      "head": "being laid off",
+      "tail": "being homeless",
+      "probs": {
+        "none": 0.9419,
+        "enables": 0.0353,
+        "blocks": 0.0229
+      },
+      "reps": [
+        {
+          "none": 0.9419,
+          "enables": 0.0353,
+          "blocks": 0.0229
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "getting divorced",
+      "probs": {
+        "blocks": 0.0106,
+        "none": 0.9522,
+        "enables": 0.0372
+      },
+      "reps": [
+        {
+          "blocks": 0.0106,
+          "none": 0.9522,
+          "enables": 0.0372
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "not paying rent",
+      "probs": {
+        "none": 0.1526,
+        "enables": 0.8352,
+        "blocks": 0.0123
+      },
+      "reps": [
+        {
+          "none": 0.1526,
+          "enables": 0.8352,
+          "blocks": 0.0123
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0679,
+        "blocks": 0.0027,
+        "none": 0.9294
+      },
+      "reps": [
+        {
+          "enables": 0.0679,
+          "blocks": 0.0027,
+          "none": 0.9294
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "staying with grandmother",
+      "probs": {
+        "blocks": 0.0122,
+        "enables": 0.1088,
+        "none": 0.8791
+      },
+      "reps": [
+        {
+          "blocks": 0.0122,
+          "enables": 0.1088,
+          "none": 0.8791
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "being homeless",
+      "probs": {
+        "none": 0.9169,
+        "blocks": 0.0169,
+        "enables": 0.0663
+      },
+      "reps": [
+        {
+          "none": 0.9169,
+          "blocks": 0.0169,
+          "enables": 0.0663
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "getting divorced",
+      "probs": {
+        "blocks": 0.0094,
+        "enables": 0.0085,
+        "none": 0.9821
+      },
+      "reps": [
+        {
+          "blocks": 0.0094,
+          "enables": 0.0085,
+          "none": 0.9821
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "eviction",
+      "probs": {
+        "none": 0.0797,
+        "blocks": 0.0054,
+        "enables": 0.9149
+      },
+      "reps": [
+        {
+          "none": 0.0797,
+          "blocks": 0.0054,
+          "enables": 0.9149
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "staying with grandmother",
+      "probs": {
+        "none": 0.9201,
+        "enables": 0.0681,
+        "blocks": 0.0117
+      },
+      "reps": [
+        {
+          "none": 0.9201,
+          "enables": 0.0681,
+          "blocks": 0.0117
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.0262,
+        "blocks": 0.0102,
+        "none": 0.9637
+      },
+      "reps": [
+        {
+          "enables": 0.0262,
+          "blocks": 0.0102,
+          "none": 0.9637
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "getting divorced",
+      "probs": {
+        "none": 0.9856,
+        "enables": 0.0078,
+        "blocks": 0.0066
+      },
+      "reps": [
+        {
+          "none": 0.9856,
+          "enables": 0.0078,
+          "blocks": 0.0066
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "staying with grandmother",
+      "probs": {
+        "enables": 0.5211,
+        "blocks": 0.0483,
+        "none": 0.4306
+      },
+      "reps": [
+        {
+          "enables": 0.5211,
+          "blocks": 0.0483,
+          "none": 0.4306
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "being homeless",
+      "probs": {
+        "blocks": 0.0405,
+        "none": 0.7458,
+        "enables": 0.2137
+      },
+      "reps": [
+        {
+          "blocks": 0.0405,
+          "none": 0.7458,
+          "enables": 0.2137
+        }
+      ]
+    },
+    {
+      "head": "staying with grandmother",
+      "tail": "getting divorced",
+      "probs": {
+        "blocks": 0.0053,
+        "enables": 0.0039,
+        "none": 0.9909
+      },
+      "reps": [
+        {
+          "blocks": 0.0053,
+          "enables": 0.0039,
+          "none": 0.9909
+        }
+      ]
+    },
+    {
+      "head": "staying with grandmother",
+      "tail": "being homeless",
+      "probs": {
+        "blocks": 0.9278,
+        "none": 0.0646,
+        "enables": 0.0076
+      },
+      "reps": [
+        {
+          "blocks": 0.9278,
+          "none": 0.0646,
+          "enables": 0.0076
+        }
+      ]
+    },
+    {
+      "head": "getting divorced",
+      "tail": "being laid off",
+      "probs": {
+        "blocks": 0.0055,
+        "enables": 0.0052,
+        "none": 0.9893
+      },
+      "reps": [
+        {
+          "blocks": 0.0055,
+          "enables": 0.0052,
+          "none": 0.9893
+        }
+      ]
+    },
+    {
+      "head": "getting divorced",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.734,
+        "none": 0.2611,
+        "blocks": 0.0049
+      },
+      "reps": [
+        {
+          "enables": 0.734,
+          "none": 0.2611,
+          "blocks": 0.0049
+        }
+      ]
+    },
+    {
+      "head": "getting divorced",
+      "tail": "not paying rent",
+      "probs": {
+        "blocks": 0.0034,
+        "enables": 0.1169,
+        "none": 0.8798
+      },
+      "reps": [
+        {
+          "blocks": 0.0034,
+          "enables": 0.1169,
+          "none": 0.8798
+        }
+      ]
+    },
+    {
+      "head": "getting divorced",
+      "tail": "eviction",
+      "probs": {
+        "none": 0.9571,
+        "blocks": 0.0021,
+        "enables": 0.0408
+      },
+      "reps": [
+        {
+          "none": 0.9571,
+          "blocks": 0.0021,
+          "enables": 0.0408
+        }
+      ]
+    },
+    {
+      "head": "getting divorced",
+      "tail": "staying with grandmother",
+      "probs": {
+        "none": 0.9494,
+        "blocks": 0.0094,
+        "enables": 0.0411
+      },
+      "reps": [
+        {
+          "none": 0.9494,
+          "blocks": 0.0094,
+          "enables": 0.0411
+        }
+      ]
+    },
+    {
+      "head": "getting divorced",
+      "tail": "being homeless",
+      "probs": {
+        "blocks": 0.0225,
+        "none": 0.9437,
+        "enables": 0.0338
+      },
+      "reps": [
+        {
+          "blocks": 0.0225,
+          "none": 0.9437,
+          "enables": 0.0338
+        }
+      ]
+    },
+    {
+      "head": "grandmother",
+      "tail": "being laid off",
+      "probs": {
+        "none": 0.9914,
+        "enables": 0.0037,
+        "blocks": 0.0049
+      },
+      "reps": [
+        {
+          "none": 0.9914,
+          "enables": 0.0037,
+          "blocks": 0.0049
+        }
+      ]
+    },
+    {
+      "head": "grandmother",
+      "tail": "getting divorced",
+      "probs": {
+        "none": 0.9951,
+        "blocks": 0.0024,
+        "enables": 0.0025
+      },
+      "reps": [
+        {
+          "none": 0.9951,
+          "blocks": 0.0024,
+          "enables": 0.0025
+        }
+      ]
+    },
+    {
+      "head": "grandmother",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.0148,
+        "blocks": 0.0235,
+        "none": 0.9617
+      },
+      "reps": [
+        {
+          "enables": 0.0148,
+          "blocks": 0.0235,
+          "none": 0.9617
+        }
+      ]
+    },
+    {
+      "head": "grandmother",
+      "tail": "not paying rent",
+      "probs": {
+        "blocks": 0.0162,
+        "none": 0.971,
+        "enables": 0.0128
+      },
+      "reps": [
+        {
+          "blocks": 0.0162,
+          "none": 0.971,
+          "enables": 0.0128
+        }
+      ]
+    },
+    {
+      "head": "grandmother",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0282,
+        "none": 0.9221,
+        "blocks": 0.0497
+      },
+      "reps": [
+        {
+          "enables": 0.0282,
+          "none": 0.9221,
+          "blocks": 0.0497
+        }
+      ]
+    },
+    {
+      "head": "grandmother",
+      "tail": "staying with grandmother",
+      "probs": {
+        "none": 0.0539,
+        "enables": 0.9395,
+        "blocks": 0.0066
+      },
+      "reps": [
+        {
+          "none": 0.0539,
+          "enables": 0.9395,
+          "blocks": 0.0066
+        }
+      ]
+    },
+    {
+      "head": "grandmother",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.0145,
+        "blocks": 0.2703,
+        "none": 0.7153
+      },
+      "reps": [
+        {
+          "enables": 0.0145,
+          "blocks": 0.2703,
+          "none": 0.7153
+        }
+      ]
+    },
+    {
+      "head": "being laid off",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.0192,
+        "blocks": 0.0599,
+        "none": 0.9209
+      },
+      "reps": [
+        {
+          "enables": 0.0192,
+          "blocks": 0.0599,
+          "none": 0.9209
+        }
+      ]
+    },
+    {
+      "head": "being laid off",
+      "tail": "grandmother",
+      "probs": {
+        "enables": 0.0535,
+        "blocks": 0.2042,
+        "none": 0.7423
+      },
+      "reps": [
+        {
+          "enables": 0.0535,
+          "blocks": 0.2042,
+          "none": 0.7423
+        }
+      ]
+    },
+    {
+      "head": "getting divorced",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.0016,
+        "blocks": 0.0059,
+        "none": 0.9924
+      },
+      "reps": [
+        {
+          "enables": 0.0016,
+          "blocks": 0.0059,
+          "none": 0.9924
+        }
+      ]
+    },
+    {
+      "head": "getting divorced",
+      "tail": "grandmother",
+      "probs": {
+        "enables": 0.0862,
+        "blocks": 0.211,
+        "none": 0.7028
+      },
+      "reps": [
+        {
+          "enables": 0.0862,
+          "blocks": 0.211,
+          "none": 0.7028
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.0044,
+        "blocks": 0.017,
+        "none": 0.9786
+      },
+      "reps": [
+        {
+          "enables": 0.0044,
+          "blocks": 0.017,
+          "none": 0.9786
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "grandmother",
+      "probs": {
+        "enables": 0.0708,
+        "blocks": 0.2149,
+        "none": 0.7143
+      },
+      "reps": [
+        {
+          "enables": 0.0708,
+          "blocks": 0.2149,
+          "none": 0.7143
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.002,
+        "blocks": 0.0099,
+        "none": 0.9881
+      },
+      "reps": [
+        {
+          "enables": 0.002,
+          "blocks": 0.0099,
+          "none": 0.9881
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "grandmother",
+      "probs": {
+        "enables": 0.0512,
+        "blocks": 0.1157,
+        "none": 0.8332
+      },
+      "reps": [
+        {
+          "enables": 0.0512,
+          "blocks": 0.1157,
+          "none": 0.8332
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.0043,
+        "blocks": 0.0116,
+        "none": 0.9841
+      },
+      "reps": [
+        {
+          "enables": 0.0043,
+          "blocks": 0.0116,
+          "none": 0.9841
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "grandmother",
+      "probs": {
+        "enables": 0.1127,
+        "blocks": 0.1686,
+        "none": 0.7187
+      },
+      "reps": [
+        {
+          "enables": 0.1127,
+          "blocks": 0.1686,
+          "none": 0.7187
+        }
+      ]
+    },
+    {
+      "head": "staying with grandmother",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.011,
+        "blocks": 0.0074,
+        "none": 0.9816
+      },
+      "reps": [
+        {
+          "enables": 0.011,
+          "blocks": 0.0074,
+          "none": 0.9816
+        }
+      ]
+    },
+    {
+      "head": "staying with grandmother",
+      "tail": "grandmother",
+      "probs": {
+        "enables": 0.1015,
+        "blocks": 0.0879,
+        "none": 0.8106
+      },
+      "reps": [
+        {
+          "enables": 0.1015,
+          "blocks": 0.0879,
+          "none": 0.8106
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "employer",
+      "probs": {
+        "enables": 0.0111,
+        "blocks": 0.0182,
+        "none": 0.9707
+      },
+      "reps": [
+        {
+          "enables": 0.0111,
+          "blocks": 0.0182,
+          "none": 0.9707
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "grandmother",
+      "probs": {
+        "enables": 0.0306,
+        "blocks": 0.0819,
+        "none": 0.8876
+      },
+      "reps": [
+        {
+          "enables": 0.0306,
+          "blocks": 0.0819,
+          "none": 0.8876
+        }
+      ]
+    }
+  ]
+}

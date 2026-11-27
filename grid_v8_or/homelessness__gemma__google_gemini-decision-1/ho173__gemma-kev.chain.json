@@ -1,0 +1,252 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho173",
+  "text": "After my divorce money got really tight, but I had savings, so I kept paying my rent.",
+  "nodes": [
+    "divorce",
+    "financial hardship",
+    "paying rent",
+    "I"
+  ],
+  "edges": [
+    {
+      "head": "I",
+      "tail": "paying rent",
+      "rel": "enables",
+      "prob": 0.799
+    },
+    {
+      "head": "divorce",
+      "tail": "financial hardship",
+      "rel": "enables",
+      "prob": 0.836
+    },
+    {
+      "head": "divorce",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.87
+    },
+    {
+      "head": "financial hardship",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.672
+    }
+  ],
+  "chains": [
+    [
+      "I",
+      "paying rent"
+    ],
+    [
+      "financial hardship"
+    ],
+    [
+      "divorce",
+      "financial hardship"
+    ]
+  ],
+  "kev_requests": 5,
+  "connected": true,
+  "kinds": {
+    "divorce": "event",
+    "financial hardship": "event",
+    "paying rent": "event",
+    "I": "participant"
+  },
+  "asked": [
+    {
+      "head": "I",
+      "tail": "divorce",
+      "probs": {
+        "blocks": 0.0291,
+        "none": 0.9229,
+        "enables": 0.0479
+      },
+      "reps": [
+        {
+          "blocks": 0.0291,
+          "none": 0.9229,
+          "enables": 0.0479
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "financial hardship",
+      "probs": {
+        "none": 0.5444,
+        "enables": 0.1799,
+        "blocks": 0.2756
+      },
+      "reps": [
+        {
+          "none": 0.5444,
+          "enables": 0.1799,
+          "blocks": 0.2756
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "paying rent",
+      "probs": {
+        "none": 0.1813,
+        "blocks": 0.0202,
+        "enables": 0.7985
+      },
+      "reps": [
+        {
+          "none": 0.1813,
+          "blocks": 0.0202,
+          "enables": 0.7985
+        }
+      ]
+    },
+    {
+      "head": "paying rent",
+      "tail": "divorce",
+      "probs": {
+        "blocks": 0.0177,
+        "none": 0.9673,
+        "enables": 0.0149
+      },
+      "reps": [
+        {
+          "blocks": 0.0177,
+          "none": 0.9673,
+          "enables": 0.0149
+        }
+      ]
+    },
+    {
+      "head": "paying rent",
+      "tail": "financial hardship",
+      "probs": {
+        "none": 0.5215,
+        "blocks": 0.0964,
+        "enables": 0.3821
+      },
+      "reps": [
+        {
+          "none": 0.5215,
+          "blocks": 0.0964,
+          "enables": 0.3821
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "divorce",
+      "probs": {
+        "blocks": 0.0269,
+        "none": 0.9202,
+        "enables": 0.0529
+      },
+      "reps": [
+        {
+          "blocks": 0.0269,
+          "none": 0.9202,
+          "enables": 0.0529
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "paying rent",
+      "probs": {
+        "none": 0.7159,
+        "blocks": 0.2392,
+        "enables": 0.045
+      },
+      "reps": [
+        {
+          "none": 0.7159,
+          "blocks": 0.2392,
+          "enables": 0.045
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "financial hardship",
+      "probs": {
+        "none": 0.1586,
+        "enables": 0.8356,
+        "blocks": 0.0058
+      },
+      "reps": [
+        {
+          "none": 0.1586,
+          "enables": 0.8356,
+          "blocks": 0.0058
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "paying rent",
+      "probs": {
+        "blocks": 0.0354,
+        "enables": 0.0245,
+        "none": 0.9401
+      },
+      "reps": [
+        {
+          "blocks": 0.0354,
+          "enables": 0.0245,
+          "none": 0.9401
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0094,
+        "blocks": 0.8703,
+        "none": 0.1202
+      },
+      "reps": [
+        {
+          "enables": 0.0094,
+          "blocks": 0.8703,
+          "none": 0.1202
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0137,
+        "blocks": 0.6724,
+        "none": 0.3138
+      },
+      "reps": [
+        {
+          "enables": 0.0137,
+          "blocks": 0.6724,
+          "none": 0.3138
+        }
+      ]
+    },
+    {
+      "head": "paying rent",
+      "tail": "I",
+      "probs": {
+        "enables": 0.137,
+        "blocks": 0.0911,
+        "none": 0.7719
+      },
+      "reps": [
+        {
+          "enables": 0.137,
+          "blocks": 0.0911,
+          "none": 0.7719
+        }
+      ]
+    }
+  ]
+}

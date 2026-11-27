@@ -1,0 +1,328 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho053",
+  "text": "My wife and I got divorced, but I still had my job, so I never struggled with money.",
+  "nodes": [
+    "divorce",
+    "having a job",
+    "struggling with money",
+    "wife",
+    "I"
+  ],
+  "edges": [
+    {
+      "head": "I",
+      "tail": "having a job",
+      "rel": "enables",
+      "prob": 0.563
+    },
+    {
+      "head": "having a job",
+      "tail": "struggling with money",
+      "rel": "blocks",
+      "prob": 0.933
+    },
+    {
+      "head": "having a job",
+      "tail": "I",
+      "rel": "enables",
+      "prob": 0.888
+    }
+  ],
+  "chains": [
+    [
+      "wife"
+    ],
+    [
+      "I",
+      "having a job",
+      "struggling with money"
+    ],
+    [
+      "divorce"
+    ]
+  ],
+  "kev_requests": 6,
+  "connected": false,
+  "kinds": {
+    "divorce": "event",
+    "having a job": "event",
+    "struggling with money": "event",
+    "wife": "participant",
+    "I": "participant"
+  },
+  "asked": [
+    {
+      "head": "wife",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.3349,
+        "blocks": 0.0389,
+        "none": 0.6263
+      },
+      "reps": [
+        {
+          "enables": 0.3349,
+          "blocks": 0.0389,
+          "none": 0.6263
+        }
+      ]
+    },
+    {
+      "head": "wife",
+      "tail": "having a job",
+      "probs": {
+        "blocks": 0.0254,
+        "none": 0.9586,
+        "enables": 0.016
+      },
+      "reps": [
+        {
+          "blocks": 0.0254,
+          "none": 0.9586,
+          "enables": 0.016
+        }
+      ]
+    },
+    {
+      "head": "wife",
+      "tail": "struggling with money",
+      "probs": {
+        "none": 0.9399,
+        "enables": 0.0315,
+        "blocks": 0.0286
+      },
+      "reps": [
+        {
+          "none": 0.9399,
+          "enables": 0.0315,
+          "blocks": 0.0286
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "divorce",
+      "probs": {
+        "none": 0.8859,
+        "enables": 0.0717,
+        "blocks": 0.0424
+      },
+      "reps": [
+        {
+          "none": 0.8859,
+          "enables": 0.0717,
+          "blocks": 0.0424
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "having a job",
+      "probs": {
+        "none": 0.411,
+        "enables": 0.5633,
+        "blocks": 0.0256
+      },
+      "reps": [
+        {
+          "none": 0.411,
+          "enables": 0.5633,
+          "blocks": 0.0256
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "struggling with money",
+      "probs": {
+        "enables": 0.0704,
+        "blocks": 0.334,
+        "none": 0.5956
+      },
+      "reps": [
+        {
+          "enables": 0.0704,
+          "blocks": 0.334,
+          "none": 0.5956
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.0257,
+        "none": 0.8986,
+        "blocks": 0.0757
+      },
+      "reps": [
+        {
+          "enables": 0.0257,
+          "none": 0.8986,
+          "blocks": 0.0757
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "struggling with money",
+      "probs": {
+        "none": 0.0518,
+        "enables": 0.0149,
+        "blocks": 0.9333
+      },
+      "reps": [
+        {
+          "none": 0.0518,
+          "enables": 0.0149,
+          "blocks": 0.9333
+        }
+      ]
+    },
+    {
+      "head": "struggling with money",
+      "tail": "divorce",
+      "probs": {
+        "blocks": 0.0682,
+        "none": 0.8982,
+        "enables": 0.0336
+      },
+      "reps": [
+        {
+          "blocks": 0.0682,
+          "none": 0.8982,
+          "enables": 0.0336
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "having a job",
+      "probs": {
+        "blocks": 0.0336,
+        "none": 0.9473,
+        "enables": 0.0191
+      },
+      "reps": [
+        {
+          "blocks": 0.0336,
+          "none": 0.9473,
+          "enables": 0.0191
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "struggling with money",
+      "probs": {
+        "none": 0.9281,
+        "blocks": 0.0264,
+        "enables": 0.0455
+      },
+      "reps": [
+        {
+          "none": 0.9281,
+          "blocks": 0.0264,
+          "enables": 0.0455
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "wife",
+      "probs": {
+        "enables": 0.016,
+        "blocks": 0.026,
+        "none": 0.958
+      },
+      "reps": [
+        {
+          "enables": 0.016,
+          "blocks": 0.026,
+          "none": 0.958
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0182,
+        "blocks": 0.2066,
+        "none": 0.7752
+      },
+      "reps": [
+        {
+          "enables": 0.0182,
+          "blocks": 0.2066,
+          "none": 0.7752
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "wife",
+      "probs": {
+        "enables": 0.0173,
+        "blocks": 0.0265,
+        "none": 0.9562
+      },
+      "reps": [
+        {
+          "enables": 0.0173,
+          "blocks": 0.0265,
+          "none": 0.9562
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "I",
+      "probs": {
+        "enables": 0.8884,
+        "blocks": 0.0173,
+        "none": 0.0944
+      },
+      "reps": [
+        {
+          "enables": 0.8884,
+          "blocks": 0.0173,
+          "none": 0.0944
+        }
+      ]
+    },
+    {
+      "head": "struggling with money",
+      "tail": "wife",
+      "probs": {
+        "enables": 0.0167,
+        "blocks": 0.0455,
+        "none": 0.9377
+      },
+      "reps": [
+        {
+          "enables": 0.0167,
+          "blocks": 0.0455,
+          "none": 0.9377
+        }
+      ]
+    },
+    {
+      "head": "struggling with money",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0265,
+        "blocks": 0.3615,
+        "none": 0.612
+      },
+      "reps": [
+        {
+          "enables": 0.0265,
+          "blocks": 0.3615,
+          "none": 0.612
+        }
+      ]
+    }
+  ]
+}

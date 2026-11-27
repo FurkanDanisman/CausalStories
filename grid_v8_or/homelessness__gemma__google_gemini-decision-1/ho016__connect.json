@@ -1,0 +1,1099 @@
+{
+  "new_nodes": {
+    "providing shelter": {
+      "group": "providing shelter",
+      "value": 0
+    },
+    "family housing support": {
+      "group": "family housing support",
+      "value": 0
+    },
+    "having savings": {
+      "group": "having savings",
+      "value": 0
+    },
+    "job loss": {
+      "group": "job loss",
+      "value": 1
+    },
+    "coping with divorce": {
+      "group": "coping with divorce",
+      "value": 1
+    }
+  },
+  "edges": [
+    {
+      "head": "boss",
+      "tail": "job loss",
+      "rel": "enables",
+      "prob": 0.632
+    },
+    {
+      "head": "being laid off",
+      "tail": "job loss",
+      "rel": "enables",
+      "prob": 0.588
+    },
+    {
+      "head": "financial hardship",
+      "tail": "providing shelter",
+      "rel": "blocks",
+      "prob": 0.496
+    },
+    {
+      "head": "providing shelter",
+      "tail": "eviction",
+      "rel": "blocks",
+      "prob": 0.523
+    },
+    {
+      "head": "providing shelter",
+      "tail": "being homeless",
+      "rel": "blocks",
+      "prob": 0.662
+    },
+    {
+      "head": "job loss",
+      "tail": "financial hardship",
+      "rel": "enables",
+      "prob": 0.555
+    },
+    {
+      "head": "family housing support",
+      "tail": "eviction",
+      "rel": "blocks",
+      "prob": 0.528
+    },
+    {
+      "head": "having savings",
+      "tail": "financial hardship",
+      "rel": "blocks",
+      "prob": 0.765
+    },
+    {
+      "head": "having savings",
+      "tail": "not paying rent",
+      "rel": "blocks",
+      "prob": 0.773
+    },
+    {
+      "head": "having savings",
+      "tail": "providing shelter",
+      "rel": "enables",
+      "prob": 0.564
+    },
+    {
+      "head": "having savings",
+      "tail": "I",
+      "rel": "enables",
+      "prob": 0.49
+    },
+    {
+      "head": "job loss",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.966
+    },
+    {
+      "head": "coping with divorce",
+      "tail": "I",
+      "rel": "blocks",
+      "prob": 0.538
+    }
+  ],
+  "asked": [
+    {
+      "head": "coping with divorce",
+      "tail": "being laid off",
+      "probs": {
+        "enables": 0.0153,
+        "none": 0.958,
+        "blocks": 0.0268
+      }
+    },
+    {
+      "head": "coping with divorce",
+      "tail": "getting divorced",
+      "probs": {
+        "none": 0.8214,
+        "enables": 0.06,
+        "blocks": 0.1186
+      }
+    },
+    {
+      "head": "coping with divorce",
+      "tail": "financial hardship",
+      "probs": {
+        "blocks": 0.0258,
+        "enables": 0.1147,
+        "none": 0.8595
+      }
+    },
+    {
+      "head": "coping with divorce",
+      "tail": "not paying rent",
+      "probs": {
+        "none": 0.9221,
+        "blocks": 0.025,
+        "enables": 0.0529
+      }
+    },
+    {
+      "head": "coping with divorce",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0413,
+        "blocks": 0.049,
+        "none": 0.9097
+      }
+    },
+    {
+      "head": "coping with divorce",
+      "tail": "being homeless",
+      "probs": {
+        "none": 0.9184,
+        "enables": 0.0394,
+        "blocks": 0.0421
+      }
+    },
+    {
+      "head": "coping with divorce",
+      "tail": "providing shelter",
+      "probs": {
+        "blocks": 0.1007,
+        "enables": 0.1012,
+        "none": 0.7981
+      }
+    },
+    {
+      "head": "coping with divorce",
+      "tail": "family housing support",
+      "probs": {
+        "none": 0.805,
+        "enables": 0.0953,
+        "blocks": 0.0996
+      }
+    },
+    {
+      "head": "coping with divorce",
+      "tail": "having savings",
+      "probs": {
+        "blocks": 0.0449,
+        "none": 0.9196,
+        "enables": 0.0355
+      }
+    },
+    {
+      "head": "coping with divorce",
+      "tail": "job loss",
+      "probs": {
+        "enables": 0.0436,
+        "none": 0.9291,
+        "blocks": 0.0273
+      }
+    },
+    {
+      "head": "boss",
+      "tail": "providing shelter",
+      "probs": {
+        "enables": 0.0126,
+        "none": 0.8072,
+        "blocks": 0.1802
+      }
+    },
+    {
+      "head": "boss",
+      "tail": "family housing support",
+      "probs": {
+        "none": 0.896,
+        "enables": 0.0252,
+        "blocks": 0.0788
+      }
+    },
+    {
+      "head": "boss",
+      "tail": "having savings",
+      "probs": {
+        "blocks": 0.1825,
+        "enables": 0.0214,
+        "none": 0.7961
+      }
+    },
+    {
+      "head": "boss",
+      "tail": "job loss",
+      "probs": {
+        "enables": 0.6316,
+        "none": 0.3555,
+        "blocks": 0.0128
+      }
+    },
+    {
+      "head": "boss",
+      "tail": "coping with divorce",
+      "probs": {
+        "none": 0.8928,
+        "blocks": 0.0663,
+        "enables": 0.041
+      }
+    },
+    {
+      "head": "being laid off",
+      "tail": "providing shelter",
+      "probs": {
+        "none": 0.6378,
+        "blocks": 0.3511,
+        "enables": 0.0112
+      }
+    },
+    {
+      "head": "being laid off",
+      "tail": "family housing support",
+      "probs": {
+        "none": 0.9567,
+        "enables": 0.0103,
+        "blocks": 0.033
+      }
+    },
+    {
+      "head": "being laid off",
+      "tail": "having savings",
+      "probs": {
+        "none": 0.7175,
+        "blocks": 0.2676,
+        "enables": 0.0149
+      }
+    },
+    {
+      "head": "being laid off",
+      "tail": "job loss",
+      "probs": {
+        "blocks": 0.0274,
+        "enables": 0.5884,
+        "none": 0.3842
+      }
+    },
+    {
+      "head": "being laid off",
+      "tail": "coping with divorce",
+      "probs": {
+        "blocks": 0.0656,
+        "enables": 0.0512,
+        "none": 0.8832
+      }
+    },
+    {
+      "head": "financial hardship",
+      "tail": "providing shelter",
+      "probs": {
+        "none": 0.4957,
+        "enables": 0.0084,
+        "blocks": 0.4959
+      }
+    },
+    {
+      "head": "financial hardship",
+      "tail": "family housing support",
+      "probs": {
+        "enables": 0.0371,
+        "none": 0.8697,
+        "blocks": 0.0932
+      }
+    },
+    {
+      "head": "financial hardship",
+      "tail": "having savings",
+      "probs": {
+        "none": 0.6707,
+        "enables": 0.0204,
+        "blocks": 0.3088
+      }
+    },
+    {
+      "head": "financial hardship",
+      "tail": "job loss",
+      "probs": {
+        "enables": 0.031,
+        "blocks": 0.031,
+        "none": 0.9381
+      }
+    },
+    {
+      "head": "financial hardship",
+      "tail": "coping with divorce",
+      "probs": {
+        "enables": 0.11,
+        "blocks": 0.145,
+        "none": 0.7451
+      }
+    },
+    {
+      "head": "not paying rent",
+      "tail": "providing shelter",
+      "probs": {
+        "blocks": 0.3832,
+        "none": 0.5944,
+        "enables": 0.0224
+      }
+    },
+    {
+      "head": "not paying rent",
+      "tail": "family housing support",
+      "probs": {
+        "blocks": 0.0958,
+        "none": 0.8609,
+        "enables": 0.0433
+      }
+    },
+    {
+      "head": "not paying rent",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0211,
+        "none": 0.9238,
+        "blocks": 0.055
+      }
+    },
+    {
+      "head": "not paying rent",
+      "tail": "job loss",
+      "probs": {
+        "blocks": 0.0111,
+        "none": 0.9827,
+        "enables": 0.0062
+      }
+    },
+    {
+      "head": "not paying rent",
+      "tail": "coping with divorce",
+      "probs": {
+        "none": 0.913,
+        "enables": 0.0286,
+        "blocks": 0.0584
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "providing shelter",
+      "probs": {
+        "blocks": 0.1764,
+        "enables": 0.0668,
+        "none": 0.7568
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "family housing support",
+      "probs": {
+        "blocks": 0.03,
+        "none": 0.9274,
+        "enables": 0.0426
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0156,
+        "none": 0.9293,
+        "blocks": 0.055
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "job loss",
+      "probs": {
+        "none": 0.9619,
+        "blocks": 0.0188,
+        "enables": 0.0193
+      }
+    },
+    {
+      "head": "eviction",
+      "tail": "coping with divorce",
+      "probs": {
+        "blocks": 0.0922,
+        "enables": 0.0537,
+        "none": 0.8541
+      }
+    },
+    {
+      "head": "being homeless",
+      "tail": "providing shelter",
+      "probs": {
+        "blocks": 0.0766,
+        "none": 0.7705,
+        "enables": 0.1529
+      }
+    },
+    {
+      "head": "being homeless",
+      "tail": "family housing support",
+      "probs": {
+        "enables": 0.0883,
+        "blocks": 0.0284,
+        "none": 0.8833
+      }
+    },
+    {
+      "head": "being homeless",
+      "tail": "having savings",
+      "probs": {
+        "none": 0.7536,
+        "enables": 0.0363,
+        "blocks": 0.2101
+      }
+    },
+    {
+      "head": "being homeless",
+      "tail": "job loss",
+      "probs": {
+        "blocks": 0.0319,
+        "enables": 0.0506,
+        "none": 0.9174
+      }
+    },
+    {
+      "head": "being homeless",
+      "tail": "coping with divorce",
+      "probs": {
+        "enables": 0.0544,
+        "none": 0.7839,
+        "blocks": 0.1617
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "not paying rent",
+      "probs": {
+        "blocks": 0.3606,
+        "none": 0.6234,
+        "enables": 0.016
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "eviction",
+      "probs": {
+        "none": 0.4712,
+        "blocks": 0.5232,
+        "enables": 0.0056
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.0119,
+        "blocks": 0.6624,
+        "none": 0.3258
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "family housing support",
+      "probs": {
+        "none": 0.8817,
+        "enables": 0.0878,
+        "blocks": 0.0305
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "having savings",
+      "probs": {
+        "blocks": 0.0433,
+        "enables": 0.0743,
+        "none": 0.8824
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "job loss",
+      "probs": {
+        "blocks": 0.0402,
+        "enables": 0.0166,
+        "none": 0.9432
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "coping with divorce",
+      "probs": {
+        "blocks": 0.0179,
+        "enables": 0.2013,
+        "none": 0.7808
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "getting divorced",
+      "probs": {
+        "blocks": 0.0133,
+        "none": 0.9236,
+        "enables": 0.0631
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "financial hardship",
+      "probs": {
+        "blocks": 0.0099,
+        "enables": 0.5547,
+        "none": 0.4355
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "not paying rent",
+      "probs": {
+        "blocks": 0.0071,
+        "enables": 0.1038,
+        "none": 0.8891
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "eviction",
+      "probs": {
+        "blocks": 0.0063,
+        "enables": 0.0685,
+        "none": 0.9253
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.0441,
+        "none": 0.9481,
+        "blocks": 0.0078
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "providing shelter",
+      "probs": {
+        "blocks": 0.3175,
+        "none": 0.6628,
+        "enables": 0.0197
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "family housing support",
+      "probs": {
+        "none": 0.9139,
+        "blocks": 0.0644,
+        "enables": 0.0216
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0114,
+        "none": 0.8046,
+        "blocks": 0.184
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "coping with divorce",
+      "probs": {
+        "enables": 0.0646,
+        "none": 0.8775,
+        "blocks": 0.0579
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "being laid off",
+      "probs": {
+        "enables": 0.0084,
+        "blocks": 0.0208,
+        "none": 0.9708
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "getting divorced",
+      "probs": {
+        "blocks": 0.0366,
+        "enables": 0.021,
+        "none": 0.9424
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "financial hardship",
+      "probs": {
+        "none": 0.6033,
+        "enables": 0.0074,
+        "blocks": 0.3893
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "not paying rent",
+      "probs": {
+        "none": 0.612,
+        "enables": 0.0087,
+        "blocks": 0.3793
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0062,
+        "none": 0.4659,
+        "blocks": 0.5279
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "being homeless",
+      "probs": {
+        "blocks": 0.4846,
+        "none": 0.5029,
+        "enables": 0.0125
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "providing shelter",
+      "probs": {
+        "none": 0.5256,
+        "enables": 0.4453,
+        "blocks": 0.0291
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "having savings",
+      "probs": {
+        "enables": 0.0522,
+        "none": 0.9137,
+        "blocks": 0.0341
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "job loss",
+      "probs": {
+        "blocks": 0.0128,
+        "enables": 0.0057,
+        "none": 0.9815
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "coping with divorce",
+      "probs": {
+        "enables": 0.1321,
+        "none": 0.8378,
+        "blocks": 0.0301
+      }
+    },
+    {
+      "head": "getting divorced",
+      "tail": "providing shelter",
+      "probs": {
+        "blocks": 0.1864,
+        "enables": 0.0317,
+        "none": 0.7819
+      }
+    },
+    {
+      "head": "getting divorced",
+      "tail": "family housing support",
+      "probs": {
+        "none": 0.9191,
+        "enables": 0.0186,
+        "blocks": 0.0623
+      }
+    },
+    {
+      "head": "getting divorced",
+      "tail": "having savings",
+      "probs": {
+        "blocks": 0.1298,
+        "none": 0.847,
+        "enables": 0.0233
+      }
+    },
+    {
+      "head": "getting divorced",
+      "tail": "job loss",
+      "probs": {
+        "none": 0.9602,
+        "enables": 0.0249,
+        "blocks": 0.0149
+      }
+    },
+    {
+      "head": "getting divorced",
+      "tail": "coping with divorce",
+      "probs": {
+        "none": 0.6314,
+        "enables": 0.3122,
+        "blocks": 0.0563
+      }
+    },
+    {
+      "head": "I",
+      "tail": "providing shelter",
+      "probs": {
+        "none": 0.5441,
+        "enables": 0.2238,
+        "blocks": 0.232
+      }
+    },
+    {
+      "head": "I",
+      "tail": "family housing support",
+      "probs": {
+        "none": 0.8128,
+        "enables": 0.1198,
+        "blocks": 0.0674
+      }
+    },
+    {
+      "head": "I",
+      "tail": "having savings",
+      "probs": {
+        "blocks": 0.133,
+        "none": 0.6414,
+        "enables": 0.2256
+      }
+    },
+    {
+      "head": "I",
+      "tail": "job loss",
+      "probs": {
+        "blocks": 0.0605,
+        "none": 0.8555,
+        "enables": 0.0839
+      }
+    },
+    {
+      "head": "I",
+      "tail": "coping with divorce",
+      "probs": {
+        "blocks": 0.0592,
+        "none": 0.7317,
+        "enables": 0.2091
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "being laid off",
+      "probs": {
+        "blocks": 0.0472,
+        "none": 0.94,
+        "enables": 0.0128
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "getting divorced",
+      "probs": {
+        "enables": 0.0315,
+        "blocks": 0.0569,
+        "none": 0.9116
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "financial hardship",
+      "probs": {
+        "none": 0.2171,
+        "enables": 0.0174,
+        "blocks": 0.7655
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "not paying rent",
+      "probs": {
+        "enables": 0.0155,
+        "none": 0.2113,
+        "blocks": 0.7732
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "eviction",
+      "probs": {
+        "enables": 0.0041,
+        "blocks": 0.335,
+        "none": 0.6609
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.0061,
+        "none": 0.6665,
+        "blocks": 0.3274
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "providing shelter",
+      "probs": {
+        "enables": 0.5644,
+        "none": 0.4201,
+        "blocks": 0.0154
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "family housing support",
+      "probs": {
+        "none": 0.6428,
+        "blocks": 0.197,
+        "enables": 0.1601
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "job loss",
+      "probs": {
+        "enables": 0.0301,
+        "none": 0.8723,
+        "blocks": 0.0976
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "coping with divorce",
+      "probs": {
+        "enables": 0.0997,
+        "blocks": 0.0212,
+        "none": 0.8791
+      }
+    },
+    {
+      "head": "husband",
+      "tail": "providing shelter",
+      "probs": {
+        "blocks": 0.2528,
+        "none": 0.6158,
+        "enables": 0.1314
+      }
+    },
+    {
+      "head": "husband",
+      "tail": "family housing support",
+      "probs": {
+        "enables": 0.1285,
+        "blocks": 0.2161,
+        "none": 0.6555
+      }
+    },
+    {
+      "head": "husband",
+      "tail": "having savings",
+      "probs": {
+        "none": 0.8719,
+        "blocks": 0.0833,
+        "enables": 0.0448
+      }
+    },
+    {
+      "head": "husband",
+      "tail": "job loss",
+      "probs": {
+        "blocks": 0.0145,
+        "enables": 0.0098,
+        "none": 0.9757
+      }
+    },
+    {
+      "head": "husband",
+      "tail": "coping with divorce",
+      "probs": {
+        "none": 0.7429,
+        "enables": 0.1267,
+        "blocks": 0.1304
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.0071,
+        "blocks": 0.0117,
+        "none": 0.9812
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.0316,
+        "blocks": 0.0365,
+        "none": 0.9319
+      }
+    },
+    {
+      "head": "providing shelter",
+      "tail": "I",
+      "probs": {
+        "enables": 0.2704,
+        "blocks": 0.046,
+        "none": 0.6836
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.0084,
+        "blocks": 0.0092,
+        "none": 0.9824
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.0102,
+        "blocks": 0.0121,
+        "none": 0.9777
+      }
+    },
+    {
+      "head": "family housing support",
+      "tail": "I",
+      "probs": {
+        "enables": 0.082,
+        "blocks": 0.017,
+        "none": 0.901
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.0111,
+        "blocks": 0.0146,
+        "none": 0.9744
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.0313,
+        "blocks": 0.0286,
+        "none": 0.94
+      }
+    },
+    {
+      "head": "having savings",
+      "tail": "I",
+      "probs": {
+        "enables": 0.4897,
+        "blocks": 0.0696,
+        "none": 0.4407
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.0082,
+        "blocks": 0.0933,
+        "none": 0.8985
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.0057,
+        "blocks": 0.0591,
+        "none": 0.9352
+      }
+    },
+    {
+      "head": "job loss",
+      "tail": "I",
+      "probs": {
+        "enables": 0.005,
+        "blocks": 0.9655,
+        "none": 0.0295
+      }
+    },
+    {
+      "head": "coping with divorce",
+      "tail": "boss",
+      "probs": {
+        "enables": 0.0026,
+        "blocks": 0.0069,
+        "none": 0.9905
+      }
+    },
+    {
+      "head": "coping with divorce",
+      "tail": "husband",
+      "probs": {
+        "enables": 0.0198,
+        "blocks": 0.071,
+        "none": 0.9092
+      }
+    },
+    {
+      "head": "coping with divorce",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0051,
+        "blocks": 0.5377,
+        "none": 0.4572
+      }
+    }
+  ],
+  "chains": [
+    [
+      "coping with divorce"
+    ],
+    [
+      "boss",
+      "being laid off",
+      "financial hardship",
+      "not paying rent",
+      "eviction",
+      "being homeless"
+    ],
+    [
+      "I"
+    ]
+  ],
+  "log": [
+    "  start at 'coping with divorce'",
+    "  ask 'coping with divorce' (path coping with divorce): no new arrows",
+    "  start at 'boss'",
+    "  ask 'boss' (path boss): job loss enables 0.63",
+    "  ask 'being laid off' (path boss > being laid off): job loss enables 0.59",
+    "  ask 'financial hardship' (path boss > being laid off > financial hardship): providing shelter blocks 0.50",
+    "  ask 'not paying rent' (path boss > being laid off > financial hardship > not paying rent): no new arrows",
+    "  ask 'eviction' (path boss > being laid off > financial hardship > not paying rent > eviction): no new arrows",
+    "  ask 'being homeless' (path boss > being laid off > financial hardship > not paying rent > eviction > being homeless): no new arrows",
+    "  ask 'providing shelter' (path boss > being laid off > financial hardship > providing shelter): eviction blocks 0.52, being homeless blocks 0.66",
+    "  ask 'job loss' (path boss > being laid off > job loss): financial hardship enables 0.55",
+    "  start at 'family housing support'",
+    "  ask 'family housing support' (path family housing support): eviction blocks 0.53",
+    "  start at 'getting divorced'",
+    "  ask 'getting divorced' (path getting divorced): no new arrows",
+    "  start at 'I'",
+    "  ask 'I' (path I): no new arrows",
+    "  start at 'having savings'",
+    "  ask 'having savings' (path having savings): financial hardship blocks 0.77, not paying rent blocks 0.77, providing shelter enables 0.56",
+    "  start at 'husband'",
+    "  ask 'husband' (path husband): no new arrows"
+  ]
+}

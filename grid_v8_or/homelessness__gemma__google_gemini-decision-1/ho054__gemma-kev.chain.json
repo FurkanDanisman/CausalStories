@@ -1,0 +1,1078 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho054",
+  "text": "My company laid me off, and my marriage ended. Money got really tight, and I couldn't pay my rent anymore. I had nothing saved. I got evicted, but my sister let me move in with her, so I never ended up on the street.",
+  "nodes": [
+    "laying off",
+    "marriage ending",
+    "financial hardship",
+    "not paying rent",
+    "eviction",
+    "moving in with sister",
+    "being homeless",
+    "company",
+    "sister"
+  ],
+  "edges": [
+    {
+      "head": "company",
+      "tail": "laying off",
+      "rel": "enables",
+      "prob": 0.914
+    },
+    {
+      "head": "laying off",
+      "tail": "financial hardship",
+      "rel": "enables",
+      "prob": 0.756
+    },
+    {
+      "head": "financial hardship",
+      "tail": "not paying rent",
+      "rel": "enables",
+      "prob": 0.867
+    },
+    {
+      "head": "not paying rent",
+      "tail": "eviction",
+      "rel": "enables",
+      "prob": 0.824
+    },
+    {
+      "head": "eviction",
+      "tail": "moving in with sister",
+      "rel": "enables",
+      "prob": 0.704
+    },
+    {
+      "head": "moving in with sister",
+      "tail": "being homeless",
+      "rel": "blocks",
+      "prob": 0.899
+    },
+    {
+      "head": "marriage ending",
+      "tail": "financial hardship",
+      "rel": "enables",
+      "prob": 0.637
+    },
+    {
+      "head": "sister",
+      "tail": "moving in with sister",
+      "rel": "enables",
+      "prob": 0.947
+    },
+    {
+      "head": "sister",
+      "tail": "being homeless",
+      "rel": "blocks",
+      "prob": 0.516
+    }
+  ],
+  "chains": [
+    [
+      "being homeless"
+    ],
+    [
+      "company",
+      "laying off",
+      "financial hardship",
+      "not paying rent",
+      "eviction",
+      "moving in with sister",
+      "being homeless"
+    ],
+    [
+      "marriage ending",
+      "financial hardship",
+      "not paying rent",
+      "eviction",
+      "moving in with sister",
+      "being homeless"
+    ],
+    [
+      "sister",
+      "moving in with sister",
+      "being homeless"
+    ],
+    [
+      "sister",
+      "being homeless"
+    ]
+  ],
+  "kev_requests": 10,
+  "connected": true,
+  "kinds": {
+    "laying off": "event",
+    "marriage ending": "event",
+    "financial hardship": "event",
+    "not paying rent": "event",
+    "eviction": "event",
+    "moving in with sister": "event",
+    "being homeless": "event",
+    "company": "participant",
+    "sister": "participant"
+  },
+  "asked": [
+    {
+      "head": "being homeless",
+      "tail": "laying off",
+      "probs": {
+        "blocks": 0.0197,
+        "enables": 0.0125,
+        "none": 0.9678
+      },
+      "reps": [
+        {
+          "blocks": 0.0197,
+          "enables": 0.0125,
+          "none": 0.9678
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "marriage ending",
+      "probs": {
+        "enables": 0.025,
+        "blocks": 0.0309,
+        "none": 0.944
+      },
+      "reps": [
+        {
+          "enables": 0.025,
+          "blocks": 0.0309,
+          "none": 0.944
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "financial hardship",
+      "probs": {
+        "blocks": 0.0173,
+        "enables": 0.027,
+        "none": 0.9556
+      },
+      "reps": [
+        {
+          "blocks": 0.0173,
+          "enables": 0.027,
+          "none": 0.9556
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "not paying rent",
+      "probs": {
+        "enables": 0.0293,
+        "none": 0.9452,
+        "blocks": 0.0255
+      },
+      "reps": [
+        {
+          "enables": 0.0293,
+          "none": 0.9452,
+          "blocks": 0.0255
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "eviction",
+      "probs": {
+        "blocks": 0.0426,
+        "enables": 0.0243,
+        "none": 0.9331
+      },
+      "reps": [
+        {
+          "blocks": 0.0426,
+          "enables": 0.0243,
+          "none": 0.9331
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "moving in with sister",
+      "probs": {
+        "none": 0.5979,
+        "enables": 0.0668,
+        "blocks": 0.3353
+      },
+      "reps": [
+        {
+          "none": 0.5979,
+          "enables": 0.0668,
+          "blocks": 0.3353
+        }
+      ]
+    },
+    {
+      "head": "company",
+      "tail": "laying off",
+      "probs": {
+        "blocks": 0.014,
+        "enables": 0.9145,
+        "none": 0.0715
+      },
+      "reps": [
+        {
+          "blocks": 0.014,
+          "enables": 0.9145,
+          "none": 0.0715
+        }
+      ]
+    },
+    {
+      "head": "company",
+      "tail": "marriage ending",
+      "probs": {
+        "none": 0.9466,
+        "enables": 0.0452,
+        "blocks": 0.0082
+      },
+      "reps": [
+        {
+          "none": 0.9466,
+          "enables": 0.0452,
+          "blocks": 0.0082
+        }
+      ]
+    },
+    {
+      "head": "company",
+      "tail": "financial hardship",
+      "probs": {
+        "none": 0.8825,
+        "enables": 0.1108,
+        "blocks": 0.0067
+      },
+      "reps": [
+        {
+          "none": 0.8825,
+          "enables": 0.1108,
+          "blocks": 0.0067
+        }
+      ]
+    },
+    {
+      "head": "company",
+      "tail": "not paying rent",
+      "probs": {
+        "enables": 0.04,
+        "none": 0.9539,
+        "blocks": 0.0061
+      },
+      "reps": [
+        {
+          "enables": 0.04,
+          "none": 0.9539,
+          "blocks": 0.0061
+        }
+      ]
+    },
+    {
+      "head": "company",
+      "tail": "eviction",
+      "probs": {
+        "none": 0.9506,
+        "enables": 0.0447,
+        "blocks": 0.0047
+      },
+      "reps": [
+        {
+          "none": 0.9506,
+          "enables": 0.0447,
+          "blocks": 0.0047
+        }
+      ]
+    },
+    {
+      "head": "company",
+      "tail": "moving in with sister",
+      "probs": {
+        "enables": 0.0331,
+        "none": 0.9271,
+        "blocks": 0.0397
+      },
+      "reps": [
+        {
+          "enables": 0.0331,
+          "none": 0.9271,
+          "blocks": 0.0397
+        }
+      ]
+    },
+    {
+      "head": "company",
+      "tail": "being homeless",
+      "probs": {
+        "blocks": 0.021,
+        "none": 0.9487,
+        "enables": 0.0303
+      },
+      "reps": [
+        {
+          "blocks": 0.021,
+          "none": 0.9487,
+          "enables": 0.0303
+        }
+      ]
+    },
+    {
+      "head": "laying off",
+      "tail": "marriage ending",
+      "probs": {
+        "blocks": 0.0072,
+        "none": 0.9244,
+        "enables": 0.0683
+      },
+      "reps": [
+        {
+          "blocks": 0.0072,
+          "none": 0.9244,
+          "enables": 0.0683
+        }
+      ]
+    },
+    {
+      "head": "laying off",
+      "tail": "financial hardship",
+      "probs": {
+        "blocks": 0.0063,
+        "enables": 0.7564,
+        "none": 0.2373
+      },
+      "reps": [
+        {
+          "blocks": 0.0063,
+          "enables": 0.7564,
+          "none": 0.2373
+        }
+      ]
+    },
+    {
+      "head": "laying off",
+      "tail": "not paying rent",
+      "probs": {
+        "blocks": 0.0033,
+        "enables": 0.0405,
+        "none": 0.9561
+      },
+      "reps": [
+        {
+          "blocks": 0.0033,
+          "enables": 0.0405,
+          "none": 0.9561
+        }
+      ]
+    },
+    {
+      "head": "laying off",
+      "tail": "eviction",
+      "probs": {
+        "blocks": 0.002,
+        "enables": 0.0236,
+        "none": 0.9744
+      },
+      "reps": [
+        {
+          "blocks": 0.002,
+          "enables": 0.0236,
+          "none": 0.9744
+        }
+      ]
+    },
+    {
+      "head": "laying off",
+      "tail": "moving in with sister",
+      "probs": {
+        "blocks": 0.0202,
+        "enables": 0.0428,
+        "none": 0.937
+      },
+      "reps": [
+        {
+          "blocks": 0.0202,
+          "enables": 0.0428,
+          "none": 0.937
+        }
+      ]
+    },
+    {
+      "head": "laying off",
+      "tail": "being homeless",
+      "probs": {
+        "none": 0.9222,
+        "blocks": 0.0422,
+        "enables": 0.0355
+      },
+      "reps": [
+        {
+          "none": 0.9222,
+          "blocks": 0.0422,
+          "enables": 0.0355
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "marriage ending",
+      "probs": {
+        "none": 0.893,
+        "blocks": 0.0096,
+        "enables": 0.0974
+      },
+      "reps": [
+        {
+          "none": 0.893,
+          "blocks": 0.0096,
+          "enables": 0.0974
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "not paying rent",
+      "probs": {
+        "blocks": 0.0083,
+        "enables": 0.8667,
+        "none": 0.125
+      },
+      "reps": [
+        {
+          "blocks": 0.0083,
+          "enables": 0.8667,
+          "none": 0.125
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "eviction",
+      "probs": {
+        "none": 0.8236,
+        "enables": 0.1711,
+        "blocks": 0.0053
+      },
+      "reps": [
+        {
+          "none": 0.8236,
+          "enables": 0.1711,
+          "blocks": 0.0053
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "moving in with sister",
+      "probs": {
+        "blocks": 0.0126,
+        "none": 0.8797,
+        "enables": 0.1076
+      },
+      "reps": [
+        {
+          "blocks": 0.0126,
+          "none": 0.8797,
+          "enables": 0.1076
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "being homeless",
+      "probs": {
+        "none": 0.9208,
+        "enables": 0.0647,
+        "blocks": 0.0145
+      },
+      "reps": [
+        {
+          "none": 0.9208,
+          "enables": 0.0647,
+          "blocks": 0.0145
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "marriage ending",
+      "probs": {
+        "enables": 0.0155,
+        "blocks": 0.0101,
+        "none": 0.9744
+      },
+      "reps": [
+        {
+          "enables": 0.0155,
+          "blocks": 0.0101,
+          "none": 0.9744
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "eviction",
+      "probs": {
+        "none": 0.1636,
+        "blocks": 0.0122,
+        "enables": 0.8243
+      },
+      "reps": [
+        {
+          "none": 0.1636,
+          "blocks": 0.0122,
+          "enables": 0.8243
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "moving in with sister",
+      "probs": {
+        "enables": 0.0673,
+        "none": 0.9186,
+        "blocks": 0.0142
+      },
+      "reps": [
+        {
+          "enables": 0.0673,
+          "none": 0.9186,
+          "blocks": 0.0142
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "being homeless",
+      "probs": {
+        "none": 0.9547,
+        "blocks": 0.013,
+        "enables": 0.0323
+      },
+      "reps": [
+        {
+          "none": 0.9547,
+          "blocks": 0.013,
+          "enables": 0.0323
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "marriage ending",
+      "probs": {
+        "blocks": 0.0052,
+        "none": 0.9877,
+        "enables": 0.0071
+      },
+      "reps": [
+        {
+          "blocks": 0.0052,
+          "none": 0.9877,
+          "enables": 0.0071
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "moving in with sister",
+      "probs": {
+        "none": 0.2522,
+        "blocks": 0.0437,
+        "enables": 0.7041
+      },
+      "reps": [
+        {
+          "none": 0.2522,
+          "blocks": 0.0437,
+          "enables": 0.7041
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "being homeless",
+      "probs": {
+        "blocks": 0.0639,
+        "none": 0.7017,
+        "enables": 0.2344
+      },
+      "reps": [
+        {
+          "blocks": 0.0639,
+          "none": 0.7017,
+          "enables": 0.2344
+        }
+      ]
+    },
+    {
+      "head": "moving in with sister",
+      "tail": "marriage ending",
+      "probs": {
+        "blocks": 0.0057,
+        "enables": 0.003,
+        "none": 0.9913
+      },
+      "reps": [
+        {
+          "blocks": 0.0057,
+          "enables": 0.003,
+          "none": 0.9913
+        }
+      ]
+    },
+    {
+      "head": "moving in with sister",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.0201,
+        "blocks": 0.8989,
+        "none": 0.0811
+      },
+      "reps": [
+        {
+          "enables": 0.0201,
+          "blocks": 0.8989,
+          "none": 0.0811
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "laying off",
+      "probs": {
+        "blocks": 0.0023,
+        "none": 0.9908,
+        "enables": 0.0069
+      },
+      "reps": [
+        {
+          "blocks": 0.0023,
+          "none": 0.9908,
+          "enables": 0.0069
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "financial hardship",
+      "probs": {
+        "none": 0.3537,
+        "blocks": 0.0093,
+        "enables": 0.637
+      },
+      "reps": [
+        {
+          "none": 0.3537,
+          "blocks": 0.0093,
+          "enables": 0.637
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "not paying rent",
+      "probs": {
+        "blocks": 0.0048,
+        "none": 0.8799,
+        "enables": 0.1153
+      },
+      "reps": [
+        {
+          "blocks": 0.0048,
+          "none": 0.8799,
+          "enables": 0.1153
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "eviction",
+      "probs": {
+        "blocks": 0.0042,
+        "none": 0.9518,
+        "enables": 0.0439
+      },
+      "reps": [
+        {
+          "blocks": 0.0042,
+          "none": 0.9518,
+          "enables": 0.0439
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "moving in with sister",
+      "probs": {
+        "none": 0.9587,
+        "blocks": 0.0085,
+        "enables": 0.0328
+      },
+      "reps": [
+        {
+          "none": 0.9587,
+          "blocks": 0.0085,
+          "enables": 0.0328
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "being homeless",
+      "probs": {
+        "none": 0.9479,
+        "enables": 0.0244,
+        "blocks": 0.0277
+      },
+      "reps": [
+        {
+          "none": 0.9479,
+          "enables": 0.0244,
+          "blocks": 0.0277
+        }
+      ]
+    },
+    {
+      "head": "sister",
+      "tail": "laying off",
+      "probs": {
+        "enables": 0.0037,
+        "none": 0.9896,
+        "blocks": 0.0067
+      },
+      "reps": [
+        {
+          "enables": 0.0037,
+          "none": 0.9896,
+          "blocks": 0.0067
+        }
+      ]
+    },
+    {
+      "head": "sister",
+      "tail": "marriage ending",
+      "probs": {
+        "enables": 0.0029,
+        "none": 0.9934,
+        "blocks": 0.0037
+      },
+      "reps": [
+        {
+          "enables": 0.0029,
+          "none": 0.9934,
+          "blocks": 0.0037
+        }
+      ]
+    },
+    {
+      "head": "sister",
+      "tail": "financial hardship",
+      "probs": {
+        "enables": 0.0675,
+        "none": 0.7925,
+        "blocks": 0.14
+      },
+      "reps": [
+        {
+          "enables": 0.0675,
+          "none": 0.7925,
+          "blocks": 0.14
+        }
+      ]
+    },
+    {
+      "head": "sister",
+      "tail": "not paying rent",
+      "probs": {
+        "enables": 0.0162,
+        "blocks": 0.0189,
+        "none": 0.9649
+      },
+      "reps": [
+        {
+          "enables": 0.0162,
+          "blocks": 0.0189,
+          "none": 0.9649
+        }
+      ]
+    },
+    {
+      "head": "sister",
+      "tail": "eviction",
+      "probs": {
+        "blocks": 0.06,
+        "enables": 0.028,
+        "none": 0.9119
+      },
+      "reps": [
+        {
+          "blocks": 0.06,
+          "enables": 0.028,
+          "none": 0.9119
+        }
+      ]
+    },
+    {
+      "head": "sister",
+      "tail": "moving in with sister",
+      "probs": {
+        "blocks": 0.0058,
+        "none": 0.047,
+        "enables": 0.9472
+      },
+      "reps": [
+        {
+          "blocks": 0.0058,
+          "none": 0.047,
+          "enables": 0.9472
+        }
+      ]
+    },
+    {
+      "head": "sister",
+      "tail": "being homeless",
+      "probs": {
+        "enables": 0.0111,
+        "none": 0.473,
+        "blocks": 0.5159
+      },
+      "reps": [
+        {
+          "enables": 0.0111,
+          "none": 0.473,
+          "blocks": 0.5159
+        }
+      ]
+    },
+    {
+      "head": "laying off",
+      "tail": "company",
+      "probs": {
+        "enables": 0.0308,
+        "blocks": 0.0486,
+        "none": 0.9206
+      },
+      "reps": [
+        {
+          "enables": 0.0308,
+          "blocks": 0.0486,
+          "none": 0.9206
+        }
+      ]
+    },
+    {
+      "head": "laying off",
+      "tail": "sister",
+      "probs": {
+        "enables": 0.0339,
+        "blocks": 0.3344,
+        "none": 0.6317
+      },
+      "reps": [
+        {
+          "enables": 0.0339,
+          "blocks": 0.3344,
+          "none": 0.6317
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "company",
+      "probs": {
+        "enables": 0.0008,
+        "blocks": 0.0024,
+        "none": 0.9968
+      },
+      "reps": [
+        {
+          "enables": 0.0008,
+          "blocks": 0.0024,
+          "none": 0.9968
+        }
+      ]
+    },
+    {
+      "head": "marriage ending",
+      "tail": "sister",
+      "probs": {
+        "enables": 0.0878,
+        "blocks": 0.2277,
+        "none": 0.6845
+      },
+      "reps": [
+        {
+          "enables": 0.0878,
+          "blocks": 0.2277,
+          "none": 0.6845
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "company",
+      "probs": {
+        "enables": 0.0043,
+        "blocks": 0.0187,
+        "none": 0.9771
+      },
+      "reps": [
+        {
+          "enables": 0.0043,
+          "blocks": 0.0187,
+          "none": 0.9771
+        }
+      ]
+    },
+    {
+      "head": "financial hardship",
+      "tail": "sister",
+      "probs": {
+        "enables": 0.1236,
+        "blocks": 0.2379,
+        "none": 0.6385
+      },
+      "reps": [
+        {
+          "enables": 0.1236,
+          "blocks": 0.2379,
+          "none": 0.6385
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "company",
+      "probs": {
+        "enables": 0.0039,
+        "blocks": 0.0119,
+        "none": 0.9842
+      },
+      "reps": [
+        {
+          "enables": 0.0039,
+          "blocks": 0.0119,
+          "none": 0.9842
+        }
+      ]
+    },
+    {
+      "head": "not paying rent",
+      "tail": "sister",
+      "probs": {
+        "enables": 0.0779,
+        "blocks": 0.1886,
+        "none": 0.7334
+      },
+      "reps": [
+        {
+          "enables": 0.0779,
+          "blocks": 0.1886,
+          "none": 0.7334
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "company",
+      "probs": {
+        "enables": 0.0024,
+        "blocks": 0.0063,
+        "none": 0.9913
+      },
+      "reps": [
+        {
+          "enables": 0.0024,
+          "blocks": 0.0063,
+          "none": 0.9913
+        }
+      ]
+    },
+    {
+      "head": "eviction",
+      "tail": "sister",
+      "probs": {
+        "enables": 0.1938,
+        "blocks": 0.3106,
+        "none": 0.4956
+      },
+      "reps": [
+        {
+          "enables": 0.1938,
+          "blocks": 0.3106,
+          "none": 0.4956
+        }
+      ]
+    },
+    {
+      "head": "moving in with sister",
+      "tail": "company",
+      "probs": {
+        "enables": 0.0109,
+        "blocks": 0.0084,
+        "none": 0.9807
+      },
+      "reps": [
+        {
+          "enables": 0.0109,
+          "blocks": 0.0084,
+          "none": 0.9807
+        }
+      ]
+    },
+    {
+      "head": "moving in with sister",
+      "tail": "sister",
+      "probs": {
+        "enables": 0.1036,
+        "blocks": 0.0716,
+        "none": 0.8248
+      },
+      "reps": [
+        {
+          "enables": 0.1036,
+          "blocks": 0.0716,
+          "none": 0.8248
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "company",
+      "probs": {
+        "enables": 0.0157,
+        "blocks": 0.0156,
+        "none": 0.9688
+      },
+      "reps": [
+        {
+          "enables": 0.0157,
+          "blocks": 0.0156,
+          "none": 0.9688
+        }
+      ]
+    },
+    {
+      "head": "being homeless",
+      "tail": "sister",
+      "probs": {
+        "enables": 0.0463,
+        "blocks": 0.065,
+        "none": 0.8887
+      },
+      "reps": [
+        {
+          "enables": 0.0463,
+          "blocks": 0.065,
+          "none": 0.8887
+        }
+      ]
+    }
+  ]
+}

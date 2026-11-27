@@ -1,0 +1,328 @@
+{
+  "tag": "gemma-kev",
+  "id": "ho064",
+  "text": "My wife and I got divorced, but I still had my job, so I never had money trouble.",
+  "nodes": [
+    "divorce",
+    "having a job",
+    "money trouble",
+    "wife",
+    "I"
+  ],
+  "edges": [
+    {
+      "head": "I",
+      "tail": "having a job",
+      "rel": "enables",
+      "prob": 0.537
+    },
+    {
+      "head": "having a job",
+      "tail": "money trouble",
+      "rel": "blocks",
+      "prob": 0.904
+    },
+    {
+      "head": "having a job",
+      "tail": "I",
+      "rel": "enables",
+      "prob": 0.935
+    }
+  ],
+  "chains": [
+    [
+      "wife"
+    ],
+    [
+      "I",
+      "having a job",
+      "money trouble"
+    ],
+    [
+      "divorce"
+    ]
+  ],
+  "kev_requests": 6,
+  "connected": false,
+  "kinds": {
+    "divorce": "event",
+    "having a job": "event",
+    "money trouble": "event",
+    "wife": "participant",
+    "I": "participant"
+  },
+  "asked": [
+    {
+      "head": "wife",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.1641,
+        "none": 0.7807,
+        "blocks": 0.0552
+      },
+      "reps": [
+        {
+          "enables": 0.1641,
+          "none": 0.7807,
+          "blocks": 0.0552
+        }
+      ]
+    },
+    {
+      "head": "wife",
+      "tail": "having a job",
+      "probs": {
+        "blocks": 0.0311,
+        "none": 0.9447,
+        "enables": 0.0243
+      },
+      "reps": [
+        {
+          "blocks": 0.0311,
+          "none": 0.9447,
+          "enables": 0.0243
+        }
+      ]
+    },
+    {
+      "head": "wife",
+      "tail": "money trouble",
+      "probs": {
+        "blocks": 0.0375,
+        "none": 0.9296,
+        "enables": 0.0329
+      },
+      "reps": [
+        {
+          "blocks": 0.0375,
+          "none": 0.9296,
+          "enables": 0.0329
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.061,
+        "blocks": 0.0288,
+        "none": 0.9102
+      },
+      "reps": [
+        {
+          "enables": 0.061,
+          "blocks": 0.0288,
+          "none": 0.9102
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "having a job",
+      "probs": {
+        "blocks": 0.022,
+        "enables": 0.537,
+        "none": 0.441
+      },
+      "reps": [
+        {
+          "blocks": 0.022,
+          "enables": 0.537,
+          "none": 0.441
+        }
+      ]
+    },
+    {
+      "head": "I",
+      "tail": "money trouble",
+      "probs": {
+        "enables": 0.0395,
+        "blocks": 0.4343,
+        "none": 0.5262
+      },
+      "reps": [
+        {
+          "enables": 0.0395,
+          "blocks": 0.4343,
+          "none": 0.5262
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "divorce",
+      "probs": {
+        "enables": 0.0231,
+        "none": 0.933,
+        "blocks": 0.0439
+      },
+      "reps": [
+        {
+          "enables": 0.0231,
+          "none": 0.933,
+          "blocks": 0.0439
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "money trouble",
+      "probs": {
+        "blocks": 0.9036,
+        "none": 0.0729,
+        "enables": 0.0235
+      },
+      "reps": [
+        {
+          "blocks": 0.9036,
+          "none": 0.0729,
+          "enables": 0.0235
+        }
+      ]
+    },
+    {
+      "head": "money trouble",
+      "tail": "divorce",
+      "probs": {
+        "blocks": 0.0859,
+        "none": 0.8669,
+        "enables": 0.0472
+      },
+      "reps": [
+        {
+          "blocks": 0.0859,
+          "none": 0.8669,
+          "enables": 0.0472
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "having a job",
+      "probs": {
+        "enables": 0.0188,
+        "none": 0.9533,
+        "blocks": 0.0279
+      },
+      "reps": [
+        {
+          "enables": 0.0188,
+          "none": 0.9533,
+          "blocks": 0.0279
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "money trouble",
+      "probs": {
+        "none": 0.8971,
+        "enables": 0.0525,
+        "blocks": 0.0504
+      },
+      "reps": [
+        {
+          "none": 0.8971,
+          "enables": 0.0525,
+          "blocks": 0.0504
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "wife",
+      "probs": {
+        "enables": 0.0166,
+        "blocks": 0.0346,
+        "none": 0.9488
+      },
+      "reps": [
+        {
+          "enables": 0.0166,
+          "blocks": 0.0346,
+          "none": 0.9488
+        }
+      ]
+    },
+    {
+      "head": "divorce",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0149,
+        "blocks": 0.23,
+        "none": 0.7551
+      },
+      "reps": [
+        {
+          "enables": 0.0149,
+          "blocks": 0.23,
+          "none": 0.7551
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "wife",
+      "probs": {
+        "enables": 0.0365,
+        "blocks": 0.0296,
+        "none": 0.9339
+      },
+      "reps": [
+        {
+          "enables": 0.0365,
+          "blocks": 0.0296,
+          "none": 0.9339
+        }
+      ]
+    },
+    {
+      "head": "having a job",
+      "tail": "I",
+      "probs": {
+        "enables": 0.9346,
+        "blocks": 0.0133,
+        "none": 0.052
+      },
+      "reps": [
+        {
+          "enables": 0.9346,
+          "blocks": 0.0133,
+          "none": 0.052
+        }
+      ]
+    },
+    {
+      "head": "money trouble",
+      "tail": "wife",
+      "probs": {
+        "enables": 0.0179,
+        "blocks": 0.0494,
+        "none": 0.9327
+      },
+      "reps": [
+        {
+          "enables": 0.0179,
+          "blocks": 0.0494,
+          "none": 0.9327
+        }
+      ]
+    },
+    {
+      "head": "money trouble",
+      "tail": "I",
+      "probs": {
+        "enables": 0.0344,
+        "blocks": 0.2945,
+        "none": 0.671
+      },
+      "reps": [
+        {
+          "enables": 0.0344,
+          "blocks": 0.2945,
+          "none": 0.671
+        }
+      ]
+    }
+  ]
+}
