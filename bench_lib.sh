@@ -27,14 +27,20 @@ declare -A MODELS=(
   [qwen]=/model-weights/Qwen3.5-27B
   [llama]=/model-weights/Meta-Llama-3.1-8B-Instruct
   [gptoss]=/model-weights/gpt-oss-20b
+  [llama70]=/model-weights/Llama-3.3-70B-Instruct
+  [olmo]=/model-weights/Olmo-3-7B-Instruct
 )
+# per-model vLLM settings: Llama-3.3-70B (~140 GB in bf16) is quantised to FP8 on load (weights ~70 GB) with an FP8 KV
+# cache, and a 32k context (enough for every prompt, including Whole-corpus prompting's 200 stories)
+declare -A VLLM_EXTRA=([llama70]="--quantization fp8 --kv-cache-dtype fp8 --gpu-memory-utilization 0.95")
+declare -A MAX_LEN=([llama70]=32768)
 GPU_NAME=$(nvidia-smi --query-gpu=name --format=csv,noheader | head -1)
 GPU_COUNT=$(nvidia-smi -L | wc -l)
 
 start_llm() {                             # start_llm <gemma|qwen|llama|gptoss> [max_len]
-  local path=${MODELS[$1]} len=${2:-32768}
+  local path=${MODELS[$1]} len=${MAX_LEN[$1]:-${2:-32768}}
   python -m vllm.entrypoints.openai.api_server --model "$path" --served-model-name llm \
-    --tensor-parallel-size 2 --max-model-len "$len" --port $LLM_PORT > "$OUT/llm_server_$1.log" 2>&1 &
+    --tensor-parallel-size 2 --max-model-len "$len" --port $LLM_PORT ${VLLM_EXTRA[$1]:-} > "$OUT/llm_server_$1.log" 2>&1 &
   LLM_PID=$!; local t=$(date +%s)
   for i in $(seq 1 180); do
     curl -sf "http://127.0.0.1:$LLM_PORT/v1/models" >/dev/null && { printf "load\t%s\t%s\n" "$1" $(( $(date +%s) - t )) >> "$OUT/model_loads.tsv"; return 0; }
