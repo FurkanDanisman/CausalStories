@@ -90,6 +90,8 @@ def chat(messages, max_tokens=16384, temperature=0.0, logprobs=False):
     body = {"model": MODEL, "messages": messages, "max_tokens": max_tokens, "temperature": temperature,
             "chat_template_kwargs": {"enable_thinking": False}}    # model thinking off (Qwen); ReCITE's <think> is in the text
     key = "EMPTY"
+    if os.environ.get("OR_REASONING") and "openrouter.ai" not in URL:   # local vLLM, gpt-oss: lowest reasoning effort
+        body["reasoning_effort"] = os.environ["OR_REASONING"]
     if "openrouter.ai" in URL:                                     # hosted model: OpenRouter's key, thinking off,
         body.pop("chat_template_kwargs")                                               # one provider for every call
         body["reasoning"] = {"effort": os.environ["OR_REASONING"]} if os.environ.get("OR_REASONING") else {"enabled": False}

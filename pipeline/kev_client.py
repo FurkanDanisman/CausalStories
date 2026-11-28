@@ -113,6 +113,8 @@ class KevClient:
                     body["provider"] = {"order": [os.environ["OR_PROVIDER"]], "allow_fallbacks": False}
             else:                                         # local vLLM: no thinking (Qwen 3.5)
                 body["chat_template_kwargs"] = {"enable_thinking": False}
+                if effort:                                # local vLLM, a model that must reason (gpt-oss): lowest effort
+                    body["reasoning_effort"] = effort
             data = json.dumps(body).encode()
             for attempt in range(6):
                 req = urllib.request.Request(url, data=data, headers={"authorization": f"Bearer {key}",
@@ -127,8 +129,8 @@ class KevClient:
                     ch = resp["choices"][0]
                     lp = {}
                     toks = (ch.get("logprobs") or {}).get("content") or [{}]
-                    if effort:                                # the first answer token that is an option letter
-                        toks = [t for t in toks if t.get("token", "").strip().rstrip(")").upper() in letters][:1] or [{}]
+                    if effort:                                # the LAST token that is an option letter: the answer comes
+                        toks = [t for t in toks if t.get("token", "").strip().rstrip(")").upper() in letters][-1:] or [{}]
                     for t in toks[0].get("top_logprobs", []):
                         tok = t["token"].strip().rstrip(")").upper()
                         if tok in letters and tok not in lp:

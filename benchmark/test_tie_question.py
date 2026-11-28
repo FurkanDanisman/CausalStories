@@ -73,8 +73,8 @@ def ask(text, q):
     r = json.loads(urllib.request.urlopen(req, timeout=120).read()); ch = r["choices"][0]
     lp = {}
     toks = (ch.get("logprobs") or {}).get("content") or [{}]
-    if os.environ.get("OR_REASONING"):               # reasoning model: the first answer token that is a letter
-        toks = [t for t in toks if t.get("token", "").strip().rstrip(")").upper() in L][:1] or [{}]
+    if os.environ.get("OR_REASONING"):               # reasoning model: the last token that is a letter (the answer)
+        toks = [t for t in toks if t.get("token", "").strip().rstrip(")").upper() in L][-1:] or [{}]
     for t in toks[0].get("top_logprobs", []):
         tok = t["token"].strip().rstrip(")").upper()
         if tok in L and tok not in lp: lp[tok] = t["logprob"]

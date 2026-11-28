@@ -94,14 +94,16 @@ class OpenAIClient:
         self.model = model
 
     def complete(self, *, task: str, prompt: str, schema: Type[T], temperature: float = 0.0) -> T:
-        import re
+        import os, re
         last = None
         for attempt in range(5):                     # retries above temperature 0 (else the same bad answer)
             resp = self._client.chat.completions.create(
                 model=self.model,
                 temperature=temperature if attempt == 0 else max(temperature, 0.7),
                 response_format={"type": "json_object"},
-                extra_body={"chat_template_kwargs": {"enable_thinking": False}},   # vLLM: no thinking (Qwen 3.5)
+                extra_body={"chat_template_kwargs": {"enable_thinking": False},    # vLLM: no thinking (Qwen 3.5);
+                            **({"reasoning_effort": os.environ["OR_REASONING"]}   # gpt-oss: lowest reasoning effort
+                               if os.environ.get("OR_REASONING") else {})},
                 messages=[{"role": "user", "content": prompt + "\n\n" + _schema_instructions(schema)}],
             )
             try:
