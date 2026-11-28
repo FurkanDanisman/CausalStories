@@ -41,7 +41,9 @@ def ask(text, q):
     body = {"model": "llm" if local else MODEL, "temperature": 0, "max_tokens": 1, "logprobs": True, "top_logprobs": 10,
             "messages": [{"role": "user", "content": prompt}]}
     if local: body["chat_template_kwargs"] = {"enable_thinking": False}
-    elif PROVIDER: body["provider"] = {"order": [PROVIDER], "allow_fallbacks": False}
+    else:
+        body["reasoning"] = {"enabled": False}
+        if PROVIDER: body["provider"] = {"order": [PROVIDER], "allow_fallbacks": False}
     url = local or "https://openrouter.ai/api/v1/chat/completions"
     key = "EMPTY" if local else os.environ["OPENROUTER_API_KEY"]
     req = urllib.request.Request(url, data=json.dumps(body).encode(),

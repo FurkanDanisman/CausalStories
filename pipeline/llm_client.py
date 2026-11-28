@@ -128,13 +128,15 @@ class OpenRouterClient(OpenAIClient):
                          api_key=api_key or os.environ.get("OPENROUTER_API_KEY"))
 
     def complete(self, *, task: str, prompt: str, schema: Type[T], temperature: float = 0.0) -> T:
-        import re
+        import os, re
         last = None
         for attempt in range(5):                     # retries above temperature 0, else the same bad answer repeats
             resp = self._client.chat.completions.create(
                 model=self.model, temperature=temperature if attempt == 0 else max(temperature, 0.7),
                 response_format={"type": "json_object"},
-                extra_body={"reasoning": {"enabled": False}},          # no thinking (e.g. Qwen 3.5)
+                extra_body={"reasoning": {"enabled": False},           # no thinking (e.g. Qwen 3.5)
+                            **({"provider": {"order": [os.environ["OR_PROVIDER"]], "allow_fallbacks": False}}
+                               if os.environ.get("OR_PROVIDER") else {})},   # one provider for every call
                 messages=[{"role": "user", "content": prompt + "\n\n" + _schema_instructions(schema)}])
             try:                                        # OpenRouter reports the call's cost in usage
                 from pipeline.kev_client import log_cost

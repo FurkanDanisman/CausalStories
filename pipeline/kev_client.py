@@ -107,6 +107,8 @@ class KevClient:
                     "messages": [{"role": "user", "content": prompt}]}
             if "openrouter.ai" in url:
                 body["reasoning"] = {"enabled": False}
+                if os.environ.get("OR_PROVIDER"):         # one provider for every call (same model setup, logprobs)
+                    body["provider"] = {"order": [os.environ["OR_PROVIDER"]], "allow_fallbacks": False}
             else:                                         # local vLLM: no thinking (Qwen 3.5)
                 body["chat_template_kwargs"] = {"enable_thinking": False}
             data = json.dumps(body).encode()

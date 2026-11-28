@@ -89,13 +89,19 @@ def log_inference(model, prompt_tokens=None, completion_tokens=None, questions=N
 def chat(messages, max_tokens=16384, temperature=0.0, logprobs=False):
     body = {"model": MODEL, "messages": messages, "max_tokens": max_tokens, "temperature": temperature,
             "chat_template_kwargs": {"enable_thinking": False}}    # model thinking off (Qwen); ReCITE's <think> is in the text
+    key = "EMPTY"
+    if "openrouter.ai" in URL:                                     # hosted model: OpenRouter's key, thinking off,
+        body.pop("chat_template_kwargs"); body["reasoning"] = {"enabled": False}       # one provider for every call
+        if os.environ.get("OR_PROVIDER"):
+            body["provider"] = {"order": [os.environ["OR_PROVIDER"]], "allow_fallbacks": False}
+        key = os.environ["OPENROUTER_API_KEY"]
     if logprobs:
         body.update({"logprobs": True, "top_logprobs": 10})
     data = json.dumps(body).encode()
     for attempt in range(6):
         try:
             req = urllib.request.Request(URL, data=data, headers={"content-type": "application/json",
-                                                                  "authorization": "Bearer EMPTY"})
+                                                                  "authorization": f"Bearer {key}"})
             with urllib.request.urlopen(req, timeout=1800) as r:   # ReCITE's long reasoning (up to 16,384 tokens) can pass 10 min when many stories run at once
                 resp = json.loads(r.read())
                 u = resp.get("usage") or {}

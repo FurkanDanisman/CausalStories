@@ -64,7 +64,7 @@ def ask(text, q):
     body = {"model": MODEL, "temperature": 0, "max_tokens": 1, "logprobs": True, "top_logprobs": 10,
             "messages": [{"role": "user", "content": prompt}]}
     if PROVIDER: body["provider"] = {"order": [PROVIDER], "allow_fallbacks": False}
-    if "gemma" in MODEL: body["reasoning"] = {"enabled": False}
+    body["reasoning"] = {"enabled": False}
     req = urllib.request.Request("https://openrouter.ai/api/v1/chat/completions", data=json.dumps(body).encode(),
                                  headers={"authorization": "Bearer " + os.environ["OPENROUTER_API_KEY"],
                                           "content-type": "application/json"})
