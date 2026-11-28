@@ -24,10 +24,14 @@ GENERATORS = [("gemma", "Gemma 4 31B"), ("qwen", "Qwen 3.5 27B"), ("llama70", "L
 
 
 def ours_rows(w):
-    g9 = P / "grid_v9" / f"{w}__gemma__llm"                     # new causal-edge definition (homelessness so far)
-    rows = [("Gemma 4 31B", "Gemma 4 31B", g9 if g9.exists() else P / "grid_v8c" / f"{w}__gemma__llm"),
-            ("Qwen 3.5 27B", "Qwen 3.5 27B", P / "grid_v8" / f"{w}__qwen__llm"),
-            ("Llama 3.3 70B", "Llama 3.3 70B", P / "grid_v8" / f"{w}__llama70__llm")]
+    def newest(g, grids):                                    # the newest finished run of ours for this generator
+        for gr in grids:
+            if (P / gr / f"{w}__{g}__llm" / f"evaluation_{SLUG}_flip_cut{MAIN:02d}.json").exists():
+                return P / gr / f"{w}__{g}__llm"
+        return P / grids[-1] / f"{w}__{g}__llm"
+    rows = [("Gemma 4 31B", "Gemma 4 31B", newest("gemma", ["grid_v10", "grid_v9", "grid_v8c"])),
+            ("Qwen 3.5 27B", "Qwen 3.5 27B", newest("qwen", ["grid_v10", "grid_v8"])),
+            ("Llama 3.3 70B", "Llama 3.3 70B", newest("llama70", ["grid_v10", "grid_v8"]))]
     rows += [("Gemma 4 31B", lab, P / "grid_v8_or" / f"{w}__gemma__{s}") for lab, s in DECISION]
     return rows
 
@@ -111,8 +115,8 @@ def tex():
          r"Score with KL: Causal Stories only (the only method with conditional probabilities): geometric mean of node F1, "
          r"arrows, SID and the KL score $\exp(-\mathrm{KL})$, where a group stated the other way round (e.g. `employment' for "
          r"`job loss') is compared with its true node with the values flipped. "
-         r"Causal Stories with Gemma 4 31B: homelessness with the new causal-edge definition (all other Causal Stories rows, "
-         r"including the decision models: the old definition); mental health: the grouping rerun with the new opposite question. "
+         r"Causal Stories with Gemma 4 31B and Qwen 3.5 27B: the v10 runs (new causal-edge definition, grouping tie rule); "
+         r"Llama 3.3 70B and the decision models: the earlier runs (old definition), until their v10 runs are finished. "
          r"Bold: the best score among the methods with the same generator (part 1) and among the decision models (part 2).", ""]
     HEAD = [r"\toprule", r"& \multicolumn{3}{c}{Individual stories} & \multicolumn{5}{c}{Aggregated (world graph)} \\",
             r"\cmidrule(lr){2-4}\cmidrule(lr){5-9}",

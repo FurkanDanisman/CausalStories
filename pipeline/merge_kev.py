@@ -24,12 +24,13 @@ from .llm_client import LLMClient
 from .schema import NodeClustering
 
 
-TIE = 0.01                             # answers within this of each other are a tie (see kev_merge)
+TIE = 0.01                             # answers within this of each other are a tie: the tie question decides (kev_merge)
 
 
 def kev_merge(kev: KevClient, graphs: list[dict], log=print) -> dict:
     groups: list[dict] = []            # {"kind", "name", "members": [[j, v, sign]]}
     decisions: list[dict] = []
+    ties: list[dict] = []              # every tie question and its answer
     for g in graphs:
         j, kinds = g["id"], g.get("kinds") or {}
         nodes = list(g["nodes"])
@@ -52,18 +53,29 @@ def kev_merge(kev: KevClient, graphs: list[dict], log=print) -> dict:
                                   "probs": {r: round(x, 4) for r, x in pr.items()}, "choice": choice})
                 if choice in ("same", "opposite"):
                     cands.append((pr[choice], v, gi, 1 if choice == "same" else -1))
-        # a node "same"/"opposite" to several groups with probabilities within TIE of its best one is a tie: it goes
-        # to the group created first (lowest index), not to whichever is a hair more probable. Each pair is ranked by
-        # the probability at the top of its node's tie, then by group age.
-        top = {}
-        for p, v, gi, sign in sorted(cands, key=lambda c: -c[0]):
-            run = top.setdefault(v, [])
-            if not run or run[-1][0] - p > TIE:
-                run.append([p])
-            run[-1].append(gi)
-        eff = {(v, gi): run[0] for v, runs in top.items() for run in runs for gi in run[1:]}
+        # a node "same"/"opposite" to several groups with probabilities within TIE of its best one is a tie: the
+        # same model is asked which of those groups the node is (kev_group_tie.md), in both group orders; the group
+        # with the higher mean wins and the other tied groups are dropped for this node.
+        best = {}
+        for p, v, gi, sign in cands:
+            best[v] = max(best.get(v, 0.0), p)
+        for v in list(best):
+            tied = [gi for p, w, gi, s in cands if w == v and best[v] - p <= TIE]
+            if len(tied) < 2:
+                continue
+            shown = [[m[1] for m in groups[gi]["members"] if m[2] > 0] for gi in tied]
+            q1 = prompts.kev_group_tie_question(v, shown)
+            q2 = prompts.kev_group_tie_question(v, shown[::-1])
+            a = kev.ask(g["text"], {"t1": q1, "t2": q2})
+            p1 = [a["t1"]["probabilities"][f"group {i + 1}"] for i in range(len(tied))]
+            p2 = [a["t2"]["probabilities"][f"group {len(tied) - i}"] for i in range(len(tied))]
+            mean = [(x + y) / 2 for x, y in zip(p1, p2)]
+            win = tied[max(range(len(tied)), key=lambda i: mean[i])]
+            ties.append({"narrative": j, "node": v, "groups": [groups[gi]["name"] for gi in tied],
+                         "probs": [round(x, 4) for x in mean], "choice": groups[win]["name"]})
+            cands = [c for c in cands if not (c[1] == v and c[2] in tied and c[2] != win)]
         placed, taken = {}, set()
-        for p, v, gi, sign in sorted(cands, key=lambda c: (-eff[(c[1], c[2])], c[2])):
+        for p, v, gi, sign in sorted(cands, key=lambda c: -c[0]):
             if v in placed or gi in taken:
                 continue
             placed[v] = (gi, sign)
@@ -79,7 +91,9 @@ def kev_merge(kev: KevClient, graphs: list[dict], log=print) -> dict:
                 groups.append({"kind": kinds.get(v, "event"), "name": name, "members": [[j, v, 1]]})
                 log(f"  {v!r} -> new group")
 
-    return abstraction(groups, graphs, decisions)
+    out = abstraction(groups, graphs, decisions)
+    out["ties"] = ties
+    return out
 
 
 def abstraction(groups: list[dict], graphs: list[dict], decisions: list[dict]) -> dict:

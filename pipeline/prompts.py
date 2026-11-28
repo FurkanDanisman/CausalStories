@@ -121,6 +121,15 @@ def kev_group_question(node: str, members: list[str], kind: str) -> dict:
             "instructions": render("kev_group.md", NODE=node, MEMBERS=listing)}
 
 
+def kev_group_tie_question(node: str, groups: list[list[str]]) -> dict:
+    """A node tied between several groups: which one? One option per group, shown by its most frequent members."""
+    from collections import Counter
+    show = lambda ms: ", ".join(f'"{n}"' for n, _ in Counter(ms).most_common(6))
+    return {"type": "choice",
+            "criteria": {f"group {i + 1}": f"the group of events like {show(ms)}" for i, ms in enumerate(groups)},
+            "instructions": render("kev_group_tie.md", NODE=node)}
+
+
 # Naming guidance for merge_concepts.md, by node kind.
 MERGE_NAMING = {
     "event": "Name each concept by its meaning, as a short general phrase "
