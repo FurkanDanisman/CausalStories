@@ -134,7 +134,9 @@ class OpenRouterClient(OpenAIClient):
             resp = self._client.chat.completions.create(
                 model=self.model, temperature=temperature if attempt == 0 else max(temperature, 0.7),
                 response_format={"type": "json_object"},
-                extra_body={"reasoning": {"enabled": False},           # no thinking (e.g. Qwen 3.5)
+                extra_body={"reasoning": ({"effort": os.environ["OR_REASONING"]} if os.environ.get("OR_REASONING")
+                                          else {"enabled": False}),     # no thinking (e.g. Qwen 3.5); a model that
+                                                                        # must reason (gpt-oss): the lowest effort
                             **({"provider": {"order": [os.environ["OR_PROVIDER"]], "allow_fallbacks": False}}
                                if os.environ.get("OR_PROVIDER") else {})},   # one provider for every call
                 messages=[{"role": "user", "content": prompt + "\n\n" + _schema_instructions(schema)}])

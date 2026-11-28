@@ -103,10 +103,12 @@ class KevClient:
             prompt = (f"Text:\n{state}\n\nQuestion: {q.get('instructions', '')}\nOptions:\n" +
                       "\n".join(f"{L}) {k}: {d}" for L, (k, d) in zip(letters, opts)) +
                       "\n\nAnswer with the single letter of the best option and nothing else.")
-            body = {"model": model, "temperature": 0, "max_tokens": 1, "logprobs": True, "top_logprobs": 10,
-                    "messages": [{"role": "user", "content": prompt}]}
+            effort = os.environ.get("OR_REASONING")       # a model whose reasoning cannot be switched off (gpt-oss,
+            body = {"model": model, "temperature": 0, "max_tokens": 2000 if effort else 1,   # GLM-5.3): it reasons
+                    "logprobs": True, "top_logprobs": 10,                                    # briefly; the answer letter
+                    "messages": [{"role": "user", "content": prompt}]}                       # is read after it
             if "openrouter.ai" in url:
-                body["reasoning"] = {"enabled": False}
+                body["reasoning"] = {"effort": effort} if effort else {"enabled": False}
                 if os.environ.get("OR_PROVIDER"):         # one provider for every call (same model setup, logprobs)
                     body["provider"] = {"order": [os.environ["OR_PROVIDER"]], "allow_fallbacks": False}
             else:                                         # local vLLM: no thinking (Qwen 3.5)
@@ -124,7 +126,10 @@ class KevClient:
                                   questions=1, chars=len(prompt))
                     ch = resp["choices"][0]
                     lp = {}
-                    for t in ((ch.get("logprobs") or {}).get("content") or [{}])[0].get("top_logprobs", []):
+                    toks = (ch.get("logprobs") or {}).get("content") or [{}]
+                    if effort:                                # the first answer token that is an option letter
+                        toks = [t for t in toks if t.get("token", "").strip().rstrip(")").upper() in letters][:1] or [{}]
+                    for t in toks[0].get("top_logprobs", []):
                         tok = t["token"].strip().rstrip(")").upper()
                         if tok in letters and tok not in lp:
                             lp[tok] = t["logprob"]

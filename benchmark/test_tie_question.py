@@ -64,13 +64,18 @@ def ask(text, q):
     body = {"model": MODEL, "temperature": 0, "max_tokens": 1, "logprobs": True, "top_logprobs": 10,
             "messages": [{"role": "user", "content": prompt}]}
     if PROVIDER: body["provider"] = {"order": [PROVIDER], "allow_fallbacks": False}
-    body["reasoning"] = {"enabled": False}
+    eff = os.environ.get("OR_REASONING")
+    body["reasoning"] = {"effort": eff} if eff else {"enabled": False}
+    if eff: body["max_tokens"] = 2000
     req = urllib.request.Request("https://openrouter.ai/api/v1/chat/completions", data=json.dumps(body).encode(),
                                  headers={"authorization": "Bearer " + os.environ["OPENROUTER_API_KEY"],
                                           "content-type": "application/json"})
     r = json.loads(urllib.request.urlopen(req, timeout=120).read()); ch = r["choices"][0]
     lp = {}
-    for t in ((ch.get("logprobs") or {}).get("content") or [{}])[0].get("top_logprobs", []):
+    toks = (ch.get("logprobs") or {}).get("content") or [{}]
+    if os.environ.get("OR_REASONING"):               # reasoning model: the first answer token that is a letter
+        toks = [t for t in toks if t.get("token", "").strip().rstrip(")").upper() in L][:1] or [{}]
+    for t in toks[0].get("top_logprobs", []):
         tok = t["token"].strip().rstrip(")").upper()
         if tok in L and tok not in lp: lp[tok] = t["logprob"]
     if not lp:
