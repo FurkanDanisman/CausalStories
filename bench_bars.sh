@@ -4,7 +4,7 @@
 #   GRID=grid_v10 bash bench_bars.sh
 GRID=${GRID:-grid_v10}
 bar() { local p=$1 n=$(( $1 / 5 )); printf "[%-20s] %3d%%" "$(printf '#%.0s' $(seq 1 $n) 2>/dev/null | head -c $n)" "$p"; }
-for g in gemma qwen llama70; do for w in homelessness mental_health; do
+for g in ${GENS:-gemma qwen llama70 gptoss}; do for w in ${WORLDS:-homelessness mental_health}; do
   d=$GRID/${w}__${g}__llm; [ -d "$d" ] || { printf "  %-8s %-14s not started\n" $g $w; continue; }
   done_n=0; now=""
   for s in nodes chain_walk groups names node-happened implied connect; do

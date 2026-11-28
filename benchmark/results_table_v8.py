@@ -8,7 +8,7 @@ shows "not run". Rerun this script as results arrive.
 Main table: individual scores, and aggregated scores at the 10% cut for Causal Stories (competitors at no cut: the
 cut is a step of our method). Appendix: Causal Stories' aggregated score at every cut.
 Usage: python benchmark/results_table_v8.py  ->  benchmark/stories_v8/results_table.pdf"""
-import json, re, subprocess
+import json, os, re, subprocess
 from pathlib import Path
 
 HERE = Path(__file__).parent
@@ -16,11 +16,13 @@ P = HERE.parent
 SLUG = "gemma-4-31b-it"
 CUTS = [0, 5, 10, 15, 20, 25, 30]
 MAIN = 10
-WORLDS = {"homelessness": "Homelessness", "mental_health": "Mental health"}
+WORLDS = {k: v for k, v in {"homelessness": "Homelessness", "mental_health": "Mental health", "addiction": "Addiction relapse"}.items()
+          if k in os.environ.get("TABLE_WORLDS", "mental_health,addiction").split(",")}
 DECISION = [("Gemini Decision 1", "google_gemini-decision-1"), ("GPT-6 Luna Decisions", "openai_gpt-6-luna-decisions"),
             ("Jev 1.14", "typesafe_jev-1_14")]   # Kev 4B dropped (too slow on OpenRouter)
 OUT = HERE / "stories_v8"
-GENERATORS = [("gemma", "Gemma 4 31B"), ("qwen", "Qwen 3.5 27B"), ("llama70", "Llama 3.3 70B")]
+GENERATORS = [("gemma", "Gemma 4 31B"), ("qwen", "Qwen 3.5 27B"), ("llama70", "Llama 3.3 70B"), ("gptoss", "gpt-oss-20b")]
+V = os.environ.get("RESULTS_GRID", "grid_v11")         # every method and generator from this run
 
 
 def ours_rows(w):
@@ -29,9 +31,7 @@ def ours_rows(w):
             if (P / gr / f"{w}__{g}__llm" / f"evaluation_{SLUG}_flip_cut{MAIN:02d}.json").exists():
                 return P / gr / f"{w}__{g}__llm"
         return P / grids[-1] / f"{w}__{g}__llm"
-    rows = [("Gemma 4 31B", "Gemma 4 31B", newest("gemma", ["grid_v10", "grid_v9", "grid_v8c"])),
-            ("Qwen 3.5 27B", "Qwen 3.5 27B", newest("qwen", ["grid_v10", "grid_v8"])),
-            ("Llama 3.3 70B", "Llama 3.3 70B", newest("llama70", ["grid_v10", "grid_v8"]))]
+    rows = [(gl, gl, P / V / f"{w}__{g}__llm") for g, gl in GENERATORS]
     rows += [("Gemma 4 31B", lab, P / "grid_v8_or" / f"{w}__gemma__{s}") for lab, s in DECISION]
     return rows
 
@@ -39,10 +39,10 @@ def ours_rows(w):
 def comp_rows(w):
     rows = []
     for g, gl in GENERATORS:
-        G = P / "grid_v8"
-        rows += [("Per-story prompting", gl, G / f"{w}__{g}__C1-llm-llmgroup", None),
-                 ("Causal Map", gl, G / f"{w}__{g}__C5-llm-llmgroup", G / f"agg__C5agg__{w}__{g}__C5-llm-llmgroup"),
-                 ("Whole-corpus prompting", gl, None, G / f"{w}__{g}__C6-llm-llmgroup")]
+        G = P / V
+        rows += [("Per-story prompting", gl, G / f"{w}__{g}__C1-llm", None),
+                 ("Causal Map", gl, G / f"{w}__{g}__C5-llm", G / f"agg__C5agg__{w}__{g}__C5-llm"),
+                 ("Whole-corpus prompting", gl, None, G / f"{w}__{g}__C6-llm")]
     return rows
 
 
@@ -115,8 +115,8 @@ def tex():
          r"Score with KL: Causal Stories only (the only method with conditional probabilities): geometric mean of node F1, "
          r"arrows, SID and the KL score $\exp(-\mathrm{KL})$, where a group stated the other way round (e.g. `employment' for "
          r"`job loss') is compared with its true node with the values flipped. "
-         r"Causal Stories with Gemma 4 31B and Qwen 3.5 27B: the v10 runs (new causal-edge definition, grouping tie rule); "
-         r"Llama 3.3 70B and the decision models: the earlier runs (old definition), until their v10 runs are finished. "
+         r"All methods and generators: the v11 runs (Causal Stories: new causal-edge definition, tie question in the "
+         r"grouping); the decision models (part 2): the earlier runs (old definition). "
          r"Bold: the best score among the methods with the same generator (part 1) and among the decision models (part 2).", ""]
     HEAD = [r"\toprule", r"& \multicolumn{3}{c}{Individual stories} & \multicolumn{5}{c}{Aggregated (world graph)} \\",
             r"\cmidrule(lr){2-4}\cmidrule(lr){5-9}",

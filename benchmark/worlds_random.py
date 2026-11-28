@@ -55,14 +55,31 @@ WORLDS = {
             "depression": ({"loneliness": 0.7}, {"therapy": 0.7}),
         },
     },
+    "addiction": {                       # v9: the shape of mental health; two life events, act only through the craving
+        "outcome": "relapse",
+        "start": ["getting laid off", "a fight with my partner"],
+        "root": {"getting laid off": 0.45, "a fight with my partner": 0.45, "PROTAGONIST": 0.45, "SPONSOR": 0.55},
+        "actors": {"getting laid off": "EMPLOYER", "a fight with my partner": "PARTNER"},
+        "mech": {
+            "going to AA meetings": ({"PROTAGONIST": 1.0}, {}),
+            "sponsor support": ({"SPONSOR": 0.80}, {}),
+            "craving a drink": ({"getting laid off": 0.7, "a fight with my partner": 0.6}, {"going to AA meetings": 0.6}),
+            "relapse": ({"craving a drink": 0.7}, {"sponsor support": 0.7}),
+        },
+    },
 }
 ACTOR = {"job loss": "EMPLOYER", "providing a place to stay": "FAMILY MEMBER", "social support": "CLOSE FRIENDS",
-         "therapy": "PROTAGONIST", "breakup": "ROMANTIC PARTNER"}
+         "therapy": "PROTAGONIST", "breakup": "ROMANTIC PARTNER",
+         "getting laid off": "EMPLOYER", "a fight with my partner": "PARTNER", "sponsor support": "SPONSOR",
+         "going to AA meetings": "PROTAGONIST"}
 SAY = {"job loss": "my employer let me go", "providing a place to stay": "a family member offered me a place to stay",
        "social support": "my close friends stood by me", "therapy": "I was seeing a therapist", "savings": "I had savings",
-       "divorce": "I went through a divorce", "losing a family member": "a family member died", "breakup": "my partner and I broke up"}
+       "divorce": "I went through a divorce", "losing a family member": "a family member died", "breakup": "my partner and I broke up",
+       "getting laid off": "my boss laid me off", "a fight with my partner": "my partner and I had a big fight",
+       "sponsor support": "my sponsor was there for me", "going to AA meetings": "I was going to AA meetings"}
 SAY_NOT = {"job loss": "I still had my job", "losing a family member": "I still had my family", "providing a place to stay": "no family member offered me a place to stay", "social support": "no close friends stood by me",
-           "therapy": "I was not seeing a therapist", "savings": "I had no savings"}
+           "therapy": "I was not seeing a therapist", "savings": "I had no savings",
+           "sponsor support": "I had no sponsor to lean on", "going to AA meetings": "I was not going to AA meetings"}
 
 
 def person(w, rng):
@@ -91,7 +108,8 @@ def graph(w):
 
 OPPOSITE = {"savings": "no savings", "providing a place to stay": "no place to stay from family",
             "social support": "no support from close friends", "job loss": "still had my job",
-            "losing a family member": "still had my family", "therapy": "no therapy"}   # name of a node told as absent
+            "losing a family member": "still had my family", "therapy": "no therapy",
+            "sponsor support": "no sponsor support", "going to AA meetings": "not going to AA meetings"}   # name of a node told as absent
 
 
 def possible(W, x, n):
@@ -112,14 +130,19 @@ def tells(w, x):
         causes = [u for u in en if x[u] and not u.isupper()]
         if not causes:
             continue                                           # not at stake: nothing told
+        for u in causes:                                       # a cause that happened is told (a protection can also be
+            if u not in told:                                  # a cause: the sponsor gets me to meetings), with its actor
+                told[u] = 1
+                if u in ACTOR and x.get(ACTOR[u], 1): told[ACTOR[u]] = 1
+                facts.append(SAY.get(u, u))
         for u in W.get("tell_absent", {}).get(v, []):          # a cause that did not happen, told as absent
             if not x[u] and not x[v]:                          # only when the event did not happen either
                 told[u] = 0; facts.append(SAY_NOT[u])
         prot = [b for b in bl if possible(W, x, b)]            # a protection that could not happen is not told
         for b in prot:                                         # the protection of an event at stake
             told[b] = x[b]
-            if x[b] and b in ACTOR:
-                told[ACTOR[b]] = 1; arrows.append((ACTOR[b], b, "carries out"))
+            if x[b] and b in ACTOR and x.get(ACTOR[b], 1):       # the participant only if it was there (meetings:
+                told[ACTOR[b]] = 1; arrows.append((ACTOR[b], b, "carries out"))   # the sponsor may have got me there)
             facts.append(SAY[b] if x[b] else SAY_NOT[b])
         told[v] = x[v]
         there = [b for b in prot if x[b]]
@@ -168,9 +191,11 @@ def draw_stories(w, n=200, seed=0):
 
 
 if __name__ == "__main__" and sys.argv[1:2] == ["facts"]:
-    import json, pathlib
-    d = pathlib.Path(__file__).parent / "stories_v8"; d.mkdir(exist_ok=True)
+    import json, pathlib                          # facts [<folder> <world> ...]: default stories_v8, every world
+    d = pathlib.Path(__file__).parent / (sys.argv[2] if len(sys.argv) > 2 else "stories_v8"); d.mkdir(exist_ok=True)
     for i, w in enumerate(WORLDS):
+        if len(sys.argv) > 3 and w not in sys.argv[3:]:
+            continue
         items = draw_stories(w, 200, seed=900 + i)
         (d / f"{w}_facts.json").write_text(json.dumps(items, indent=1))
         print(w, len(items), "people ->", d / f"{w}_facts.json")

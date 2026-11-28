@@ -12,7 +12,8 @@ from pathlib import Path
 
 HERE = Path(__file__).parent
 import os
-GRID = HERE.parent / os.environ.get("COMP_GRID", "grid_v8")       # competing methods
+GRID = HERE.parent / os.environ.get("COMP_GRID", "grid_v11")      # competing methods
+CS = os.environ.get("COMP_SUFFIX", "-llm")                         # their run folders: <world>__<gen>__C1<CS>
 OURS = HERE.parent / os.environ.get("OURS_GRID", "grid_v8")      # our runs
 STORIES = os.environ.get("STORIES", "stories_v8")
 SUFFIX = os.environ.get("PDF_SUFFIX", "")
@@ -20,7 +21,7 @@ SUFFIX = os.environ.get("PDF_SUFFIX", "")
 
 # Newer runs of ours for one generator, first existing wins: gemma=grid_v9 (new causal-edge definition; homelessness
 # only so far), then grid_v8c (Gemma's grouping rerun with the new opposite question)
-OURS_BY_GEN = dict(x.split("=") for x in os.environ.get("OURS_BY_GEN", "gemma=grid_v10:grid_v9:grid_v8c,qwen=grid_v10,llama70=grid_v10").split(",") if x)
+OURS_BY_GEN = dict(x.split("=") for x in os.environ.get("OURS_BY_GEN", "gemma=grid_v11,qwen=grid_v11,llama70=grid_v11,gptoss=grid_v11").split(",") if x)
 
 
 def ours(run):
@@ -38,7 +39,7 @@ def base(run):
 OUT = HERE / STORIES / "results_build"
 SLUG = "gemma-4-31b-it"
 CUTS = [0, 5, 10, 15, 20, 25, 30]
-GENS = {"gemma": "Gemma 4 31B", "qwen": "Qwen 3.5 27B", "llama70": "Llama 3.3 70B"}
+GENS = {"gemma": "Gemma 4 31B", "qwen": "Qwen 3.5 27B", "llama70": "Llama 3.3 70B", "gptoss": "gpt-oss-20b"}
 WORLDS = {"homelessness": "Homelessness", "mental_health": "Mental health"}
 POS = {"carries out", "enables", "risk"}
 sys.path.insert(0, str(HERE)); import worlds_random as R
@@ -172,8 +173,8 @@ def main():
                 s = S[sid]
                 tex.append(r"\clearpage\subsection*{" + wt + " -- " + gt + " -- " + sid + r"}\noindent\textit{``" + esc(s["text"]) + r"''}\par\medskip")
                 cells = [(true_story(w, s), r"\textbf{True graph}")]
-                for lab, run in [("Causal Stories", f"{w}__{g}__llm"), ("Per-story prompting", f"{w}__{g}__C1-llm-llmgroup"),
-                                 ("Causal Map", f"{w}__{g}__C5-llm-llmgroup")]:
+                for lab, run in [("Causal Stories", f"{w}__{g}__llm"), ("Per-story prompting", f"{w}__{g}__C1{CS}"),
+                                 ("Causal Map", f"{w}__{g}__C5{CS}")]:
                     f, cap = individual(w, sid, run, f"{g}_{lab.replace(chr(32), chr(95))}")
                     cells.append((f, f"\\textbf{{{lab}}}\\\\" + cap))
                 tex.append(grid(cells, "0.3"))
@@ -184,13 +185,13 @@ def main():
            r"and bottom right: Whole-corpus prompting, as they output them (the usage cut is a step of our method only). Score = geometric mean of node F1, arrows and SID (comparable across methods); score with KL (Causal Stories "
            r"only, the only method with conditional probabilities) = geometric mean of node F1, arrows, SID and $\\exp(-\\mathrm{KL})$, "
            r"where a group stated the other way round (e.g. `employment' for `job loss') is compared with its true node with the values flipped. "
-           r"Causal Stories with Gemma 4 31B and Qwen 3.5 27B: the v10 runs (new causal-edge definition and the grouping tie rule); Llama 3.3 70B: the v8 run (old definition) until its v10 run is finished. Causal Stories' arrows are labelled with its estimate; the other methods' arrows carry no number (they output none: Causal Map's link weight is only the share of stories that mention the link, and Whole-corpus prompting gives no weight). Appendix A: Causal Stories with LLM grouping instead of its grouping procedure (Gemma and Qwen only); Appendix B: Causal Stories at every other cut."]
+           r"All methods and generators: the v11 runs (Causal Stories: new causal-edge definition and the tie question in the grouping); Appendix A: the earlier LLM-grouping runs (Gemma, Qwen). Causal Stories' arrows are labelled with its estimate; the other methods' arrows carry no number (they output none: Causal Map's link weight is only the share of stories that mention the link, and Whole-corpus prompting gives no weight). Appendix A: Causal Stories with LLM grouping instead of its grouping procedure (Gemma and Qwen only); Appendix B: Causal Stories at every other cut."]
     MAIN = ("Causal Stories", "llm", "B", 10)                                    # main text: grouping B (Kev procedure), 10% cut
     APPX = ("Causal Stories with LLM grouping", "llm-llmgroup", "A", 10)          # appendix: grouping A, then every other cut
 
     def page(w, wt, g, gt, lab, suf, t, mc):
         comp = []
-        for cl, run in [("Causal Map", f"agg__C5agg__{w}__{g}__C5-llm-llmgroup"), ("Whole-corpus prompting", f"{w}__{g}__C6-llm-llmgroup")]:
+        for cl, run in [("Causal Map", f"agg__C5agg__{w}__{g}__C5{CS}"), ("Whole-corpus prompting", f"{w}__{g}__C6{CS}")]:
             f, cap = aggregated(run, 0, f"{w}_{g}_{cl.replace(chr(32), chr(95))}", labels=False)
             comp.append((f, f"\\textbf{{{cl}}}\\\\" + cap))
         f, cap = aggregated(f"{w}__{g}__{suf}", mc, f"{w}_{g}_{t}")
